@@ -48,19 +48,8 @@
 #       SED = sed -i ''
 #     endif
 
-# This is to deal with paths that change depending on whether we're in the
-# semgrep-proprietary monorepo or detached as a standalone semgrep project.
-# The script 'scripts/make-symlinks' also deals with such issues.
-PROJECT_ROOT = $(shell git rev-parse --show-toplevel || pwd)
-ifeq ($(shell pwd),$(PROJECT_ROOT))
-  # The root is here.
-  BUILD = _build
-  BUILD_DEFAULT = _build/default
-else
-  # Assume we're in the semgrep-proprietary repo where OSS/ = semgrep.
-  BUILD = ../_build
-  BUILD_DEFAULT = ../_build/default/OSS
-endif
+BUILD = _build
+BUILD_DEFAULT = _build/default
 
 ifeq ($(shell uname -o),Cygwin)
   EXE = .exe
