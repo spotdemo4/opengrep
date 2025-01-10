@@ -17,11 +17,9 @@ OBJS = \
   build-test-windows-x86.yml \
   tests.yml \
   test-e2e-semgrep-ci.yml nightly.yml \
-  check-semgrep-pro-version.yml \
   build-test-docker.yml push-docker.yml \
   start-release.yml release.yml release-homebrew.yml \
-  trigger-semgrep-comparison-argo.yml \
-  sync-with-PRO.yml
+  trigger-semgrep-comparison-argo.yml
 
 #TODO: in theory we should have a 'make depend' as modifying some .jsonnet
 # actually requires then to regenerate other files that depends on this .jsonnet

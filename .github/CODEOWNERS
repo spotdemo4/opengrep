@@ -1,3 +1,1 @@
-src/engine/*taint* @IagoAbal
-src/analyzing @IagoAbal
-src/tainting @IagoAbal
+* @willem-delbare @dimitris-m
