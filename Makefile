@@ -200,7 +200,6 @@ test-all:
 #coupling: this is run by .github/workflow/tests.yml
 .PHONY: core-test
 core-test:
-	./scripts/make-symlinks
 	$(MAKE) build-core-test
 # The following command ensures that we can call 'test.exe --help'
 # from the directory of the checkout
@@ -492,7 +491,8 @@ nix-update:
 
 # used in build-test-windows-x86.jsonnet
 install-deps-WINDOWS-for-semgrep-core:
-	opam depext $(WINDOWS_OPAM_DEPEXT_DEPS)
+	# We will use OPAM 2.1+ which has integrated support for depexts.
+	opam install -y $(WINDOWS_OPAM_DEPEXT_DEPS)
 
 ###############################################################################
 # Developer targets
@@ -503,7 +503,6 @@ install-deps-WINDOWS-for-semgrep-core:
 # important dependencies change.
 .PHONY: setup
 setup: semgrep.opam
-	./scripts/make-symlinks
 	./scripts/check-bash-version
 	$(MAKE) install-deps-for-semgrep-core
 
