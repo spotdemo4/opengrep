@@ -659,7 +659,9 @@ def scan(
         if pattern is not None and lang is None:
             abort("-e/--pattern and -l/--lang must both be specified")
 
-        if config and "auto" in config and metrics == MetricsState.OFF:
+        # TODO: Check if that is really a necessary restriction, to have metrics on:
+        _FIXME_INTENTIONALLY_FALSE = False
+        if _FIXME_INTENTIONALLY_FALSE and (config and "auto" in config and metrics == MetricsState.OFF):
             abort(
                 "Cannot create auto config when metrics are off. Please allow metrics or run with a specific config."
             )
