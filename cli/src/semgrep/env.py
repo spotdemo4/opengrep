@@ -73,7 +73,7 @@ class Env:
 
     version_check_url: str = field(
         default=EnvFactory(
-            "SEMGREP_VERSION_CHECK_URL", "https://semgrep.dev/api/check-version"
+            "SEMGREP_VERSION_CHECK_URL", "https://opengrep.dev/api/check-version"
         )
     )
     version_check_timeout: int = field()
@@ -105,7 +105,7 @@ class Env:
         value = os.getenv("SEMGREP_VERSION_CACHE_PATH")
         if value:
             return Path(value)
-        return Path.home() / ".cache" / "semgrep_version"
+        return Path.home() / ".cache" / "opengrep_version"
 
     @git_command_timeout.default
     def git_command_timeout_default(self) -> int:
