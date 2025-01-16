@@ -9,19 +9,21 @@ LIBS = \
   libs/gha.libsonnet \
   libs/semgrep.libsonnet \
 
+# NOTE: Removed temporarily because we don't generate from jsonnet right now:
+# build-test-windows-x86.yml
 OBJS = \
-  semgrep.yml lint.yml \
+  semgrep.yml \
+  lint.yml \
   build-test-core-x86.yml \
   build-test-osx-x86.yml build-test-osx-arm64.yml \
   build-test-manylinux-x86.yml build-test-manylinux-aarch64.yml \
-  build-test-windows-x86.yml \
   tests.yml \
   test-e2e-semgrep-ci.yml nightly.yml \
   build-test-docker.yml push-docker.yml \
   start-release.yml release.yml release-homebrew.yml \
   trigger-semgrep-comparison-argo.yml
 
-#TODO: in theory we should have a 'make depend' as modifying some .jsonnet
+# TODO: in theory we should have a 'make depend' as modifying some .jsonnet
 # actually requires then to regenerate other files that depends on this .jsonnet
 # The brute force way to make sure everything is ok (which is actually used
 # in CI) is to 'make clean; make' each time.
