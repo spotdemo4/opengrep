@@ -42,7 +42,7 @@ type conf = {
   dry_run : bool;
   suppress_errors : bool;
   (* --code/--sca/--secrets/ *)
-  products : Semgrep_output_v1_t.product list;
+  (* products : Semgrep_output_v1_t.product list; *)
   (* for monorepos *)
   subdir : string;
   (* BIG ONE: 'semgrep ci' shares most of its flags with 'semgrep scan'
@@ -61,28 +61,6 @@ type conf = {
 (* ------------------------------------------------------------------ *)
 (* Products *)
 (* ------------------------------------------------------------------ *)
-
-let o_code : bool Term.t =
-  let info = Arg.info [ "code" ] ~doc:{|Run Semgrep Code (SAST) product.|} in
-  Arg.value (Arg.flag info)
-
-let o_supply_chain : bool Term.t =
-  let info =
-    Arg.info [ "supply-chain" ] ~doc:{|Run Semgrep Supply Chain product.|}
-  in
-  Arg.value (Arg.flag info)
-
-(* TODO: uncomment and delete from Scan_CLI.ml where it should not be used
-   let o_secrets : bool Term.t =
-     let info =
-       Arg.info [ "secrets" ]
-         ~doc:
-           {|Run Semgrep Secrets product, including support for secret validation.
-   Requires access to Secrets, contact support@semgrep.com for more
-   information.|}
-     in
-     Arg.value (Arg.flag info)
-*)
 
 (* ------------------------------------------------------------------ *)
 (* Other *)
@@ -302,7 +280,7 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
       Logs.warn (fun m ->
           m
             "Paths that match both --include and --exclude will be skipped by \
-             Semgrep.");
+             Opengrep.");
     Scan_CLI.
       {
         rules_source;
@@ -367,23 +345,17 @@ let cmdline_term : conf Term.t =
    * it below so we can get a nice man page documenting those environment
    * variables (Romain's idea).
    *)
-  let combine scan_conf audit_on code secrets dry_run _internal_ci_scan_results
+  let combine scan_conf audit_on (* code secrets *) dry_run _internal_ci_scan_results
       _x_dump_n_rule_partitions _x_dump_rule_partitions_dir
       x_merge_partial_results_dir x_merge_partial_results_output
       _x_partial_config _x_partial_output x_validate_partial_results_actual
-      x_validate_partial_results_expected subdir supply_chain suppress_errors
+      x_validate_partial_results_expected subdir (*  supply_chain *) suppress_errors
       _git_meta _github_meta =
-    let products =
-      (if secrets then [ `Secrets ] else [])
-      @ (if code then [ `SAST ] else [])
-      @ if supply_chain then [ `SCA ] else []
-    in
     {
       scan_conf;
       audit_on;
       dry_run;
       suppress_errors;
-      products;
       subdir;
       x_distributed_scan_conf =
         {
@@ -399,31 +371,28 @@ let cmdline_term : conf Term.t =
     }
   in
   Term.(
-    const combine $ scan_subset_cmdline_term $ o_audit_on $ o_code
-    $ SC.o_secrets $ o_dry_run $ o_internal_ci_scan_results
+    const combine $ scan_subset_cmdline_term $ o_audit_on 
+    $ o_dry_run $ o_internal_ci_scan_results
     $ o_x_dump_n_rule_partitions $ o_x_dump_rule_partitions_dir
     $ o_x_merge_partial_results_dir $ o_x_merge_partial_results_output
     $ o_x_partial_config $ o_x_partial_output
     $ o_x_validate_partial_results_actual
-    $ o_x_validate_partial_results_expected $ o_subdir $ o_supply_chain
+    $ o_x_validate_partial_results_expected $ o_subdir 
     $ o_suppress_errors $ Git_metadata.env $ Github_metadata.env)
 
-let doc = "the recommended way to run semgrep in CI"
+let doc = "the recommended way to run opengrep in CI"
 
 let man : Cmdliner.Manpage.block list =
   [
     `S Cmdliner.Manpage.s_description;
     `P
-      "In pull_request/merge_request (PR/MR) contexts, `semgrep ci` will only \
+      "In pull_request/merge_request (PR/MR) contexts, `opengrep ci` will only \
        report findings that were introduced by the PR/MR.";
-    `P
-      "When logged in, `semgrep ci` runs rules configured on Semgrep App and \
-       sends findings to your findings dashboard.";
     `P "Only displays findings that were marked as blocking.";
   ]
   @ CLI_common.help_page_bottom
 
-let cmdline_info : Cmd.info = Cmd.info "semgrep ci" ~doc ~man
+let cmdline_info : Cmd.info = Cmd.info "opengrep ci" ~doc ~man
 
 (*****************************************************************************)
 (* Entry point *)

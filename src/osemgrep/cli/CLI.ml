@@ -195,8 +195,8 @@ let dispatch_subcommand (caps : caps) (argv : string array) =
         (* partial support, still use Pysemgrep.Fallback in it *)
         | "scan" -> Scan_subcommand.main caps subcmd_argv
         | "ci" -> Ci_subcommand.main caps subcmd_argv
-        | "install-semgrep-pro" ->
-            Install_semgrep_pro_subcommand.main caps subcmd_argv
+        (* | "install-semgrep-pro" ->
+               Install_semgrep_pro_subcommand.main caps subcmd_argv *)
         (* osemgrep-only: and by default! no need experimental! *)
         | "lsp" -> Lsp_subcommand.main caps subcmd_argv
         | "logout" ->

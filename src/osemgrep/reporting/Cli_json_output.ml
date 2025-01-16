@@ -6,7 +6,7 @@ module Out = Semgrep_output_v1_j
 (* Prelude *)
 (*****************************************************************************)
 (* Convert results coming from Core_runner (semgrep-core JSON output)
- * to the formally specified Semgrep CLI JSON output.
+ * to the formally specified Opengrep CLI JSON output.
  *
  * I'm skipping lots of Python code and lots of intermediate modules for now
  * and just go directly from the Core_runner results to the final Cli_output.

@@ -128,9 +128,9 @@ let o_metrics : Metrics_.config Term.t =
     Arg.info [ "metrics" ]
       ~env:(Cmd.Env.info "SEMGREP_SEND_METRICS")
       ~doc:
-        {|Configures how usage metrics are sent to the Semgrep server. If
+        {|Configures how usage metrics are sent to the Opengrep server. If
 'auto', metrics are sent whenever the --config value pulls from the
-Semgrep server. If 'on', metrics are always sent. If 'off', metrics
+Opengrep server. If 'on', metrics are always sent. If 'off', metrics
 are disabled altogether and not sent. If absent, the
 SEMGREP_SEND_METRICS environment variable value will be used. If no
 environment variable, defaults to 'auto'.
@@ -145,7 +145,7 @@ let o_version_check : bool Term.t =
     ~default:default.version_check
     ~env:(Cmd.Env.info "SEMGREP_ENABLE_VERSION_CHECK")
     ~doc:
-      {|Checks Semgrep servers to see if the latest version is run; disabling
+      {|Checks Opengrep servers to see if the latest version is run; disabling
  this may reduce exit time after returning results.
 |}
 
@@ -184,7 +184,7 @@ let o_include : string list Term.t =
   let info =
     Arg.info [ "include" ] ~docv:"PATTERN"
       ~doc:
-        {|Specify files or directories that should be scanned by semgrep,
+        {|Specify files or directories that should be scanned by opengrep,
 excluding other files.
 This filter is applied after these other filters: '--exclude' options,
 any filtering done by git (or other SCM), and filtering by '.semgrepignore'
@@ -211,7 +211,7 @@ let o_max_target_bytes : int Term.t =
     Arg.info [ "max-target-bytes" ]
       ~doc:
         (spf
-           {|Maximum size for a file to be scanned by Semgrep, e.g
+           {|Maximum size for a file to be scanned by Opengrep, e.g
 '1.5MB'. Any input program larger than this will be ignored. A zero or
 negative value disables this filter. Defaults to %d bytes|}
            default)
@@ -227,13 +227,13 @@ let o_use_git : bool Term.t =
   H.negatable_flag [ "use-git-ignore" ] ~neg_options:[ "no-git-ignore" ]
     ~default:default.targeting_conf.respect_gitignore
     ~doc:
-      {|'--no-git-ignore' causes semgrep to not call 'git' and not consult
-        '.gitignore' files to determine which files semgrep should scan.
+      {|'--no-git-ignore' causes opengrep to not call 'git' and not consult
+        '.gitignore' files to determine which files opengrep should scan.
         As a result of '--no-git-ignore', gitignored files and git submodules
         will be scanned.
         This flag has no effect if the scanning root is not
         in a git repository.
-        '--use-git-ignore' is semgrep's default behavior.|}
+        '--use-git-ignore' is opengrep's default behavior.|}
 
 let o_ignore_semgrepignore_files : bool Term.t =
   let info =
@@ -241,7 +241,7 @@ let o_ignore_semgrepignore_files : bool Term.t =
       [ "x-ignore-semgrepignore-files" ]
       ~doc:
         {|[INTERNAL] Ignore all '.semgrepignore' files found in the project
-tree for the purpose of selecting target files to be scanned by semgrep.
+tree for the purpose of selecting target files to be scanned by opengrep.
 Other filters may still apply.
 THIS OPTION IS NOT PART OF THE SEMGREP API AND MAY
 CHANGE OR DISAPPEAR WITHOUT NOTICE.
@@ -260,7 +260,7 @@ let o_scan_unknown_extensions : bool Term.t =
          {|If true, target files specified directly on the command line
 will bypass normal language detection. They will be analyzed according to
 the value of --lang if applicable, or otherwise with the analyzers/languages
-specified in the Semgrep rule(s) regardless of file extension or file type.
+specified in the Opengrep rule(s) regardless of file extension or file type.
 This setting doesn't apply to target files discovered by scanning folders.
 Defaults to %b.
 |}
@@ -444,8 +444,7 @@ let o_matching_explanations : bool Term.t =
       [ "matching-explanations" ]
       ~doc:
         {|Add debugging information in the JSON output to trace how
-different parts of a rule are matched (a.k.a., "Inspect Rule"
-in the Semgrep playground)|}
+different parts of a rule are matched.|}
   in
   Arg.value (Arg.flag info)
 
@@ -473,6 +472,7 @@ let o_trace : bool Term.t =
 meant for internal use and may be changed or removed without warning.
 |}
 
+(* TODO: Remove. *)
 let o_trace_endpoint : string option Term.t =
   let info =
     Arg.info [ "trace-endpoint" ]
@@ -511,7 +511,7 @@ let o_text : bool Term.t =
 
 let o_json : bool Term.t =
   let info =
-    Arg.info [ "json" ] ~doc:{|Output results in Semgrep's JSON format.|}
+    Arg.info [ "json" ] ~doc:{|Output results in Opengrep's JSON format.|}
   in
   Arg.value (Arg.flag info)
 
@@ -605,6 +605,7 @@ let o_junit_xml_outputs = make_o_format_outputs ~fancy:"JUnit XML" "junit-xml"
 (* Run Secrets Post Processors                                  *)
 (* ------------------------------------------------------------------ *)
 
+(* TODO: Remove. *)
 let o_secrets : bool Term.t =
   let info =
     Arg.info [ "secrets" ]
@@ -1452,7 +1453,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       Logs.warn (fun m ->
           m
             "Paths that match both --include and --exclude will be skipped by \
-             Semgrep.");
+             Opengrep.");
 
     if trace_endpoint <> None && not trace then
       Logs.warn (fun m ->
@@ -1520,7 +1521,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
     $ o_version $ o_version_check $ o_vim $ o_vim_outputs
     $ o_ignore_semgrepignore_files $ o_ls $ o_ls_long)
 
-let doc = "run semgrep rules on files"
+let doc = "run opengrep rules on files"
 
 (* TODO: document the exit codes as defined in Exit_code.mli *)
 let man : Cmdliner.Manpage.block list =
@@ -1530,22 +1531,15 @@ let man : Cmdliner.Manpage.block list =
       "Searches TARGET paths for matches to rules or patterns. Defaults to \
        searching entire current working directory.";
     `P "To get started quickly, run";
-    `Pre "semgrep --config auto .";
+    `Pre "opengrep --config auto .";
     `P
-      "This will automatically fetch rules for your project from the Semgrep \
-       Registry. NOTE: Using `--config auto` will log in to the Semgrep \
-       Registry with your project URL.";
-    `P "For more information about Semgrep, go to https://semgrep.dev.";
-    `P
-      "NOTE: By default, Semgrep will report pseudonymous usage metrics to its \
-       server if you pull your configuration from the Semgrep registry. To \
-       learn more about how and why these metrics are collected, please see \
-       https://semgrep.dev/docs/metrics. To modify this behavior, see the \
-       --metrics option below.";
+      "This will automatically fetch rules for your project from the Opengrep \
+       Registry.";
+    `P "For more information about Opengrep, go to https://opengrep.dev.";
   ]
   @ CLI_common.help_page_bottom
 
-let cmdline_info : Cmd.info = Cmd.info "semgrep scan" ~doc ~man
+let cmdline_info : Cmd.info = Cmd.info "opengrep scan" ~doc ~man
 
 (*****************************************************************************)
 (* Entry point *)

@@ -94,8 +94,8 @@ core:
 # Make binaries available to pysemgrep
 .PHONY: copy-core-for-cli
 copy-core-for-cli:
-	rm -f cli/src/semgrep/bin/semgrep-core$(EXE)
-	cp bin/semgrep-core$(EXE) cli/src/semgrep/bin/
+	rm -f cli/src/semgrep/bin/opengrep-core$(EXE)
+	cp bin/opengrep-core$(EXE) cli/src/semgrep/bin/
 
 # Minimal build of the semgrep-core executable. Intended for the docker build.
 # If you need other binaries, look at the build-xxx rules below.
@@ -104,15 +104,15 @@ copy-core-for-cli:
 # does not support this bash feature.
 .PHONY: minimal-build
 minimal-build:
-	dune build $(BUILD)/install/default/bin/semgrep-core$(EXE)
-	dune build $(BUILD)/install/default/bin/osemgrep$(EXE)
-	dune build $(BUILD)/install/default/bin/semgrep$(EXE)
+	dune build $(BUILD)/install/default/bin/opengrep-core$(EXE)
+	dune build $(BUILD)/install/default/bin/opengrep-cli$(EXE)
+	dune build $(BUILD)/install/default/bin/opengrep$(EXE)
 # Remove all symbols with GNU strip. It saves 10-25% on the executable
 # size and it doesn't seem to reduce the functionality or
 # debuggability of OCaml executables.
 # See discussion at https://github.com/semgrep/semgrep/pull/9471
-	chmod +w bin/semgrep-core$(EXE)
-	strip bin/semgrep-core$(EXE)
+	chmod +w bin/opengrep-core$(EXE)
+	strip bin/opengrep-core$(EXE)
 
 #coupling: The 'semgrep-oss' is the name of the step in the Dockerfile, the
 # 'semgrep' the name of the docker image produced (will be semgrep:latest)
@@ -158,12 +158,13 @@ clean:
 .PHONY: install
 install:
 	$(MAKE) copy-core-for-cli
-# Install semgrep and semgrep-core in a place known to pip.
+# Install opengrep and opengrep-core in a place known to pip.
 	python3 -m pip install ./cli
 
 .PHONY: uninstall
 uninstall:
-	-python3 -m pip uninstall --yes semgrep
+	-python3 -m pip uninstall --yes semgrep # TODO: Remove.
+	-python3 -m pip uninstall --yes opengrep
 
 ###############################################################################
 # Test target
@@ -208,7 +209,7 @@ build-core-test:
 #coupling: this is run by .github/workflow/tests.yml
 .PHONY: core-test-e2e
 core-test-e2e:
-	SEMGREP_CORE=$(PWD)/bin/semgrep-core$(EXE) \
+	SEMGREP_CORE=$(PWD)/bin/opengrep-core$(EXE) \
 	$(MAKE) -C interfaces/semgrep_interfaces test
 
 ###############################################################################
@@ -544,8 +545,8 @@ dump:
 
 # for ocamldebug
 core-bc:
-	dune build $(BUILD)/install/default/bin/semgrep-core.bc
-	dune build $(BUILD)/install/default/bin/osemgrep.bc
+	dune build $(BUILD)/install/default/bin/opengrep-core.bc
+	dune build $(BUILD)/install/default/bin/opengrep-cli.bc
 test-bc:
 	dune build $(BUILD_DEFAULT)/src/tests/test.bc
 # The bytecode version of semgrep-core needs dlls for tree-sitter
@@ -612,10 +613,10 @@ SEMGREP_ARGS=--experimental --config semgrep.jsonnet --error --strict --exclude 
 #Dogfooding osemgrep!
 .PHONY: check
 check:
-	./bin/osemgrep$(EXE) $(SEMGREP_ARGS)
+	./bin/opengrep-cli$(EXE) $(SEMGREP_ARGS)
 
 check_for_emacs:
-	./bin/osemgrep$(EXE) $(SEMGREP_ARGS) --emacs --quiet
+	./bin/opengrep-cli$(EXE) $(SEMGREP_ARGS) --emacs --quiet
 
 DOCKER_IMAGE=semgrep/semgrep:develop
 
@@ -643,6 +644,8 @@ dev:
 ###############################################################################
 # Pad's targets
 ###############################################################################
+
+# TODO: Remove this, or edit accordingly:
 
 pr:
 	git push origin `git rev-parse --abbrev-ref HEAD`

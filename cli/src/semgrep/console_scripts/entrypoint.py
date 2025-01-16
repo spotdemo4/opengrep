@@ -89,10 +89,10 @@ def is_correct_pro_version(core_path):
 
 # similar to cli/src/semgrep/semgrep_core.py compute_executable_path()
 def find_semgrep_core_path(pro=False, extra_message=""):
-    if pro:
+    if pro: # TODO: Remove this.
         core = "semgrep-core-proprietary"
     else:
-        core = "semgrep-core"
+        core = "opengrep-core"
 
     if IS_WINDOWS:
         core += ".exe"
@@ -182,7 +182,7 @@ def exec_osemgrep():
 
         # If you call semgrep-core as osemgrep, then we get
         # osemgrep behavior, see src/main/Main.ml
-        sys.argv[0] = "osemgrep"
+        sys.argv[0] = "opengrep-cli"
     # nosem: dangerous-os-exec-tainted-env-args
     os.execvp(str(path), sys.argv)
 

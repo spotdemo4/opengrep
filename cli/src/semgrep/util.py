@@ -134,7 +134,7 @@ def welcome() -> None:
     click.echo(
         f"""
 ┌──── {logo} ────┐
-│ Semgrep CLI │
+│ Opengrep CLI │
 └─────────────┘
 """,
         err=True,

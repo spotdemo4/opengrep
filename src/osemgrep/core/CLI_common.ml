@@ -116,12 +116,10 @@ let o_common : conf Term.t =
 
 let help_page_bottom =
   [
-    `S Manpage.s_authors;
-    `P "Semgrep Inc. <support@semgrep.com>";
     `S Manpage.s_bugs;
     `P
       "If you encounter an issue, please report it at\n\
-      \      https://github.com/semgrep/semgrep/issues";
+      \      https://github.com/opengrep/opengrep/issues";
   ]
 
 (* Small wrapper around Cmdliner.Cmd.eval_value.

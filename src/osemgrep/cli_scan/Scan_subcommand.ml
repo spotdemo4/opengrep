@@ -316,7 +316,7 @@ let print_logo () : unit =
     Ocolor_format.asprintf
       {|
 ┌──── @{<green>○○○@} ────┐
-│ Semgrep CLI │
+│ Opengrep CLI │
 └─────────────┘
 |}
   in

@@ -85,9 +85,9 @@
 (*****************************************************************************)
 let eprint_experimental_windows (cap : Cap.Console.stderr) : unit =
   let epr = CapConsole.eprint cap in
-  epr "!!!This is an experimental version of semgrep for Windows.!!!";
-  epr "!!!Not all features may work. In case of problems, report here:!!!";
-  epr "!!!https://github.com/semgrep/semgrep/issues/1330!!!";
+  epr "!!!This is an experimental version of opengrep for Windows.!!!";
+  epr "!!!Some features may not work.!!!";
+  epr "!!!https://github.com/opengrep/opengrep/issues!!!";
   ()
 
 (*****************************************************************************)
@@ -107,18 +107,18 @@ let () =
         Fpath.v argv.(0) |> Fpath.base |> Fpath.rem_ext |> Fpath.to_string
       in
       match argv0 with
-      (* osemgrep!! *)
-      | "osemgrep"
+      (* opengrep-cli a.k.a. osemgrep *)
+      | "osemgrep" | "semgrep" | "opengrep-cli"
       (* in the long term (and in the short term on windows) we want to ship
-       * osemgrep as the default "semgrep" binary, without any
+       * opengrep-cli as the default "opengrep" binary, without any
        * wrapper script such as cli/bin/semgrep around it.
        *)
-      | "semgrep" ->
+      | "opengrep" ->
           let exit_code =
             match argv0 with
-            | "semgrep" ->
+            | "opengrep" ->
                 eprint_experimental_windows caps#stderr;
-                (* adding --experimemtal so we don't default back to pysemgrep *)
+                (* adding --experimental so we don't default back to pysemgrep *)
                 CLI.main
                   (caps :> CLI.caps)
                   (Array.append argv [| "--experimental" |])
@@ -130,5 +130,5 @@ let () =
                   exit_code.description exit_code.code
                   (String.concat " " (Array.to_list argv)));
           CapStdlib.exit caps#exit exit_code.code
-      (* legacy semgrep-core *)
+      (* legacy opengrep-core a.k.a. semgrep-core *)
       | _else_ -> Core_CLI.main caps argv)
