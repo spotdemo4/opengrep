@@ -63,7 +63,7 @@ class Env:
         converter=migrate_fail_open_url,
     )
     semgrep_url: str = field(
-        default=EnvFactory(["SEMGREP_URL", "SEMGREP_APP_URL"], "https://semgrep.dev"),
+        default=EnvFactory(["SEMGREP_URL", "SEMGREP_APP_URL"], "https://opengrep.dev"),
         converter=url,
     )
     app_token: Optional[str] = field(default=EnvFactory("SEMGREP_APP_TOKEN"))
