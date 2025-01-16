@@ -4,20 +4,25 @@ version: "1.100.0"
 synopsis:
   "Like grep but for code: fast and syntax-aware semantic code pattern for many languages"
 description: """
-Semgrep is like grep but for searching patterns at the AST level while
+Opengrep is like grep but for searching patterns at the AST level while
 leveraging semantic information (e.g., types, control flow) for powerful
 matching.
 
-For more information see https://semgrep.dev
+This project is a fork of Semgrep, created by Semgrep Inc. Opengrep is not
+affiliated with or endorsed by Semgrep Inc.
+
+For more information see https://opengrep.dev.
 """
-maintainer: ["Yoann Padioleau <pad@semgrep.com>"]
-authors: ["Yoann Padioleau <pad@semgrep.com>"]
+maintainer: [
+  "Dimitris Mostrous <dimitris@aikido.dev>" "Opengrep <team@opengrep.dev>"
+]
+authors: ["Opengrep <opengrep@opengrep.dev>" "Semgrep <semgrep@semgrep.com>"]
 license: "LGPL-2.1-only"
-homepage: "https://semgrep.dev"
-bug-reports: "https://github.com/semgrep/semgrep/issues"
+homepage: "https://opengrep.dev"
+bug-reports: "https://github.com/opengrep/opengrep/issues"
 depends: [
-  "ocaml" {>= "4.13.0"}
-  "dune" {>= "3.7" & >= "2.7.0"}
+  "ocaml" {>= "5.2.1"}
+  "dune" {>= "3.7" & >= "3.7"}
   "base"
   "menhir" {= "20230608"}
   "base" {>= "v0.15.1"}
@@ -98,4 +103,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/semgrep/semgrep.git"
+dev-repo: "git+https://github.com/opengrep/opengrep.git"
