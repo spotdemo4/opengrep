@@ -63,6 +63,7 @@ let add_project_and_config_metrics (conf : Scan_CLI.conf) : unit =
   | Configs configs -> Metrics_.add_configs_hash configs
   | Pattern _ -> ()
 
+(* TODO: Remove, since metrics are no more. *)
 let notify_user_about_metrics_once (settings : Semgrep_settings.t) : unit =
   if not (settings.has_shown_metrics_notification =*= Some true) then (
     (* python compatibility: the 22m and 24m are "normal color or intensity",
