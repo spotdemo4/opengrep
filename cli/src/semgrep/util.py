@@ -135,7 +135,7 @@ def welcome() -> None:
         f"""
 ┌──── {logo} ────┐
 │ Opengrep CLI │
-└─────────────┘
+└──────────────┘
 """,
         err=True,
     )
