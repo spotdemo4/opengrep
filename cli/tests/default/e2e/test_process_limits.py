@@ -39,7 +39,7 @@ def test_stack_size(run_semgrep_in_tmp: RunSemgrep, snapshot):
     # Set the hard as well as the soft stack limit. This should force a stack
     # overflow. If this fails, the test is broken and needs to be fixed.
     # Do not just delete this assertion. It means the actual test below does
-    # not accurately verify that we are solving the stack exhaustion
+    # not accurately verify that we are solving the stack exhaustion.
 
     # NOTE: This test requires some tuning to work on different systems
     # as we can see a SIGSEGV on macOS and Linux for too small of ulimit sizes.
@@ -57,7 +57,7 @@ def test_stack_size(run_semgrep_in_tmp: RunSemgrep, snapshot):
     print(output.stdout)
     print(output.stderr)
     assert (
-        "semgrep-core exit code: -11" in output.stderr
+        "opengrep-core exit code: -11" in output.stderr
         or "Stack overflow" in output.stderr
     )
 
@@ -70,7 +70,7 @@ def test_stack_size(run_semgrep_in_tmp: RunSemgrep, snapshot):
     )
     print(output.stderr)
     # with a soft limit, semgrep should terminate without errors
-    assert "semgrep-core exit code: -11" not in output.stderr
+    assert "opengrep-core exit code: -11" not in output.stderr
     assert "Stack overflow" not in output.stderr
     assert output.returncode == 0
 
