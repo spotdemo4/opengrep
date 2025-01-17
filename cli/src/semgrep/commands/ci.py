@@ -26,7 +26,7 @@ from semgrep import tracing
 from semgrep.app.project_config import ProjectConfig
 from semgrep.app.scans import ScanCompleteResult
 from semgrep.app.scans import ScanHandler
-from semgrep.commands.install import run_install_semgrep_pro
+# from semgrep.commands.install import run_install_semgrep_pro
 from semgrep.commands.scan import collect_additional_outputs
 from semgrep.commands.scan import scan_options
 from semgrep.commands.wrapper import handle_command_errors
@@ -251,10 +251,10 @@ def ci(
     requested_engine: EngineType,
     quiet: bool,
     rewrite_rule_ids: bool,
-    run_secrets_flag: bool,
+    run_secrets_flag: bool, # FIXME: Remove.
     disable_secrets_validation_flag: bool,
     allow_untrusted_validators: bool,
-    supply_chain: bool,
+    supply_chain: bool, # FIXME: Remove.
     scan_unknown_extensions: bool,
     subdir: Optional[Path],
     time_flag: bool,
@@ -511,22 +511,22 @@ def ci(
         if interfile_timeout is None:
             interfile_timeout = engine_type.default_interfile_timeout
 
-        if engine_type.is_pro:
-            console.print(Padding(Title("Engine", order=2), (1, 0, 0, 0)))
-            if run_secrets:
-                console.print("Semgrep Secrets requires Semgrep Pro Engine")
-            if engine_type.check_if_installed():
-                console.print(
-                    f"Using Semgrep Pro Version: [bold]{engine_type.get_pro_version()}[/bold]",
-                    markup=True,
-                )
-                console.print(
-                    f"Installed at [bold]{engine_type.get_binary_path()}[/bold]",
-                    markup=True,
-                    soft_wrap=True,
-                )
-            else:
-                run_install_semgrep_pro()
+        # if engine_type.is_pro:
+        #     console.print(Padding(Title("Engine", order=2), (1, 0, 0, 0)))
+        #     if run_secrets:
+        #         console.print("Semgrep Secrets requires Semgrep Pro Engine")
+        #     if engine_type.check_if_installed():
+        #         console.print(
+        #             f"Using Semgrep Pro Version: [bold]{engine_type.get_pro_version()}[/bold]",
+        #             markup=True,
+        #         )
+        #         console.print(
+        #             f"Installed at [bold]{engine_type.get_binary_path()}[/bold]",
+        #             markup=True,
+        #             soft_wrap=True,
+        #         )
+        #     else:
+        #         run_install_semgrep_pro()
 
         outputs = collect_additional_outputs(
             outputs_text=outputs_text,

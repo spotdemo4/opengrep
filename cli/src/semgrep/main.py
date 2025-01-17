@@ -19,7 +19,7 @@ def conditional_welcome() -> None:
         "publish",
         "login",
         "ci",
-        "install-semgrep-pro",
+        # "install-semgrep-pro",
         "lsp",
         "logout",
     }

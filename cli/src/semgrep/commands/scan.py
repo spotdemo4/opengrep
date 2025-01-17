@@ -26,7 +26,7 @@ from semgrep import tracing
 from semgrep.app.version import get_no_findings_msg
 from semgrep.app.version import get_too_many_findings_msg
 from semgrep.app.version import TOO_MANY_FINDINGS_THRESHOLD
-from semgrep.commands.install import determine_semgrep_pro_path
+# from semgrep.commands.install import determine_semgrep_pro_path
 from semgrep.commands.wrapper import handle_command_errors
 from semgrep.constants import Colors
 from semgrep.constants import DEFAULT_DIFF_DEPTH
@@ -626,10 +626,7 @@ def scan(
         # this is useful for our CI job to find where semgrep-core (or semgrep-core-proprietary)
         # is installed and check if the binary is statically linked.
         if dump_engine_path:
-            if engine_type == EngineType.OSS:
-                print(SemgrepCore.path())
-            else:
-                print(determine_semgrep_pro_path())
+            print(SemgrepCore.path())
             return None
 
         if dataflow_traces is None:
