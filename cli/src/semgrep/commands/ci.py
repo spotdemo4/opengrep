@@ -251,10 +251,10 @@ def ci(
     requested_engine: EngineType,
     quiet: bool,
     rewrite_rule_ids: bool,
-    run_secrets_flag: bool, # FIXME: Remove.
+    run_secrets_flag: bool, # NOTE: To be removed.
     disable_secrets_validation_flag: bool,
     allow_untrusted_validators: bool,
-    supply_chain: bool, # FIXME: Remove.
+    supply_chain: bool, # NOTE: to be removed.
     scan_unknown_extensions: bool,
     subdir: Optional[Path],
     time_flag: bool,
@@ -296,13 +296,13 @@ def ci(
                 subdir = subdir.relative_to(Path.cwd())
             except ValueError:
                 logger.info(
-                    "`semgrep ci --subdir` must be given a directory that is actually a subdirectory of the current directory"
+                    "`opengrep ci --subdir` must be given a directory that is actually a subdirectory of the current directory"
                 )
                 sys.exit(FATAL_EXIT_CODE)
 
         if not is_git_repo_root_approx():
             logger.info(
-                "WARNING: `semgrep ci` is meant to be run from the root of a git repo.\nWhen `semgrep ci` is not run from a git repo, it will not be able to perform all operations.\nWhen `semgrep ci` is run from a git repo, but not the root, links in the uploaded findings may be broken.\n\nTo run `semgrep ci` on only a subdirectory of a git repo, see `--subdir`."
+                "WARNING: `opengrep ci` is meant to be run from the root of a git repo.\nWhen `opengrep ci` is not run from a git repo, it will not be able to perform all operations.\nWhen `opengrep ci` is run from a git repo, but not the root, links in the uploaded findings may be broken.\n\nTo run `opengrep ci` on only a subdirectory of a git repo, see `--subdir`."
             )
 
         if config and partial_config:
@@ -329,7 +329,7 @@ def ci(
         if not token and not config:
             # Not logged in and no explicit config
             logger.info(
-                "run `semgrep login` before using `semgrep ci` or use `semgrep scan` and set `--config`"
+                "run `semgrep login` before using `opengrep ci` or use `opengrep scan` and set `--config`"
             )
             sys.exit(INVALID_API_KEY_EXIT_CODE)
         elif not token and config:
@@ -338,7 +338,7 @@ def ci(
         elif token and config:
             # Logged in but has explicit config
             logger.info(
-                "Cannot run `semgrep ci` with --config while logged in. The `semgrep ci` command will upload findings to semgrep-app and those findings must come from rules configured there. Drop the `--config` to use rules configured on semgrep.dev or log out."
+                "Cannot run `opengrep ci` with --config while logged in. The `opengrep ci` command will upload findings to semgrep-app and those findings must come from rules configured there. Drop the `--config` to use rules configured on semgrep.dev or log out."
             )
             sys.exit(FATAL_EXIT_CODE)
         elif token:
