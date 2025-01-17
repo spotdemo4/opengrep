@@ -46,14 +46,15 @@ jobs:
         # NOTE: The openssl install is a hack but it's needed... for now.
         run: C:\hostedtoolcache\windows\cygwin\3.5.5\x86_64\setup-x86_64.exe --packages=mingw64-x86_64-curl,mingw64-x86_64-gmp,mingw64-x86_64-pcre,mingw64-x86_64-pcre2,mingw64-x86_64-openssl=1.0.2u+za-1 --quiet-mode --root=D:\cygwin --site=https://mirrors.kernel.org/sourceware/cygwin/ --symlink-type=sys
 
-      - env:
-          SEGMENT_DOWNLOAD_TIMEOUT_MINS: 2
-        name: Restore GHA cache for OPAM in _opam
-        id: cache-opam-win32-amd64
-        uses: actions/cache@v4
-        with:
-          key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('semgrep.opam') }}
-          path: _opam
+      # FIXME: This fails when the extra _opam cache is restored.
+      # - name: Restore GHA cache for OPAM in _opam
+      #   env:
+      #     SEGMENT_DOWNLOAD_TIMEOUT_MINS: 2
+      #   id: cache-opam-win32-amd64
+      #   uses: actions/cache@v4
+      #   with:
+      #     key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('semgrep.opam') }}
+      #     path: _opam
 
       - name: Debug stuff
         run: |
