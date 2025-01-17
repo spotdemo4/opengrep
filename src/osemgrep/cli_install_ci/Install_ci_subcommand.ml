@@ -78,7 +78,7 @@ jobs:
 (* arbitrary name where we do our work *)
 let get_new_branch () : string =
   let version = "v1" in
-  Printf.sprintf "semgrep/install-ci-%s" version
+  Printf.sprintf "opengrep/install-ci-%s" version
 
 let mkdir_if_needed path : unit =
   if not (Sys.file_exists path) then Unix.mkdir path 0o777

@@ -144,7 +144,7 @@ let exit_code_of_errors ~strict (errors : Out.core_error list) : Exit_code.t =
           in
           Logs.info (fun m ->
               m
-                "Exiting semgrep scan due to error of severity level=Error: %s \
+                "Exiting opengrep scan due to error of severity level=Error: %s \
                  -> exit code %i"
                 (Semgrep_output_v1_j.string_of_error_type x.error_type)
                 (Exit_code.to_int exit_code));
@@ -155,7 +155,7 @@ let exit_code_of_errors ~strict (errors : Out.core_error list) : Exit_code.t =
           in
           Logs.info (fun m ->
               m
-                "Exiting semgrep scan due to error in strict mode: %s -> exit \
+                "Exiting opengrep scan due to error in strict mode: %s -> exit \
                  code %i"
                 (Semgrep_output_v1_j.string_of_error_type x.error_type)
                 (Exit_code.to_int exit_code));
@@ -864,7 +864,7 @@ let run_conf (caps : < caps ; .. >) (conf : Scan_CLI.conf) : Exit_code.t =
    *)
   CLI_common.setup_logging ~force_color:conf.output_conf.force_color
     ~level:conf.common.logging_level;
-  Logs.info (fun m -> m "Semgrep version: %s" Version.version);
+  Logs.info (fun m -> m "Opengrep version: %s" Version.version);
 
   let conf =
     if conf.common.profile then (

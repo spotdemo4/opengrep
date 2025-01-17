@@ -92,7 +92,7 @@ let man : Cmdliner.Manpage.block list =
   ]
   @ CLI_common.help_page_bottom
 
-let cmdline_info : Cmd.info = Cmd.info "semgrep validate" ~doc ~man
+let cmdline_info : Cmd.info = Cmd.info "opengrep validate" ~doc ~man
 
 (*****************************************************************************)
 (* Entry point *)

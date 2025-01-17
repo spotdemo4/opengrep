@@ -249,7 +249,7 @@ let report_errors (_caps : < Cap.stdout >) ~metacheck_errors ~num_errors
   metacheck_errors
   |> List.iter (fun (x : Out.cli_match) ->
          Logs.err (fun m ->
-             m "Semgrep match found at line %s:%d\n%s" !!(x.path) x.start.line
+             m "Opengrep match found at line %s:%d\n%s" !!(x.path) x.start.line
                x.extra.message));
   ()
 

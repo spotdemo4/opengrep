@@ -2,8 +2,7 @@
 (* Prelude *)
 (*****************************************************************************)
 (*
-   Parse a semgrep-lsp command, execute it and exit.
-
+   Parse a opengrep-lsp command, execute it and exit.
 *)
 
 (*****************************************************************************)
@@ -63,7 +62,7 @@ end
 let run_conf (caps : < caps ; .. >) (conf : Lsp_CLI.conf) : Exit_code.t =
   CLI_common.setup_logging ~force_color:false ~level:conf.common.logging_level;
   RPC_server.io_ref := (module Io);
-  Logs.debug (fun m -> m "Starting semgrep-lsp");
+  Logs.debug (fun m -> m "Starting opengrep-lsp");
   Lwt_platform.run (LS.start caps);
   Exit_code.ok ~__LOC__
 

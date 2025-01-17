@@ -122,7 +122,7 @@ def find_semgrep_core_path(pro=False, extra_message=""):
         return path
 
     raise CoreNotFound(
-        f"Failed to find {core} in PATH or in the semgrep package.{extra_message}"
+        f"Failed to find {core} in PATH or in the opengrep package.{extra_message}"
     )
 
 

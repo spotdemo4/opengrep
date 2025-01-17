@@ -195,9 +195,7 @@ let dispatch_subcommand (caps : caps) (argv : string array) =
         (* partial support, still use Pysemgrep.Fallback in it *)
         | "scan" -> Scan_subcommand.main caps subcmd_argv
         | "ci" -> Ci_subcommand.main caps subcmd_argv
-        (* | "install-semgrep-pro" ->
-               Install_semgrep_pro_subcommand.main caps subcmd_argv *)
-        (* osemgrep-only: and by default! no need experimental! *)
+        (* osemgrep-only: and by default! no need for experimental! *)
         | "lsp" -> Lsp_subcommand.main caps subcmd_argv
         | "logout" ->
             Logout_subcommand.main (caps :> < Cap.stdout >) subcmd_argv
@@ -211,7 +209,7 @@ let dispatch_subcommand (caps : caps) (argv : string array) =
               (* this should never happen because we default to 'scan',
                * but better to be safe than sorry.
                *)
-              Error.abort (Printf.sprintf "unknown semgrep command: %s" subcmd)
+              Error.abort (Printf.sprintf "unknown opengrep command: %s" subcmd)
             else raise Pysemgrep.Fallback
       with
       | Pysemgrep.Fallback -> Pysemgrep.pysemgrep (caps :> < Cap.exec >) argv)
