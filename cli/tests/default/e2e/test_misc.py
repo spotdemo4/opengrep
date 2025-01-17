@@ -301,16 +301,18 @@ def test_url_rule(run_semgrep_in_tmp: RunSemgrep, snapshot):
     )
 
 
-@pytest.mark.slow
-def test_auto_config(run_semgrep_in_tmp: RunSemgrep, mocker):
-    # --config auto will change over time, so lets just make sure this doesn't error out
-    # TODO: Mock config response for more detailed testing
-    # Use --no-strict to avoid error from unmatched nosem comment
-    mocker.patch("semgrep.metrics.Metrics.send")
-    run_semgrep_in_tmp(
-        "auto", target_name="auto", force_metrics_off=False, strict=False
-    )
-    assert True
+# NOTE: Disabled since we won't allow Opengrep to use Semgrep's registry,
+# this feature may return with a *new* registry.
+# @pytest.mark.slow
+# def test_auto_config(run_semgrep_in_tmp: RunSemgrep, mocker):
+#     # --config auto will change over time, so lets just make sure this doesn't error out
+#     # TODO: Mock config response for more detailed testing
+#     # Use --no-strict to avoid error from unmatched nosem comment
+#     mocker.patch("semgrep.metrics.Metrics.send")
+#     run_semgrep_in_tmp(
+#         "auto", target_name="auto", force_metrics_off=False, strict=False
+#     )
+#     assert True
 
 
 @pytest.mark.kinda_slow
