@@ -261,8 +261,8 @@ def ci(
     timeout_threshold: int,
     timeout: int,
     interfile_timeout: Optional[int],
-    trace: bool,
-    trace_endpoint: str,
+    # trace: bool,
+    # trace_endpoint: str,
     use_git_ignore: bool,
     verbose: bool,
     path_sensitive: bool,
@@ -274,7 +274,7 @@ def ci(
 ) -> None:
     state = get_state()
 
-    state.traces.configure(trace, trace_endpoint)
+    # state.traces.configure(trace, trace_endpoint)
     with tracing.TRACER.start_as_current_span("semgrep.commands.ci"):
         state.terminal.configure(
             verbose=verbose,
@@ -603,8 +603,8 @@ def ci(
             "timeout": timeout,
             "max_memory": max_memory,
             "interfile_timeout": interfile_timeout,
-            "trace": trace,
-            "trace_endpoint": trace_endpoint,
+            # "trace": trace,
+            # "trace_endpoint": trace_endpoint,
             "timeout_threshold": timeout_threshold,
             "skip_unknown_extensions": (not scan_unknown_extensions),
             "allow_untrusted_validators": allow_untrusted_validators,

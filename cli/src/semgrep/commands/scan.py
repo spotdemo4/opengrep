@@ -219,17 +219,17 @@ _scan_options: List[Callable] = [
         is_flag=True,
         default=False,
     ),
-    optgroup.option(
-        "--trace/--no-trace",
-        "trace",
-        is_flag=True,
-        default=False,
-    ),
-    optgroup.option(
-        "--trace-endpoint",
-        envvar="SEMGREP_OTEL_ENDPOINT",
-        default=None,
-    ),
+    # optgroup.option(
+    #     "--trace/--no-trace",
+    #     "trace",
+    #     is_flag=True,
+    #     default=False,
+    # ),
+    # optgroup.option(
+    #     "--trace-endpoint",
+    #     envvar="SEMGREP_OTEL_ENDPOINT",
+    #     default=None,
+    # ),
     optgroup.option(
         "--matching-explanations",
         is_flag=True,
@@ -567,8 +567,8 @@ def scan(
     timeout: int,
     timeout_threshold: int,
     interfile_timeout: Optional[int],
-    trace: bool,
-    trace_endpoint: Optional[str],
+    # trace: bool,
+    # trace_endpoint: Optional[str],
     use_git_ignore: bool,
     validate: bool,
     verbose: bool,
@@ -606,15 +606,15 @@ def scan(
     engine_type: Optional[EngineType] = None
 
     state = get_state()
-    if trace_endpoint and not trace:
-        logger.warning(
-            with_color(
-                Colors.yellow,
-                "The --trace-endpoint flag or SEMGREP_OTEL_ENDPOINT environment variable is specified without --trace.\n"
-                "If you intend to enable tracing, please also add the --trace flag.",
-            )
-        )
-    state.traces.configure(trace, trace_endpoint)
+    # if trace_endpoint and not trace:
+    #     logger.warning(
+    #         with_color(
+    #             Colors.yellow,
+    #             "The --trace-endpoint flag or SEMGREP_OTEL_ENDPOINT environment variable is specified without --trace.\n"
+    #             "If you intend to enable tracing, please also add the --trace flag.",
+    #         )
+    #     )
+    # state.traces.configure(trace, trace_endpoint)
     with tracing.TRACER.start_as_current_span("semgrep.commands.scan"):
         engine_type = EngineType.decide_engine_type(
             logged_in=auth.is_logged_in_weak(),
@@ -772,8 +772,8 @@ def scan(
                                 max_memory=max_memory,
                                 timeout_threshold=timeout_threshold,
                                 interfile_timeout=interfile_timeout,
-                                trace=trace,
-                                trace_endpoint=trace_endpoint,
+                                # trace=trace,
+                                # trace_endpoint=trace_endpoint,
                                 capture_stderr=capture_core_stderr,
                                 optimizations=optimizations,
                                 allow_untrusted_validators=allow_untrusted_validators,
@@ -841,8 +841,8 @@ def scan(
                         max_memory=max_memory,
                         timeout_threshold=timeout_threshold,
                         interfile_timeout=interfile_timeout,
-                        trace=trace,
-                        trace_endpoint=trace_endpoint,
+                        # trace=trace,
+                        # trace_endpoint=trace_endpoint,
                         skip_unknown_extensions=(not scan_unknown_extensions),
                         allow_untrusted_validators=allow_untrusted_validators,
                         severity=severity,
