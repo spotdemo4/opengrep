@@ -189,7 +189,7 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
       nosem optimizations oss output pro pro_intrafile pro_lang
       pro_path_sensitive rewrite_rule_ids sarif sarif_outputs
       scan_unknown_extensions secrets text text_outputs timeout
-      _timeout_interfileTODO timeout_threshold trace trace_endpoint use_git
+      _timeout_interfileTODO timeout_threshold (* trace trace_endpoint *) use_git
       version_check vim vim_outputs =
     let output_format : Output_format.t =
       Scan_CLI.output_format_conf ~text ~files_with_matches ~json ~emacs ~vim
@@ -298,8 +298,8 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
         engine_type;
         rewrite_rule_ids;
         common;
-        trace;
-        trace_endpoint;
+        (* trace;
+           trace_endpoint; *)
         (* ugly: *)
         version = false;
         show = None;
@@ -332,7 +332,7 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
     $ SC.o_pro_path_sensitive $ SC.o_rewrite_rule_ids $ SC.o_sarif
     $ SC.o_sarif_outputs $ SC.o_scan_unknown_extensions $ SC.o_secrets
     $ SC.o_text $ SC.o_text_outputs $ SC.o_timeout $ SC.o_timeout_interfile
-    $ SC.o_timeout_threshold $ SC.o_trace $ SC.o_trace_endpoint $ SC.o_use_git
+    $ SC.o_timeout_threshold $ (* SC.o_trace $ SC.o_trace_endpoint $ *) SC.o_use_git
     $ SC.o_version_check $ SC.o_vim $ SC.o_vim_outputs)
 
 (*************************************************************************)

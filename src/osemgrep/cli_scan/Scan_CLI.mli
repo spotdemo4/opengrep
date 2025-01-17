@@ -31,9 +31,9 @@ type conf = {
   version_check : bool;
   (* Debugging/logging/profiling options *)
   common : CLI_common.conf;
-  trace : bool;
+  (* trace : bool; *)
   (* TODO: use Uri.t *)
-  trace_endpoint : string option;
+  (* trace_endpoint : string option; *)
   (* Ugly: should be in separate subcommands *)
   version : bool;
   show : Show_CLI.conf option;
@@ -127,8 +127,8 @@ val o_time : bool Cmdliner.Term.t
 val o_timeout : float Cmdliner.Term.t
 val o_timeout_interfile : int Cmdliner.Term.t
 val o_timeout_threshold : int Cmdliner.Term.t
-val o_trace : bool Cmdliner.Term.t
-val o_trace_endpoint : string option Cmdliner.Term.t
+(* val o_trace : bool Cmdliner.Term.t
+   val o_trace_endpoint : string option Cmdliner.Term.t *)
 val o_use_git : bool Cmdliner.Term.t
 val o_version_check : bool Cmdliner.Term.t
 val o_vim : bool Cmdliner.Term.t

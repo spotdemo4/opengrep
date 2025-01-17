@@ -55,8 +55,8 @@ type conf = {
   version_check : bool;
   (* Debugging/logging/profiling options *)
   common : CLI_common.conf;
-  trace : bool;
-  trace_endpoint : string option;
+  (* trace : bool;
+     trace_endpoint : string option; *)
   (* Ugly: should be in separate subcommands *)
   version : bool;
   show : Show_CLI.conf option;
@@ -94,8 +94,8 @@ let default : conf =
         logging_level = Some Logs.Warning;
         maturity = Maturity.Default;
       };
-    trace = false;
-    trace_endpoint = None;
+    (* trace = false;
+       trace_endpoint = None; *)
     engine_type = OSS;
     output = None;
     output_conf = Output.default;
@@ -464,27 +464,28 @@ let o_time : bool Term.t =
  provides times for each pair (rule, target). This feature is meant for internal use and may be changed or removed without warning. At the current moment, --trace is better supported.
 |}
 
-let o_trace : bool Term.t =
-  H.negatable_flag [ "trace" ] ~neg_options:[ "no-trace" ]
-    ~default:default.trace
-    ~doc:
-      {|Record traces from Semgrep scans to help debugging. This feature is
-meant for internal use and may be changed or removed without warning.
-|}
+(* TODO: Remove, it's disabled. *)
+(* let o_trace : bool Term.t =
+     H.negatable_flag [ "trace" ] ~neg_options:[ "no-trace" ]
+       ~default:default.trace
+       ~doc:
+         {|Record traces from Semgrep scans to help debugging. This feature is
+   meant for internal use and may be changed or removed without warning.
+   |} *)
 
-(* TODO: Remove. *)
-let o_trace_endpoint : string option Term.t =
-  let info =
-    Arg.info [ "trace-endpoint" ]
-      ~env:(Cmd.Env.info "SEMGREP_OTEL_ENDPOINT")
-      ~doc:
-        {|Endpoint to send OpenTelemetry traces to, if `--trace` is present.
-The value may be `semgrep-prod` (default), `semgrep-dev`,
-`semgrep-local`, or any valid URL.  This feature is meant for
-internal use and may be changed or removed wihtout warning.
-|}
-  in
-  Arg.value (Arg.opt Arg.(some string) None info)
+(* TODO: Remove, it's disabled. *)
+(* let o_trace_endpoint : string option Term.t =
+     let info =
+       Arg.info [ "trace-endpoint" ]
+         ~env:(Cmd.Env.info "SEMGREP_OTEL_ENDPOINT")
+         ~doc:
+           {|Endpoint to send OpenTelemetry traces to, if `--trace` is present.
+   The value may be `semgrep-prod` (default), `semgrep-dev`,
+   `semgrep-local`, or any valid URL.  This feature is meant for
+   internal use and may be changed or removed wihtout warning.
+   |}
+     in
+     Arg.value (Arg.opt Arg.(some string) None info) *)
 
 let o_nosem : bool Term.t =
   H.negatable_flag ~default:true [ "enable-nosem" ]
@@ -605,7 +606,7 @@ let o_junit_xml_outputs = make_o_format_outputs ~fancy:"JUnit XML" "junit-xml"
 (* Run Secrets Post Processors                                  *)
 (* ------------------------------------------------------------------ *)
 
-(* TODO: Remove. *)
+(* FIXME: Remove. *)
 let o_secrets : bool Term.t =
   let info =
     Arg.info [ "secrets" ]
@@ -622,6 +623,7 @@ let o_no_secrets_validation : bool Term.t =
   in
   Arg.value (Arg.flag info)
 
+(* FIXME: Remove or adapt. *)
 let o_allow_untrusted_validators : bool Term.t =
   let info =
     Arg.info
@@ -642,6 +644,7 @@ let o_historical_secrets : bool Term.t =
 (* Engine type (mutually exclusive) *)
 (* ------------------------------------------------------------------ *)
 
+(* FIXME: Remove. *)
 let o_oss : bool Term.t =
   let info =
     Arg.info [ "oss-only" ]
@@ -685,6 +688,7 @@ let o_pro : bool Term.t =
   in
   Arg.value (Arg.flag info)
 
+(* TODO: Remove this, or adapt to Opengrep. *)
 (* ------------------------------------------------------------------ *)
 (* Configuration options ('scan' only, not reused in 'ci') *)
 (* ------------------------------------------------------------------ *)
@@ -824,7 +828,7 @@ let o_show_supported_languages : bool Term.t =
     Arg.info
       [ "show-supported-languages" ]
       ~doc:
-        {|Print a list of languages that are currently supported by Semgrep.|}
+        {|Print a list of languages that are currently supported by Opengrep.|}
   in
   Arg.value (Arg.flag info)
 
@@ -882,7 +886,7 @@ let o_allow_local_builds : bool Term.t =
   let info =
     Arg.info [ "allow-local-builds" ]
       ~doc:
-        {|Experimental: allow building projects contained in the repository. This allows Semgrep to identify dependencies
+        {|Experimental: allow building projects contained in the repository. This allows Opengrep to identify dependencies
           and dependency relationships when lockfiles are not present or are insufficient. However, building code may inherently
           require the execution of code contained in the scanned project or in its dependencies, which is a security risk.|}
   in
@@ -899,7 +903,7 @@ let o_allow_local_builds : bool Term.t =
 let o_target_roots : string list Term.t =
   let info =
     Arg.info [] ~docv:"TARGETS"
-      ~doc:{|Files or folders to be scanned by semgrep.|}
+      ~doc:{|Files or folders to be scanned by opengrep.|}
   in
   Arg.value
     (Arg.pos_all Arg.string
@@ -914,10 +918,10 @@ let o_project_root : string option Term.t =
   let info =
     Arg.info [ "project-root" ]
       ~doc:
-        {|Semgrep normally determines the type of project (git or novcs)
+        {|Opengrep normally determines the type of project (git or novcs)
           and the project root automatically. The project root is then used
           to locate and use '.gitignore' and '.semgrepignore' files which
-          determine target files that should be ignored by semgrep.
+          determine target files that should be ignored by opengrep.
           This option forces the project root to be a specific folder
           and assumes a local project without version control (novcs).
           This option is useful to ensure the '.semgrepignore' file that
@@ -1294,7 +1298,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       replacement rewrite_rule_ids sarif sarif_outputs scan_unknown_extensions
       secrets severity show_supported_languages strict target_roots test
       test_ignore_todo text text_outputs time_flag timeout
-      _timeout_interfileTODO timeout_threshold trace trace_endpoint use_git
+      _timeout_interfileTODO timeout_threshold (*  trace trace_endpoint *) use_git
       validate version version_check vim vim_outputs
       x_ignore_semgrepignore_files x_ls x_ls_long =
     (* Print a warning if any of the internal or experimental options.
@@ -1303,7 +1307,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       Logs.warn (fun m ->
           m
             "!!! You're using one or more options starting with '--x-'. These \
-             options are not part of the semgrep API. They will change or will \
+             options are not part of the opengrep API. They will change or will \
              be removed without notice !!! ");
     let target_roots, imply_always_select_explicit_targets =
       replace_target_roots_by_regular_files_where_needed caps
@@ -1455,12 +1459,12 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
             "Paths that match both --include and --exclude will be skipped by \
              Opengrep.");
 
-    if trace_endpoint <> None && not trace then
-      Logs.warn (fun m ->
-          m
-            "The --trace-endpoint flag or SEMGREP_OTEL_ENDPOINT environment \
-             variable is specified without --trace.\n\
-             If you intend to enable tracing, please also add the --trace flag.");
+    (* if trace_endpoint <> None && not trace then
+         Logs.warn (fun m ->
+             m
+               "The --trace-endpoint flag or SEMGREP_OTEL_ENDPOINT environment \
+                variable is specified without --trace.\n\
+                If you intend to enable tracing, please also add the --trace flag."); *)
     let ls, ls_format =
       (* --x-ls-long implies --x-ls *)
       if x_ls_long then (true, Ls_subcommand.Long)
@@ -1488,8 +1492,8 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       show;
       validate;
       test;
-      trace;
-      trace_endpoint;
+      (* trace;
+         trace_endpoint; *)
       allow_local_builds;
       ls;
       ls_format;
@@ -1517,7 +1521,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
     $ o_secrets $ o_severity $ o_show_supported_languages $ o_strict
     $ o_target_roots $ o_test $ Test_CLI.o_test_ignore_todo $ o_text
     $ o_text_outputs $ o_time $ o_timeout $ o_timeout_interfile
-    $ o_timeout_threshold $ o_trace $ o_trace_endpoint $ o_use_git $ o_validate
+    $ o_timeout_threshold $ (* o_trace $ o_trace_endpoint $ *) o_use_git $ o_validate
     $ o_version $ o_version_check $ o_vim $ o_vim_outputs
     $ o_ignore_semgrepignore_files $ o_ls $ o_ls_long)
 
