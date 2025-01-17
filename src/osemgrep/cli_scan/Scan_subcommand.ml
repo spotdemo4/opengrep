@@ -327,31 +327,31 @@ let feature_status ~(enabled : bool) : string =
   if enabled then Ocolor_format.asprintf {|@{<green>✔@}|}
   else Ocolor_format.asprintf {|@{<red>✘@}|}
 
-let print_feature_section ~(includes_token : bool) ~(engine : Engine_type.t) :
+let print_feature_section (* ~(includes_token : bool) ~(engine : Engine_type.t) *) () :
     unit =
-  let secrets_enabled =
-    match engine with
-    | PRO
-        Engine_type.
-          { secrets_config = Some Engine_type.{ allow_all_origins = _; _ }; _ }
-      ->
-        true
-    | OSS
-    | PRO Engine_type.{ secrets_config = None; _ } ->
-        false
-  in
+  (* let secrets_enabled =
+       match engine with
+       | PRO
+           Engine_type.
+             { secrets_config = Some Engine_type.{ allow_all_origins = _; _ }; _ }
+         ->
+           true
+       | OSS
+       | PRO Engine_type.{ secrets_config = None; _ } ->
+           false
+     in *)
   let features =
     [
-      ( "Semgrep OSS",
+      ( "Opengrep OSS",
         "Basic security coverage for first-party code vulnerabilities.",
         true );
-      ( "Semgrep Code (SAST)",
-        "Find and fix vulnerabilities in the code you write with advanced \
-         scanning and expert security rules.",
-        includes_token );
-      ( "Semgrep Secrets",
-        "Detect and validate potential secrets in your code.",
-        secrets_enabled );
+      (* ( "Semgrep Code (SAST)",
+           "Find and fix vulnerabilities in the code you write with advanced \
+            scanning and expert security rules.",
+           includes_token );
+         ( "Semgrep Secrets",
+           "Detect and validate potential secrets in your code.",
+           secrets_enabled ); *)
     ]
   in
   (* Print our set of features and whether each is enabled *)
@@ -764,11 +764,11 @@ let run_scan_conf (caps : < caps ; .. >) (conf : Scan_CLI.conf) : Exit_code.t =
          Logs.app (fun m ->
              m "%s"
                (Ocolor_format.asprintf {|@{<bold>  %s@}|}
-                  "Code scanning at ludicrous speed.\n"))
+                  "Code scanning.\n"))
      | _ ->
          print_feature_section
-           ~includes_token:(settings.api_token <> None)
-           ~engine:conf.engine_type);
+           (* ~includes_token:(settings.api_token <> None) *)
+           (* ~engine:conf.engine_type) *) ());
 
   notify_user_about_metrics_once settings;
 
