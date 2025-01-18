@@ -30,7 +30,7 @@ let sms_scan_id = "SMS_1234"
 (*****************************************************************************)
 
 let tests =
-  Testo.categorize "semgrep ci unit tests"
+  Testo.categorize "opengrep ci unit tests"
     [
       t "sms_scan_id from env to field" (fun () ->
           Semgrep_envvars.with_envvar "SEMGREP_MANAGED_SCAN_ID" sms_scan_id

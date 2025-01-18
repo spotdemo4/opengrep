@@ -85,7 +85,7 @@ let test_sms_scan_id (caps : Ci_subcommand.caps) =
                       try
                         let _res =
                           Ci_subcommand.main caps
-                            [| "semgrep-ci"; "--experimental" |]
+                            [| "opengrep-ci"; "--experimental" |]
                         in
                         failwith
                           "the make_response_fn should have thrown Return"
@@ -108,4 +108,4 @@ let test_sms_scan_id (caps : Ci_subcommand.caps) =
 (*****************************************************************************)
 
 let tests (caps : < Ci_subcommand.caps >) =
-  Testo.categorize "Osemgrep ci (e2e)" [ test_sms_scan_id caps ]
+  Testo.categorize "Opengrep-cli ci (e2e)" [ test_sms_scan_id caps ]

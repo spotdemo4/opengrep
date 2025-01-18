@@ -318,7 +318,7 @@ let print_logo () : unit =
       {|
 ┌──── @{<green>▢▢▢▢@} ────┐
 │ Opengrep CLI │
-└─────────────┘
+└──────────────┘
 |}
   in
   Logs.app (fun m -> m "%s" logo);

@@ -110,11 +110,11 @@ let fake_deployment = {|{"deployment":{"id":42,"name":"fake_deployment"}}|}
 let test_error_no_arguments (caps : caps) : Testo.t =
   t __FUNCTION__ (fun () ->
       try
-        let _exit = Show_subcommand.main caps [| "semgrep-show" |] in
-        failwith "semgrep show should return an exn and not reached here"
+        let _exit = Show_subcommand.main caps [| "opengrep-show" |] in
+        failwith "opengrep show should return an exn and not reached here"
       with
       | Error.Semgrep_error
-          ( "'semgrep show' expects a subcommand. Try 'semgrep show --help'.",
+          ( "'opengrep show' expects a subcommand. Try 'opengrep show --help'.",
             None ) ->
           ())
 
@@ -126,7 +126,7 @@ let test_error_no_arguments (caps : caps) : Testo.t =
 let test_version (caps : caps) : Testo.t =
   t ~checked_output:(Testo.stdout ()) __FUNCTION__ (fun () ->
       let exit_code =
-        Show_subcommand.main caps [| "semgrep-show"; "version" |]
+        Show_subcommand.main caps [| "opengrep-show"; "version" |]
       in
       Exit_code.Check.ok exit_code)
 *)
@@ -135,7 +135,7 @@ let test_version (caps : caps) : Testo.t =
 let test_supported_languages (caps : caps) : Testo.t =
   t ~checked_output:(Testo.stdout ()) __FUNCTION__ (fun () ->
       let exit_code =
-        Show_subcommand.main caps [| "semgrep-show"; "supported-languages" |]
+        Show_subcommand.main caps [| "opengrep-show"; "supported-languages" |]
       in
       Exit_code.Check.ok exit_code)
 
@@ -154,7 +154,7 @@ let test_dump_config (caps : caps) : Testo.t =
         Testutil_files.with_tempfiles ~chdir:true ~verbose:true files
           (fun _cwd ->
             Show_subcommand.main caps
-              [| "semgrep-show"; "dump-config"; "rule.yml" |])
+              [| "opengrep-show"; "dump-config"; "rule.yml" |])
       in
       Exit_code.Check.ok exit_code)
 
@@ -165,7 +165,7 @@ let test_dump_rule_v2 (caps : caps) : Testo.t =
         Testutil_files.with_tempfiles ~chdir:true ~verbose:true files
           (fun _cwd ->
             Show_subcommand.main caps
-              [| "semgrep-show"; "dump-rule-v2"; "rule.yml" |])
+              [| "opengrep-show"; "dump-rule-v2"; "rule.yml" |])
       in
       Exit_code.Check.ok exit_code)
 
@@ -189,7 +189,7 @@ let test_dump_ast (caps : caps) : Testo.t =
         Testutil_files.with_tempfiles ~chdir:true ~verbose:true files
           (fun _cwd ->
             Show_subcommand.main caps
-              [| "semgrep-show"; "dump-ast"; "python"; "foo.py" |])
+              [| "opengrep-show"; "dump-ast"; "python"; "foo.py" |])
       in
       Exit_code.Check.ok exit_code)
 
@@ -201,7 +201,7 @@ let test_dump_ast_when_error (caps : caps) : Testo.t =
         Testutil_files.with_tempfiles ~chdir:true ~verbose:true files
           (fun _cwd ->
             Show_subcommand.main caps
-              [| "semgrep-show"; "dump-ast"; "error.js" |])
+              [| "opengrep-show"; "dump-ast"; "error.js" |])
       in
       Exit_code.Check.invalid_code exit_code)
 
@@ -216,7 +216,7 @@ let test_dump_pattern (caps : caps) : Testo.t =
     (fun () ->
       let exit_code =
         Show_subcommand.main caps
-          [| "semgrep-show"; "dump-pattern"; "python"; "foo(..., $X == $X)" |]
+          [| "opengrep-show"; "dump-pattern"; "python"; "foo(..., $X == $X)" |]
       in
       Exit_code.Check.ok exit_code)
 
@@ -230,7 +230,7 @@ let test_identity (caps : caps) : Testo.t =
         (* we need to be logged in otherwise we will not contact the server *)
         with_fake_login fake_settings (fun () ->
             with_fake_identity_response fake_identity (fun () ->
-                Show_subcommand.main caps [| "semgrep-show"; "identity" |]))
+                Show_subcommand.main caps [| "opengrep-show"; "identity" |]))
       in
       Exit_code.Check.ok exit_code)
 
@@ -239,7 +239,7 @@ let test_deployment (caps : caps) : Testo.t =
       let exit_code =
         with_fake_login fake_settings (fun () ->
             with_fake_deployment_response fake_deployment (fun () ->
-                Show_subcommand.main caps [| "semgrep-show"; "deployment" |]))
+                Show_subcommand.main caps [| "opengrep-show"; "deployment" |]))
       in
       Exit_code.Check.ok exit_code)
 

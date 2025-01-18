@@ -66,7 +66,7 @@ let capabilities =
 
 (* LET'S GOOOOOO *)
 let start (caps : < Session.caps ; .. >) =
-  Logs.debug (fun m -> m "Starting Semgrep Language Server");
+  Logs.debug (fun m -> m "Starting Opengrep Language Server");
   Lwt_platform.set_engine ();
   let server = RPC_server.create (caps :> Session.caps) capabilities in
   RPC_server.start ~handler:{ on_notification; on_request } server

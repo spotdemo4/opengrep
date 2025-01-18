@@ -19,7 +19,7 @@ exception Fallback
 (* dispatch back to pysemgrep! *)
 let pysemgrep (caps : < Cap.exec >) argv =
   Logs.debug (fun m ->
-      m "execute pysemgrep: %s"
+      m "execute pyopengrep: %s"
         (argv |> Array.to_list
         |> List_.map (fun arg -> spf "%S" arg)
         |> String.concat " "));
