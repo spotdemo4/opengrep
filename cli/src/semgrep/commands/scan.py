@@ -26,7 +26,7 @@ from semgrep import tracing
 from semgrep.app.version import get_no_findings_msg
 from semgrep.app.version import get_too_many_findings_msg
 from semgrep.app.version import TOO_MANY_FINDINGS_THRESHOLD
-from semgrep.commands.install import determine_semgrep_pro_path
+# from semgrep.commands.install import determine_semgrep_pro_path
 from semgrep.commands.wrapper import handle_command_errors
 from semgrep.constants import Colors
 from semgrep.constants import DEFAULT_DIFF_DEPTH
@@ -219,17 +219,17 @@ _scan_options: List[Callable] = [
         is_flag=True,
         default=False,
     ),
-    optgroup.option(
-        "--trace/--no-trace",
-        "trace",
-        is_flag=True,
-        default=False,
-    ),
-    optgroup.option(
-        "--trace-endpoint",
-        envvar="SEMGREP_OTEL_ENDPOINT",
-        default=None,
-    ),
+    # optgroup.option(
+    #     "--trace/--no-trace",
+    #     "trace",
+    #     is_flag=True,
+    #     default=False,
+    # ),
+    # optgroup.option(
+    #     "--trace-endpoint",
+    #     envvar="SEMGREP_OTEL_ENDPOINT",
+    #     default=None,
+    # ),
     optgroup.option(
         "--matching-explanations",
         is_flag=True,
@@ -567,8 +567,8 @@ def scan(
     timeout: int,
     timeout_threshold: int,
     interfile_timeout: Optional[int],
-    trace: bool,
-    trace_endpoint: Optional[str],
+    # trace: bool,
+    # trace_endpoint: Optional[str],
     use_git_ignore: bool,
     validate: bool,
     verbose: bool,
@@ -606,15 +606,15 @@ def scan(
     engine_type: Optional[EngineType] = None
 
     state = get_state()
-    if trace_endpoint and not trace:
-        logger.warning(
-            with_color(
-                Colors.yellow,
-                "The --trace-endpoint flag or SEMGREP_OTEL_ENDPOINT environment variable is specified without --trace.\n"
-                "If you intend to enable tracing, please also add the --trace flag.",
-            )
-        )
-    state.traces.configure(trace, trace_endpoint)
+    # if trace_endpoint and not trace:
+    #     logger.warning(
+    #         with_color(
+    #             Colors.yellow,
+    #             "The --trace-endpoint flag or SEMGREP_OTEL_ENDPOINT environment variable is specified without --trace.\n"
+    #             "If you intend to enable tracing, please also add the --trace flag.",
+    #         )
+    #     )
+    # state.traces.configure(trace, trace_endpoint)
     with tracing.TRACER.start_as_current_span("semgrep.commands.scan"):
         engine_type = EngineType.decide_engine_type(
             logged_in=auth.is_logged_in_weak(),
@@ -626,10 +626,7 @@ def scan(
         # this is useful for our CI job to find where semgrep-core (or semgrep-core-proprietary)
         # is installed and check if the binary is statically linked.
         if dump_engine_path:
-            if engine_type == EngineType.OSS:
-                print(SemgrepCore.path())
-            else:
-                print(determine_semgrep_pro_path())
+            print(SemgrepCore.path())
             return None
 
         if dataflow_traces is None:
@@ -659,7 +656,9 @@ def scan(
         if pattern is not None and lang is None:
             abort("-e/--pattern and -l/--lang must both be specified")
 
-        if config and "auto" in config and metrics == MetricsState.OFF:
+        # TODO: Check if that is really a necessary restriction, to have metrics on:
+        _FIXME_INTENTIONALLY_FALSE = False
+        if _FIXME_INTENTIONALLY_FALSE and (config and "auto" in config and metrics == MetricsState.OFF):
             abort(
                 "Cannot create auto config when metrics are off. Please allow metrics or run with a specific config."
             )
@@ -770,8 +769,8 @@ def scan(
                                 max_memory=max_memory,
                                 timeout_threshold=timeout_threshold,
                                 interfile_timeout=interfile_timeout,
-                                trace=trace,
-                                trace_endpoint=trace_endpoint,
+                                # trace=trace,
+                                # trace_endpoint=trace_endpoint,
                                 capture_stderr=capture_core_stderr,
                                 optimizations=optimizations,
                                 allow_untrusted_validators=allow_untrusted_validators,
@@ -839,8 +838,8 @@ def scan(
                         max_memory=max_memory,
                         timeout_threshold=timeout_threshold,
                         interfile_timeout=interfile_timeout,
-                        trace=trace,
-                        trace_endpoint=trace_endpoint,
+                        # trace=trace,
+                        # trace_endpoint=trace_endpoint,
                         skip_unknown_extensions=(not scan_unknown_extensions),
                         allow_untrusted_validators=allow_untrusted_validators,
                         severity=severity,

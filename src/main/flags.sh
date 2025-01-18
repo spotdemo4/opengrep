@@ -113,66 +113,77 @@ else
     # appropriately added to PKG_CONFIG_PATH and use pkg-config to pick it up
     # below (see, e.g., gmp). If we expect it to always be installed via brew,
     # then use `brew --prefix <BREW PACKAGE NAME>`.
+    # 
+    # NOTE: We can let brew do more work and avoid static linking since
+    # it seems to create issues in OCaml 5... I was unable to build with the
+    # `-noautolink` flag.
+    # One thing to be careful with is not to have dependencies outside of /usr/lib
+    # and /opt/homebrew, for example a local tree-sitter. In that case we might have
+    # to provide the dependency and maybe use something like `install_name_tool` to
+    # fix the path?
+    # In any case, we are moving away from static linking on MacOS, it's easy
+    # to use `@loader_path` and allow custom dependencies to be installed
+    # together with opengrep.
     macosx)
         langs=$(cat "${TREE_SITTER_LANGS}")
-        FLAGS=("-noautolink")
+        FLAGS=()
         CCOPT=()
         # TODO: ideally much of this could be generated from dune/opam.
-        CCLIB=("-lANSITerminal_stubs"
-            "-lalcotest_stubs"
-            "-lbase_internalhash_types_stubs"
-            "-lbase_stubs"
-            "-lbigstringaf_stubs"
-            "-lca_certs_stubs"
-            "-lcamlstr"
-            "-lcheckseum_c_stubs"
-            "-lcstruct_stubs"
-            "-lctypes_stubs"
-            "-lcurl-helper"
-            "-lintegers_stubs"
-            "-ljs_of_ocaml_stubs"
-            "-ljsoo_runtime_stubs"
-            "-llwt_unix_stubs"
-            "-lmirage_crypto_ec_stubs"
-            "-lmirage_crypto_rng_unix_stubs"
-            "-lmirage_crypto_stubs"
-            "-lmtime_clock_stubs"
-            "-lmurmur3_stubs"
-            "-lparmap_stubs"
-            "-lpbrt_stubs"
-            "-lpcre_stubs"
-            "-lpcre2_stubs"
-            "-lptime_clock_stubs"
-            "-lstdc++"
-            "-lterminal_size_stubs"
-            "-lthreadsnat"
-            "-ltime_now_stubs"
-            "-ltree_sitter_bindings_stubs"
-            "-lunix"
-            "-lyaml_c_stubs"
-            "-lyaml_ffi_stubs"
-            "-lzarith"
-            "-lcurl"
-            "$(pkg-config gmp --variable libdir)/libgmp.a"
-            "$(pkg-config tree-sitter --variable libdir)/libtree-sitter.a"
-            "$(pkg-config libpcre --variable libdir)/libpcre.a"
-            "$(pkg-config libpcre2-8 --variable libdir)/libpcre2-8.a"
-            "-lpthread")
+        CCLIB=(
+            # "-lANSITerminal_stubs"
+            # "-lalcotest_stubs"
+            # "-lbase_internalhash_types_stubs"
+            # "-lbase_stubs"
+            # "-lbigstringaf_stubs"
+            # "-lca_certs_stubs"
+            # "-lcheckseum_c_stubs"
+            # "-lcstruct_stubs"
+            # "-lctypes_stubs"
+            # "-lcurl-helper"
+            # "-lintegers_stubs"
+            # "-ljs_of_ocaml_stubs"
+            # "-ljsoo_runtime_stubs"
+            # "-llwt_unix_stubs"
+            # "-lmirage_crypto_ec_stubs"
+            # "-lmirage_crypto_rng_unix_stubs"
+            # "-lmirage_crypto_stubs"
+            # "-lmtime_clock_stubs"
+            # "-lmurmur3_stubs"
+            # "-lparmap_stubs"
+            # "-lpbrt_stubs"
+            # "-lpcre_stubs"
+            # "-lpcre2_stubs"
+            # "-lptime_clock_stubs"
+            # "-lstdc++"
+            # "-lterminal_size_stubs"
+            # "-lthreadsnat"
+            # "-ltime_now_stubs"
+            # "-ltree_sitter_bindings_stubs"
+            # "-lyaml_c_stubs"
+            # "-lyaml_ffi_stubs"
+            # "-lzarith"
+            # "-lcurl"
+            # "$(pkg-config gmp --variable libdir)/libgmp.a"
+            # "$(pkg-config tree-sitter --variable libdir)/libtree-sitter.a"
+            # "$(pkg-config libpcre --variable libdir)/libpcre.a"
+            # "$(pkg-config libpcre2-8 --variable libdir)/libpcre2-8.a"
+            # "-lpthread"
+        )
 
-        # Libev does not support pkg-config. See, e.g.,
-        # <https://www.mail-archive.com/libev@lists.schmorp.de/msg02088.html>,
-        # <http://lists.schmorp.de/pipermail/libev/2024q1/002940.html>. As a
-        # result we still use the brew prefix, but with the option of an
-        # environment variable for the build to override the location.
-        if [ -z ${SEMGREP_LIBEV_ARCHIVE_PATH+set} ]; then
-            CCLIB+=("$(brew --prefix libev)/lib/libev.a")
-        else
-            CCLIB+=("${SEMGREP_LIBEV_ARCHIVE_PATH}")
-        fi
+        # # Libev does not support pkg-config. See, e.g.,
+        # # <https://www.mail-archive.com/libev@lists.schmorp.de/msg02088.html>,
+        # # <http://lists.schmorp.de/pipermail/libev/2024q1/002940.html>. As a
+        # # result we still use the brew prefix, but with the option of an
+        # # environment variable for the build to override the location.
+        # if [ -z ${SEMGREP_LIBEV_ARCHIVE_PATH+set} ]; then
+        #     CCLIB+=("$(brew --prefix libev)/lib/libev.a")
+        # else
+        #     CCLIB+=("${SEMGREP_LIBEV_ARCHIVE_PATH}")
+        # fi
 
-        for lang in $langs; do
-            CCLIB+=("-ltree_sitter_${lang}_stubs")
-        done
+        # for lang in $langs; do
+        #     CCLIB+=("-ltree_sitter_${lang}_stubs")
+        # done
         ;;
     # TODO: dedicated branch for Windows?
     *)

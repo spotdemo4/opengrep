@@ -27,8 +27,8 @@ pipenv uninstall -y semgrep
 pipenv install -e .
 
 # Run latest timing benchmark
-pipenv run semgrep --version
-pipenv run semgrep-core -version
+pipenv run opengrep --version
+pipenv run opengrep-core -version
 pipenv run python3 ../perf/run-benchmarks --config $config_path --std-only --save-to timing1.json
 jq . timing1.json
 pipenv run python3 ../perf/run-benchmarks --config $config_path --std-only --trace --save-to timing2.json --save-findings-to ci_small_repos_findings.json

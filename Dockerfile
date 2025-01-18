@@ -1,3 +1,5 @@
+# TODO: should adapt: semgrep => opengrep
+
 ###############################################################################
 # Overview
 ###############################################################################
@@ -207,7 +209,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=true \
 # the issue, to allow us to build semgrep docker images successfully
 # for now. If anyone understand exactly why pip version 24 fails the
 # docker build, we'd be happy to fix it at the root cause.
-# TODO: thos seems to work in the pro Dockerfile so we can probably
+# TODO: this seems to work in the pro Dockerfile so we can probably
 # remove it now
 RUN pip install --force-reinstall -v "pip==23.3.2"
 

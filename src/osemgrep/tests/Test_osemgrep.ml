@@ -34,6 +34,7 @@ module TL = Test_login_subcommand
 (* Tests *)
 (*****************************************************************************)
 
+(* TODO: Metrics are `Off` which means this fails. *)
 (* no need for a token to access public rules in the registry *)
 let test_scan_config_registry_no_token (caps : CLI.caps) =
   Testo.create __FUNCTION__ (fun () ->
@@ -41,7 +42,7 @@ let test_scan_config_registry_no_token (caps : CLI.caps) =
           let exit_code =
             CLI.main caps
               [|
-                "semgrep";
+                "opengrep";
                 "scan";
                 "--experimental";
                 "--debug";
@@ -84,7 +85,7 @@ let test_scan_config_registry_with_invalid_token caps : Testo.t =
            Scan_subcommand.main
              (caps :> Scan_subcommand.caps)
              [|
-               "semgrep-scan";
+               "opengrep-scan";
                "--experimental";
                "--config";
                "r/python.lang.correctness.useless-eqeq.useless-eqeq";
@@ -109,7 +110,7 @@ let test_absolute_target_path caps =
         assert (!!(Fpath.parent path) <> Unix.getcwd ());
         Scan_subcommand.main caps
           [|
-            "semgrep-scan";
+            "opengrep-scan";
             "--experimental";
             "-l";
             "python";
@@ -167,7 +168,7 @@ let test_named_pipe (caps : Scan_subcommand.caps) =
     with_read_from_named_pipe ~data:"hello\n" (fun pipe_path ->
         Scan_subcommand.main caps
           [|
-            "semgrep-scan";
+            "opengrep-scan";
             "--experimental";
             "-l";
             "python";

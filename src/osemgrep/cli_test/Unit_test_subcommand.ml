@@ -164,7 +164,7 @@ let mk_matching_explanation_tests (caps : Test_subcommand.caps) =
             (fun _cwd ->
               let exit_code =
                 Test_subcommand.main caps
-                  [| "semgrep-test"; "."; "--matching-diagnosis" |]
+                  [| "opengrep-test"; "."; "--matching-diagnosis" |]
               in
               Exit_code.Check.findings exit_code)))
     tests

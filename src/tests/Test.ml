@@ -163,7 +163,9 @@ let tests (caps : Cap.all_caps) =
         (* = Publish_subcommand.caps + Cap.exec for 'semgrep login' *)
         (caps :> < Cap.stdout ; Cap.network ; Cap.tmp ; Cap.exec >);
       Test_osemgrep.tests (caps :> CLI.caps);
-      Test_target_selection.tests (caps :> CLI.caps);
+      (* NOTE: Disabled because they require auto config and Metrics which
+       *  are now `Off` by default. *)
+      (* Test_target_selection.tests (caps :> CLI.caps); *)
       (* Networking tests disabled as they will get rate limited sometimes *)
       (* And the SSL issues they've been testing have been stable *)
       (*Unit_Networking.tests;*)

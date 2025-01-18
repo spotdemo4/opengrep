@@ -150,8 +150,8 @@ setuptools.setup(
     # creates a .exe wrapper on windows
     entry_points={
         "console_scripts": [
-            "semgrep = semgrep.console_scripts.entrypoint:main",
-            "pysemgrep = semgrep.console_scripts.pysemgrep:main",
+            "opengrep = semgrep.console_scripts.entrypoint:main",
+            "pyopengrep = semgrep.console_scripts.pysemgrep:main",
         ]
     },
     packages=setuptools.find_packages(where="src"),

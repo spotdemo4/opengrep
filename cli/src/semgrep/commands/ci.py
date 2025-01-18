@@ -26,7 +26,7 @@ from semgrep import tracing
 from semgrep.app.project_config import ProjectConfig
 from semgrep.app.scans import ScanCompleteResult
 from semgrep.app.scans import ScanHandler
-from semgrep.commands.install import run_install_semgrep_pro
+# from semgrep.commands.install import run_install_semgrep_pro
 from semgrep.commands.scan import collect_additional_outputs
 from semgrep.commands.scan import scan_options
 from semgrep.commands.wrapper import handle_command_errors
@@ -251,18 +251,18 @@ def ci(
     requested_engine: EngineType,
     quiet: bool,
     rewrite_rule_ids: bool,
-    run_secrets_flag: bool,
+    run_secrets_flag: bool, # NOTE: To be removed.
     disable_secrets_validation_flag: bool,
     allow_untrusted_validators: bool,
-    supply_chain: bool,
+    supply_chain: bool, # NOTE: to be removed.
     scan_unknown_extensions: bool,
     subdir: Optional[Path],
     time_flag: bool,
     timeout_threshold: int,
     timeout: int,
     interfile_timeout: Optional[int],
-    trace: bool,
-    trace_endpoint: str,
+    # trace: bool,
+    # trace_endpoint: str,
     use_git_ignore: bool,
     verbose: bool,
     path_sensitive: bool,
@@ -274,7 +274,7 @@ def ci(
 ) -> None:
     state = get_state()
 
-    state.traces.configure(trace, trace_endpoint)
+    # state.traces.configure(trace, trace_endpoint)
     with tracing.TRACER.start_as_current_span("semgrep.commands.ci"):
         state.terminal.configure(
             verbose=verbose,
@@ -296,13 +296,13 @@ def ci(
                 subdir = subdir.relative_to(Path.cwd())
             except ValueError:
                 logger.info(
-                    "`semgrep ci --subdir` must be given a directory that is actually a subdirectory of the current directory"
+                    "`opengrep ci --subdir` must be given a directory that is actually a subdirectory of the current directory"
                 )
                 sys.exit(FATAL_EXIT_CODE)
 
         if not is_git_repo_root_approx():
             logger.info(
-                "WARNING: `semgrep ci` is meant to be run from the root of a git repo.\nWhen `semgrep ci` is not run from a git repo, it will not be able to perform all operations.\nWhen `semgrep ci` is run from a git repo, but not the root, links in the uploaded findings may be broken.\n\nTo run `semgrep ci` on only a subdirectory of a git repo, see `--subdir`."
+                "WARNING: `opengrep ci` is meant to be run from the root of a git repo.\nWhen `opengrep ci` is not run from a git repo, it will not be able to perform all operations.\nWhen `opengrep ci` is run from a git repo, but not the root, links in the uploaded findings may be broken.\n\nTo run `opengrep ci` on only a subdirectory of a git repo, see `--subdir`."
             )
 
         if config and partial_config:
@@ -329,7 +329,7 @@ def ci(
         if not token and not config:
             # Not logged in and no explicit config
             logger.info(
-                "run `semgrep login` before using `semgrep ci` or use `semgrep scan` and set `--config`"
+                "run `semgrep login` before using `opengrep ci` or use `opengrep scan` and set `--config`"
             )
             sys.exit(INVALID_API_KEY_EXIT_CODE)
         elif not token and config:
@@ -338,7 +338,7 @@ def ci(
         elif token and config:
             # Logged in but has explicit config
             logger.info(
-                "Cannot run `semgrep ci` with --config while logged in. The `semgrep ci` command will upload findings to semgrep-app and those findings must come from rules configured there. Drop the `--config` to use rules configured on semgrep.dev or log out."
+                "Cannot run `opengrep ci` with --config while logged in. The `opengrep ci` command will upload findings to semgrep-app and those findings must come from rules configured there. Drop the `--config` to use rules configured on semgrep.dev or log out."
             )
             sys.exit(FATAL_EXIT_CODE)
         elif token:
@@ -511,22 +511,22 @@ def ci(
         if interfile_timeout is None:
             interfile_timeout = engine_type.default_interfile_timeout
 
-        if engine_type.is_pro:
-            console.print(Padding(Title("Engine", order=2), (1, 0, 0, 0)))
-            if run_secrets:
-                console.print("Semgrep Secrets requires Semgrep Pro Engine")
-            if engine_type.check_if_installed():
-                console.print(
-                    f"Using Semgrep Pro Version: [bold]{engine_type.get_pro_version()}[/bold]",
-                    markup=True,
-                )
-                console.print(
-                    f"Installed at [bold]{engine_type.get_binary_path()}[/bold]",
-                    markup=True,
-                    soft_wrap=True,
-                )
-            else:
-                run_install_semgrep_pro()
+        # if engine_type.is_pro:
+        #     console.print(Padding(Title("Engine", order=2), (1, 0, 0, 0)))
+        #     if run_secrets:
+        #         console.print("Semgrep Secrets requires Semgrep Pro Engine")
+        #     if engine_type.check_if_installed():
+        #         console.print(
+        #             f"Using Semgrep Pro Version: [bold]{engine_type.get_pro_version()}[/bold]",
+        #             markup=True,
+        #         )
+        #         console.print(
+        #             f"Installed at [bold]{engine_type.get_binary_path()}[/bold]",
+        #             markup=True,
+        #             soft_wrap=True,
+        #         )
+        #     else:
+        #         run_install_semgrep_pro()
 
         outputs = collect_additional_outputs(
             outputs_text=outputs_text,
@@ -603,8 +603,8 @@ def ci(
             "timeout": timeout,
             "max_memory": max_memory,
             "interfile_timeout": interfile_timeout,
-            "trace": trace,
-            "trace_endpoint": trace_endpoint,
+            # "trace": trace,
+            # "trace_endpoint": trace_endpoint,
             "timeout_threshold": timeout_threshold,
             "skip_unknown_extensions": (not scan_unknown_extensions),
             "allow_untrusted_validators": allow_untrusted_validators,

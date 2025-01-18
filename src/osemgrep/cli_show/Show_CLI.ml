@@ -119,7 +119,7 @@ let cmdline_term : conf Term.t =
       | [] ->
           Error.abort
             (spf
-               "'semgrep show' expects a subcommand. Try 'semgrep show --help'.")
+               "'opengrep show' expects a subcommand. Try 'opengrep show --help'.")
       | _ :: _ ->
           Error.abort
             (spf "show command not supported: %s" (String.concat " " args))
@@ -137,31 +137,31 @@ let man : Cmdliner.Manpage.block list =
     `P "Display various types of information";
     `P "Here are the different subcommands";
     (* the sub(sub)commands *)
-    `Pre "semgrep show version";
-    `P "Print the Semgrep version";
-    `Pre "semgrep show identity";
+    `Pre "opengrep show version";
+    `P "Print the Opengrep version";
+    `Pre "opengrep show identity";
     `P "Print the current logged-in token identity";
-    `Pre "semgrep show deployment";
+    `Pre "opengrep show deployment";
     `P "Print the current logged-in deployment";
-    `Pre "semgrep show supported-languages";
+    `Pre "opengrep show supported-languages";
     (* coupling: Scan_CLI.o_show_supported_languages help *)
-    `P "Print a list of languages that are currently supported by Semgrep.";
-    `Pre "semgrep show dump-config <STRING>";
+    `P "Print a list of languages that are currently supported by Opengrep.";
+    `Pre "opengrep show dump-config <STRING>";
     `P "Dump the internal representation of the result of --config=<STRING>";
-    `Pre "semgrep show dump-rule-v2 <FILE>";
+    `Pre "opengrep show dump-rule-v2 <FILE>";
     `P "Dump the internal representation of a rule using the new (v2) syntax";
-    `Pre "semgrep show dump-ast [<LANG>] <FILE>";
+    `Pre "opengrep show dump-ast [<LANG>] <FILE>";
     `P
       "Dump the abstract syntax tree of the file (with some names/types \
        resolved)";
-    `Pre "semgrep show dump-cst [<LANG>] <FILE>";
+    `Pre "opengrep show dump-cst [<LANG>] <FILE>";
     `P "Dump the concrete syntax tree of the file (tree sitter only)";
-    `Pre "semgrep show dump-pattern <LANG> <STRING>";
+    `Pre "opengrep show dump-pattern <LANG> <STRING>";
     `P "Dump the abstract syntax tree of the pattern string";
   ]
   @ CLI_common.help_page_bottom
 
-let cmdline_info : Cmd.info = Cmd.info "semgrep show" ~doc ~man
+let cmdline_info : Cmd.info = Cmd.info "opengrep show" ~doc ~man
 
 (*****************************************************************************)
 (* Entry point *)

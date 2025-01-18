@@ -89,10 +89,7 @@ def is_correct_pro_version(core_path):
 
 # similar to cli/src/semgrep/semgrep_core.py compute_executable_path()
 def find_semgrep_core_path(pro=False, extra_message=""):
-    if pro:
-        core = "semgrep-core-proprietary"
-    else:
-        core = "semgrep-core"
+    core = "opengrep-core"
 
     if IS_WINDOWS:
         core += ".exe"
@@ -122,7 +119,7 @@ def find_semgrep_core_path(pro=False, extra_message=""):
         return path
 
     raise CoreNotFound(
-        f"Failed to find {core} in PATH or in the semgrep package.{extra_message}"
+        f"Failed to find {core} in PATH or in the opengrep package.{extra_message}"
     )
 
 
@@ -148,41 +145,28 @@ def exec_pysemgrep():
 # we can always tell users to run pysemgrep instead of semgrep and be sure
 # they'll get the old behavior.
 def exec_osemgrep():
-    argv = sys.argv
-    if any(pro_flag in argv for pro_flag in PRO_FLAGS):
-        try:
-            path = find_semgrep_core_path(
-                pro=True,
-                extra_message="\nYou may need to run `semgrep install-semgrep-pro`",
-            )
-        except CoreNotFound as e:
-            print(str(e), file=sys.stderr)
-            if sys.argv[1] == "ci":
-                # CI users usually want things to just work. In particular, if they
-                # are running `semgrep ci --pro` they don't want to have to add an
-                # extra step to install-semgrep-pro. This wrapper doesn't have a way
-                # to install semgrep-pro, however, so have them run legacy `semgrep`.
-                print(
-                    "Since `semgrep ci` was run, defaulting to legacy semgrep",
-                    file=sys.stderr,
-                )
-                exec_pysemgrep()
-            else:
-                sys.exit(2)
-        # If you call semgrep-core-proprietary as osemgrep-pro, then we get
-        # osemgrep-pro behavior, see semgrep-proprietary/src/main/Pro_main.ml
-        sys.argv[0] = "osemgrep-pro"
-    else:
-        try:
-            path = find_semgrep_core_path()
-        except CoreNotFound as e:
-            print(str(e), file=sys.stderr)
-            # fatal error, see src/osemgrep/core/Exit_code.ml
-            sys.exit(2)
+    # if sys.argv[1] == "ci":
+    #     # CI users usually want things to just work. In particular, if they
+    #     # are running `semgrep ci --pro` they don't want to have to add an
+    #     # extra step to install-semgrep-pro. This wrapper doesn't have a way
+    #     # to install semgrep-pro, however, so have them run legacy `semgrep`.
+    #     print(
+    #         "Since `opengrep ci` was run, defaulting to legacy opengrep",
+    #         file=sys.stderr,
+    #     )
+    #     exec_pysemgrep()
+    # else:
+    try:
+        path = find_semgrep_core_path()
+    except CoreNotFound as e:
+        print(str(e), file=sys.stderr)
+        # fatal error, see src/osemgrep/core/Exit_code.ml
+        sys.exit(2)
 
-        # If you call semgrep-core as osemgrep, then we get
-        # osemgrep behavior, see src/main/Main.ml
-        sys.argv[0] = "osemgrep"
+    # If you call opengrep-core as opengrep-cli, then we get
+    # opengrep-cli behavior, see src/main/Main.ml
+    sys.argv[0] = "opengrep-cli"
+
     # nosem: dangerous-os-exec-tainted-env-args
     os.execvp(str(path), sys.argv)
 

@@ -145,7 +145,12 @@ def _get_latest_version(allow_fetch: bool = True) -> Optional[JsonObject]:
     env = get_state().env
     latest_version = _get_version_from_cache(env.version_check_cache_path)
 
-    if latest_version is None and allow_fetch:
+    # TODO: We do not support this at the moment, but it should probably be
+    # added for user convenience. The live version check has to be disabled
+    # for now because otherwise opengrep hangs waiting for a response.
+    _FIXME_ALWAYS_FALSE_ON_PURPOSE = False
+    
+    if latest_version is None and allow_fetch and _FIXME_ALWAYS_FALSE_ON_PURPOSE:
         latest_version = _fetch_latest_version()
 
     if latest_version is None:

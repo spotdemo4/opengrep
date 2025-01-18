@@ -219,7 +219,8 @@ class FileTargetingLog:
             )
         if self.core_failure_lines_by_file:
             partial_fragments.append(
-                f"{len(self.core_failure_lines_by_file)} files only partially analyzed due to parsing or internal Semgrep errors"
+                f"{len(self.core_failure_lines_by_file)} files only partially analyzed "
+                "due to parsing or internal Opengrep errors"
             )
 
         if not limited_fragments and not skip_fragments and not partial_fragments:
@@ -233,7 +234,7 @@ class FileTargetingLog:
             message += "\n  Partially scanned: " + ", ".join(partial_fragments)
         if skip_fragments:
             message += "\n  Scan skipped: " + ", ".join(skip_fragments)
-            message += "\n  For a full list of skipped files, run semgrep with the --verbose flag."
+            message += "\n  For a full list of skipped files, run opengrep with the --verbose flag."
         message += "\n"
         return message
 
@@ -247,7 +248,7 @@ class FileTargetingLog:
         """
         yield 0, "Files skipped:"
 
-        yield 1, "Always skipped by Semgrep:"
+        yield 1, "Always skipped by Opengrep:"
         if self.always_skipped:
             for path in sorted(self.always_skipped):
                 yield 2, with_color(Colors.cyan, str(path))
@@ -314,7 +315,7 @@ class FileTargetingLog:
         else:
             yield 2, "<none>"
 
-        yield 1, "Partially analyzed due to parsing or internal Semgrep errors"
+        yield 1, "Partially analyzed due to parsing or internal Opengrep errors"
         if self.core_failure_lines_by_file:
             for path, (lines, rule_ids) in sorted(
                 self.core_failure_lines_by_file.items()

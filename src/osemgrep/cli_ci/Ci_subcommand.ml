@@ -261,7 +261,7 @@ let deployment_config (caps : < Cap.network ; Auth.cap_token ; .. >) :
             (Out.show_deployment_config deployment_config));
       deployment_config
 
-(* eventually output the origin (if the semgrep_url is not semgrep.dev) *)
+(* TODO: eventually output the origin (if the semgrep_url is not semgrep.dev) *)
 let at_url_maybe ppf () : unit =
   if
     Uri.equal !Semgrep_envvars.v.semgrep_url
@@ -546,7 +546,7 @@ let finding_of_cli_match _commit_date index (m : Out.cli_match) : Out.finding =
 let report_scan_environment (prj_meta : Out.project_metadata) : unit =
   Logs.app (fun m -> m "  %a" Fmt.(styled `Underline string) "SCAN ENVIRONMENT");
   Logs.app (fun m ->
-      m "  versions    - semgrep %a on OCaml %a"
+      m "  versions    - opengrep %a on OCaml %a"
         Fmt.(styled `Bold string)
         Version.version
         Fmt.(styled `Bold string)
@@ -760,7 +760,7 @@ let run_conf (caps : < caps ; .. >) (ci_conf : Ci_CLI.conf) : Exit_code.t =
   | Maturity.Default -> (
       (* TODO: handle more confs, or fallback to pysemgrep further down *)
       match conf with
-      (* for now we allways fallback to pysemgrep :( *)
+      (* for now we always fallback to pyopengrep [pysemgrep] :( *)
       | _else_ -> raise Pysemgrep.Fallback)
   | Maturity.Legacy -> raise Pysemgrep.Fallback
   | Maturity.Experimental

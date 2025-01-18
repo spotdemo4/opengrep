@@ -227,6 +227,7 @@ let run_conf (caps : < caps ; .. >) (conf : Login_CLI.conf) : Exit_code.t =
 (* Entry point *)
 (*****************************************************************************)
 
+(* TODO: Temporarily disable this command, as well as `logout`. *)
 let main (caps : < caps ; .. >) (argv : string array) : Exit_code.t =
   let conf = Login_CLI.parse_argv argv in
   run_conf caps conf

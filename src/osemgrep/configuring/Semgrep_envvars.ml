@@ -127,7 +127,7 @@ let of_current_sys_env () : t =
     | None ->
         Fpath.v (env_or (fun x -> x) "HOME" "/")
   in
-  let user_dot_semgrep_dir = user_home_dir / ".semgrep" in
+  let user_dot_semgrep_dir = user_home_dir / ".semgrep" in (* TODO: This should be `.opengrep` now. *)
   {
     (* semgrep_url is set by env vars $SEMGREP_URL | $SEMGREP_APP_URL, or default *)
     semgrep_url =

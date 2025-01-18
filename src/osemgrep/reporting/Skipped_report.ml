@@ -140,7 +140,7 @@ let pp_skipped ~too_many_entries ppf
 
   Fmt.pf ppf "  %a@.@."
     Fmt.(styled `Bold string)
-    (esc ^ "Always skipped by Semgrep:");
+    (esc ^ "Always skipped by Opengrep:");
   pp_list always_ignored;
   Fmt.pf ppf "@.";
   Fmt.pf ppf "  %a@." Fmt.(styled `Bold string) (esc ^ "Skipped by .gitignore:");
@@ -202,6 +202,6 @@ let pp_skipped ~too_many_entries ppf
 
   Fmt.pf ppf "  %a@.@."
     Fmt.(styled `Bold string)
-    (esc ^ "Partially analyzed due to parsing or internal Semgrep errors");
+    (esc ^ "Partially analyzed due to parsing or internal Opengrep errors");
   pp_list errors;
   Fmt.pf ppf "@."

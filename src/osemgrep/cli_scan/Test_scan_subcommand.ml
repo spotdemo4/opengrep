@@ -121,7 +121,7 @@ let test_basic_output (caps : Scan_subcommand.caps) () =
             without_settings (fun () ->
                 Scan_subcommand.main caps
                   [|
-                    "semgrep-scan"; "--experimental"; "--config"; "rules.yml";
+                    "opengrep-scan"; "--experimental"; "--config"; "rules.yml";
                   |])
           in
           Exit_code.Check.ok exit_code))
@@ -151,7 +151,7 @@ let test_basic_verbose_output (caps : Scan_subcommand.caps) () =
             without_settings (fun () ->
                 Scan_subcommand.main caps
                   [|
-                    "semgrep-scan";
+                    "opengrep-scan";
                     "--experimental";
                     "--config";
                     "rules.yml";
@@ -167,12 +167,12 @@ let test_basic_verbose_output (caps : Scan_subcommand.caps) () =
 let tests (caps : < Scan_subcommand.caps >) =
   Testo.categorize "Osemgrep Scan (e2e)"
     [
-      t "no semgrep settings file" (fun () ->
+      t "no opengrep settings file" (fun () ->
           without_settings (test_nosettings ~env_app_token_set:false));
-      t "no semgrep settings file with env set" (fun () ->
+      t "no opengrep settings file with env set" (fun () ->
           without_settings (fun () ->
               with_env_app_token (test_nosettings ~env_app_token_set:true)));
-      t "semgrep settings file with env set" (fun () ->
+      t "opengrep settings file with env set" (fun () ->
           with_settings Semgrep_settings.default (fun () ->
               with_env_app_token (fun () ->
                   let settings_with_include_env = Semgrep_settings.load () in

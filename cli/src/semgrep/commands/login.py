@@ -25,8 +25,8 @@ def make_login_url() -> Tuple[uuid.UUID, str]:
     )
 
 
-@click.command()
-@handle_command_errors
+# @click.command()
+# @handle_command_errors
 def login() -> NoReturn:
     """
     Obtain and save credentials for semgrep.dev

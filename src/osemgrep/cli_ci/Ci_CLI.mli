@@ -10,7 +10,7 @@ type conf = {
   dry_run : bool;
   suppress_errors : bool;
   (* --code/--sca/--secrets/ *)
-  products : Semgrep_output_v1_t.product list;
+  (* products : Semgrep_output_v1_t.product list; *)
   (* for monorepos *)
   subdir : string;
   (* BIG ONE: 'semgrep ci' shares many flags with 'semgrep scan' *)

@@ -63,6 +63,7 @@ let add_project_and_config_metrics (conf : Scan_CLI.conf) : unit =
   | Configs configs -> Metrics_.add_configs_hash configs
   | Pattern _ -> ()
 
+(* TODO: Remove, since metrics are no more. *)
 let notify_user_about_metrics_once (settings : Semgrep_settings.t) : unit =
   if not (settings.has_shown_metrics_notification =*= Some true) then (
     (* python compatibility: the 22m and 24m are "normal color or intensity",
@@ -144,7 +145,7 @@ let exit_code_of_errors ~strict (errors : Out.core_error list) : Exit_code.t =
           in
           Logs.info (fun m ->
               m
-                "Exiting semgrep scan due to error of severity level=Error: %s \
+                "Exiting opengrep scan due to error of severity level=Error: %s \
                  -> exit code %i"
                 (Semgrep_output_v1_j.string_of_error_type x.error_type)
                 (Exit_code.to_int exit_code));
@@ -155,7 +156,7 @@ let exit_code_of_errors ~strict (errors : Out.core_error list) : Exit_code.t =
           in
           Logs.info (fun m ->
               m
-                "Exiting semgrep scan due to error in strict mode: %s -> exit \
+                "Exiting opengrep scan due to error in strict mode: %s -> exit \
                  code %i"
                 (Semgrep_output_v1_j.string_of_error_type x.error_type)
                 (Exit_code.to_int exit_code));
@@ -315,9 +316,9 @@ let print_logo () : unit =
   let logo =
     Ocolor_format.asprintf
       {|
-┌──── @{<green>○○○@} ────┐
-│ Semgrep CLI │
-└─────────────┘
+┌──── @{<green>▢▢▢▢@} ────┐
+│ Opengrep CLI │
+└──────────────┘
 |}
   in
   Logs.app (fun m -> m "%s" logo);
@@ -327,31 +328,31 @@ let feature_status ~(enabled : bool) : string =
   if enabled then Ocolor_format.asprintf {|@{<green>✔@}|}
   else Ocolor_format.asprintf {|@{<red>✘@}|}
 
-let print_feature_section ~(includes_token : bool) ~(engine : Engine_type.t) :
+let print_feature_section (* ~(includes_token : bool) ~(engine : Engine_type.t) *) () :
     unit =
-  let secrets_enabled =
-    match engine with
-    | PRO
-        Engine_type.
-          { secrets_config = Some Engine_type.{ allow_all_origins = _; _ }; _ }
-      ->
-        true
-    | OSS
-    | PRO Engine_type.{ secrets_config = None; _ } ->
-        false
-  in
+  (* let secrets_enabled =
+       match engine with
+       | PRO
+           Engine_type.
+             { secrets_config = Some Engine_type.{ allow_all_origins = _; _ }; _ }
+         ->
+           true
+       | OSS
+       | PRO Engine_type.{ secrets_config = None; _ } ->
+           false
+     in *)
   let features =
     [
-      ( "Semgrep OSS",
+      ( "Opengrep OSS",
         "Basic security coverage for first-party code vulnerabilities.",
         true );
-      ( "Semgrep Code (SAST)",
-        "Find and fix vulnerabilities in the code you write with advanced \
-         scanning and expert security rules.",
-        includes_token );
-      ( "Semgrep Secrets",
-        "Detect and validate potential secrets in your code.",
-        secrets_enabled );
+      (* ( "Semgrep Code (SAST)",
+           "Find and fix vulnerabilities in the code you write with advanced \
+            scanning and expert security rules.",
+           includes_token );
+         ( "Semgrep Secrets",
+           "Detect and validate potential secrets in your code.",
+           secrets_enabled ); *)
     ]
   in
   (* Print our set of features and whether each is enabled *)
@@ -764,11 +765,11 @@ let run_scan_conf (caps : < caps ; .. >) (conf : Scan_CLI.conf) : Exit_code.t =
          Logs.app (fun m ->
              m "%s"
                (Ocolor_format.asprintf {|@{<bold>  %s@}|}
-                  "Code scanning at ludicrous speed.\n"))
+                  "Code scanning.\n"))
      | _ ->
          print_feature_section
-           ~includes_token:(settings.api_token <> None)
-           ~engine:conf.engine_type);
+           (* ~includes_token:(settings.api_token <> None) *)
+           (* ~engine:conf.engine_type) *) ());
 
   notify_user_about_metrics_once settings;
 
@@ -864,7 +865,7 @@ let run_conf (caps : < caps ; .. >) (conf : Scan_CLI.conf) : Exit_code.t =
    *)
   CLI_common.setup_logging ~force_color:conf.output_conf.force_color
     ~level:conf.common.logging_level;
-  Logs.info (fun m -> m "Semgrep version: %s" Version.version);
+  Logs.info (fun m -> m "Opengrep version: %s" Version.version);
 
   let conf =
     if conf.common.profile then (

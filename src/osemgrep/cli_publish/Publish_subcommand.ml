@@ -172,13 +172,13 @@ let run_conf (caps : < caps ; .. >) (conf : Publish_CLI.conf) : Exit_code.t =
       match (config_filenames, conf.visibility) with
       | [], _ ->
           Logs.err (fun m ->
-              m "No valid semgrep rules found in %s" conf.upload_target);
+              m "No valid opengrep rules found in %s" conf.upload_target);
           Exit_code.fatal ~__LOC__
       | _, Publish_CLI.Public when List.length config_filenames <> 1 ->
           Logs.err (fun m ->
               m
                 "Only one public rule can be uploaded at a time: specify a \
-                 single Semgrep rule");
+                 single Opengrep rule");
           Exit_code.fatal ~__LOC__
       | _, Publish_CLI.Public when Option.is_none conf.registry_id ->
           Logs.err (fun m -> m "--visibility=public requires --registry-id");
@@ -220,7 +220,7 @@ let run_conf (caps : < caps ; .. >) (conf : Publish_CLI.conf) : Exit_code.t =
             Logs.err (fun m -> m "%d rules failed to upload" fail_count);
             Exit_code.fatal ~__LOC__))
   | None ->
-      Logs.err (fun m -> m "run `semgrep login` before using upload");
+      Logs.err (fun m -> m "run `opengrep login` before using upload");
       Exit_code.fatal ~__LOC__
 
 (*****************************************************************************)

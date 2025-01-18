@@ -19,7 +19,7 @@ def conditional_welcome() -> None:
         "publish",
         "login",
         "ci",
-        "install-semgrep-pro",
+        # "install-semgrep-pro",
         "lsp",
         "logout",
     }
@@ -117,4 +117,4 @@ def main() -> None:
     # To match the program usage help between pysemgrep (legacy)
     # and osemgrep (new) - and to hide complexity for our users -
     # here we specify `semgrep` as the program name for pysemgrep.
-    cli(prog_name="semgrep")
+    cli(prog_name="opengrep")

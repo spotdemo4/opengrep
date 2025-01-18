@@ -21,7 +21,7 @@
 (generate_opam_files)
 
 ;; set here so the semgrep package below can use it and we can easily bump it
-(version 1.100.0)
+(version 1.100.0) ; TODO (dimitris): Eventually move to Opengrep versioning.
 
 ;; Default attributes of opam packages
 (source (github semgrep/semgrep))
@@ -426,15 +426,20 @@ metrics
 (package (name semgrep)
   (synopsis "Like grep but for code: fast and syntax-aware semantic code pattern for many languages")
   (description "\
-Semgrep is like grep but for searching patterns at the AST level while
+Opengrep is like grep but for searching patterns at the AST level while
 leveraging semantic information (e.g., types, control flow) for powerful
 matching.
 
-For more information see https://semgrep.dev
+This project is a fork of Semgrep, created by Semgrep Inc. Opengrep is not
+affiliated with or endorsed by Semgrep Inc.
+
+For more information see https://opengrep.dev.
 "
   )
-  (maintainers "Yoann Padioleau <pad@semgrep.com>")
-  (authors "Yoann Padioleau <pad@semgrep.com>")
+  (maintainers "Dimitris Mostrous <dimitris@aikido.dev>" "Opengrep <team@opengrep.dev>")
+  (authors "Opengrep <opengrep@opengrep.dev>" "Semgrep <semgrep@semgrep.com>")
+  (source (github opengrep/opengrep))
+  (homepage "https://opengrep.dev")
   (license "LGPL-2.1-only")
 
 ;note: these are build dependencies. Development-only deps are in 'dev/*.opam'.
@@ -450,8 +455,8 @@ For more information see https://semgrep.dev
 ;TODO: restore  "bisect_ppx" {>= "2.5.0"} once can use ppxlib 0.22.0
   (depends
     ; core deps
-    (ocaml (>= 4.13.0))
-    (dune (>= 2.7.0 ))
+    (ocaml (>= 5.2.1))
+    (dune (>= 3.7))
     base
     ; parser generators
     (menhir (= 20230608))
@@ -482,15 +487,15 @@ For more information see https://semgrep.dev
     logs
     ; JSON/YAML/XML
     atdgen
-    (yojson ( >= 2.0.0 ))
+    (yojson (>= 2.0.0))
     yaml
     xmlm
-    (sarif ( >= 0.3.0 ))
+    (sarif (>= 0.3.0))
     ; CLI
     cmdliner
     ; PPX
     ppxlib
-    (ppx_deriving ( >= 6.0.3 ))
+    (ppx_deriving (>= 6.0.3))
     ppx_deriving_yojson
     ppx_hash
     ppx_inline_test

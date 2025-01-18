@@ -75,8 +75,8 @@ let pp_status ~num_rules ~num_targets ~respect_gitignore lang_jobs ppf =
      * programming languages. These include "regex", "generic" AKA "spacegrep",
      * and "aliengrep". Each of these "languages" have their own pattern syntax
      * and engine for matching patterns against targets, and thus need to be
-    * executed separately from each other. However, for simplicity, we merge the
-    * stats for these "languages" into a single "<multilang>" row.
+     * executed separately from each other. However, for simplicity, we merge the
+     * stats for these "languages" into a single "<multilang>" row.
      *)
     let xlang_label = function
       | Xlang.LSpacegrep

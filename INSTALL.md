@@ -13,24 +13,24 @@ $ make test        # test everything
 ```
 
 There's no simple installation of the development version of the
-`semgrep` command (Python wrapper + `semgrep-core` binary). To test
-`semgrep` without installing it, use `pipenv`:
+`opengrep` command (Python wrapper + `opengrep-core` binary). To test
+`opengrep` without installing it, use `pipenv`:
 
 ```
 $ cd semgrep
 $ pipenv shell
-$ semgrep --help
+$ opengrep --help
 ```
 
 Or more conveniently, you can create a shell function that will call
 `pipenv` from the correct location. For example, if you cloned the
-`semgrep` repo in your home folder (`~`), you can place the following
-code in your `~/.bashrc` file and then use `semgrep-dev` as your
-`semgrep` command:
+`opengrep` repo in your home folder (`~`), you can place the following
+code in your `~/.bashrc` file and then use `opengrep-dev` as your
+`opengrep` command:
 
 ```
-semgrep-dev() {
-  PIPENV_PIPFILE=~/semgrep/cli/Pipfile pipenv run semgrep "$@"
+opengrep-dev() {
+  PIPENV_PIPFILE=~/semgrep/cli/Pipfile pipenv run opengrep "$@"
 }
 ```
 
@@ -49,7 +49,7 @@ build Semgrep for Linux. The usual instructions for building a Docker
 image apply. It should be:
 
 ```
-$ docker build -t semgrep .
+$ docker build -t opengrep .
 ```
 
 ## Contribution guidelines

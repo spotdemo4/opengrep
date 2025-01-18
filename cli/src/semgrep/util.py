@@ -130,12 +130,12 @@ def welcome() -> None:
     """
     Print a welcome message with the Semgrep logo.
     """
-    logo = with_logo_color("○○○")
+    logo = with_logo_color("▢▢▢▢")
     click.echo(
         f"""
 ┌──── {logo} ────┐
-│ Semgrep CLI │
-└─────────────┘
+│ Opengrep CLI │
+└──────────────┘
 """,
         err=True,
     )

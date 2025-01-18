@@ -108,7 +108,8 @@ def download_semgrep_pro(
             shutil.copyfileobj(r_raw, f)
 
 
-def run_install_semgrep_pro() -> None:
+# TODO: Remove this.
+def _REMOVE_run_install_semgrep_pro() -> None:
     semgrep_pro_path = determine_semgrep_pro_path()
 
     # TODO This is a temporary solution to help offline users
@@ -188,14 +189,14 @@ def run_install_semgrep_pro() -> None:
     logger.info(f"\nSuccessfully installed Semgrep Pro Engine (version {version})!")
 
 
-@click.command()
-@click.option(
-    "--debug",
-    is_flag=True,
-)
-@handle_command_errors
-def install_semgrep_pro(debug: bool) -> None:
-    state = get_state()
-    state.terminal.configure(verbose=False, debug=debug, quiet=False, force_color=False)
+# @click.command()
+# @click.option(
+#     "--debug",
+#     is_flag=True,
+# )
+# @handle_command_errors
+# def install_semgrep_pro(debug: bool) -> None:
+#     state = get_state()
+#     state.terminal.configure(verbose=False, debug=debug, quiet=False, force_color=False)
 
-    run_install_semgrep_pro()
+#     run_install_semgrep_pro()

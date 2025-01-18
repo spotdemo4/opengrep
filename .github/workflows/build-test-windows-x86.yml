@@ -46,14 +46,15 @@ jobs:
         # NOTE: The openssl install is a hack but it's needed... for now.
         run: C:\hostedtoolcache\windows\cygwin\3.5.5\x86_64\setup-x86_64.exe --packages=mingw64-x86_64-curl,mingw64-x86_64-gmp,mingw64-x86_64-pcre,mingw64-x86_64-pcre2,mingw64-x86_64-openssl=1.0.2u+za-1 --quiet-mode --root=D:\cygwin --site=https://mirrors.kernel.org/sourceware/cygwin/ --symlink-type=sys
 
-      - env:
-          SEGMENT_DOWNLOAD_TIMEOUT_MINS: 2
-        name: Restore GHA cache for OPAM in _opam
-        id: cache-opam-win32-amd64
-        uses: actions/cache@v4
-        with:
-          key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('semgrep.opam') }}
-          path: _opam
+      # FIXME: This fails when the extra _opam cache is restored.
+      # - name: Restore GHA cache for OPAM in _opam
+      #   env:
+      #     SEGMENT_DOWNLOAD_TIMEOUT_MINS: 2
+      #   id: cache-opam-win32-amd64
+      #   uses: actions/cache@v4
+      #   with:
+      #     key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('semgrep.opam') }}
+      #     path: _opam
 
       - name: Debug stuff
         run: |
@@ -107,7 +108,7 @@ jobs:
       #     path: _opam
       #     key: ${{ steps.cache-opam-win32-amd64.outputs.cache-primary-key }}
           
-      - name: Build semgrep-core
+      - name: Build opengrep-core
         run: |
           export TREESITTER_INCDIR=$(pwd)/libs/ocaml-tree-sitter-core/tree-sitter/include
           export TREESITTER_LIBDIR=$(pwd)/libs/ocaml-tree-sitter-core/tree-sitter/lib
@@ -122,19 +123,19 @@ jobs:
           done
 
           # HACK: /usr/bin must take precedence over all paths in the opam env.
-          # Else one get's weird linking errors, because of the length of the
+          # Else one gets weird linking errors, because of the length of the
           # argument list. And `opam exec` will always re-arrange the path and
           # make this fail to compile.
-          PATH="${CYGWIN_ROOT_BIN}:$(opam exec -- printenv PATH)" dune build _build/install/default/bin/semgrep-core.exe
+          PATH="${CYGWIN_ROOT_BIN}:$(opam exec -- printenv PATH)" dune build _build/install/default/bin/opengrep-core.exe
 
-      - name: Test semgrep-core
+      - name: Test opengrep-core
         run: |
-          _build/install/default/bin/semgrep-core.exe -l python -rules tests/windows/rules.yml -json tests/windows/test.py
+          _build/install/default/bin/opengrep-core.exe -l python -rules tests/windows/rules.yml -json tests/windows/test.py
 
-      - name: Package semgrep-core
+      - name: Package opengrep-core
         run: |
           mkdir artifacts
-          cp _build/install/default/bin/semgrep-core.exe artifacts/
+          cp _build/install/default/bin/opengrep-core.exe artifacts/
 
           # TODO (sg): somehow upgrade to the latest flexdll, which should allow us
           # to statically link these libraries
@@ -159,7 +160,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: semgrep-core-and-dependent-libs-w64-artifact-${{ github.sha }}
+          name: opengrep-core-and-dependent-libs-w64-artifact-${{ github.sha }}
           path: artifacts.tgz
 
   build-wheels:
@@ -175,7 +176,7 @@ jobs:
           submodules: true
       - uses: actions/download-artifact@v4
         with:
-          name: semgrep-core-and-dependent-libs-w64-artifact-${{ github.sha }}
+          name: opengrep-core-and-dependent-libs-w64-artifact-${{ github.sha }}
       - env:
           SEMGREP_FORCE_INSTALL: 1
         run: |
@@ -184,7 +185,7 @@ jobs:
           ./scripts/build-wheels.sh --plat-name win_amd64
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-x86-wheel
+          name: windows-x86-wheel-${{ github.sha }}
           path: cli/dist.tgz
 
   test-wheels:
@@ -197,11 +198,12 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: windows-x86-wheel
+          name: windows-x86-wheel-${{ github.sha }}
       - run: tar xzvf dist.tgz
       - name: install package
         run: pip3 install dist/*.whl
       - name: test package
-        run: semgrep --version
-      - name: e2e semgrep-core test
-        run: echo '1 == 1' > test.py; semgrep -l python -e '$X == $X' test.py
+        run: opengrep --version
+      - name: e2e opengrep-core test
+        # FIXME: the -f param is probably removed, adapt.
+        run: echo '1 == 1' > test.py; opengrep -l python -e '$X == $X' test.py

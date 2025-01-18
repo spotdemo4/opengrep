@@ -21,7 +21,7 @@ fi
 
 pip install "$1"
 
-semgrep --version
+opengrep --version
 
 # shellcheck disable=SC2016
-echo '1 == 1' | semgrep -l python -e '$X == $X' -
+echo '1 == 1' | opengrep -l python -e '$X == $X' -

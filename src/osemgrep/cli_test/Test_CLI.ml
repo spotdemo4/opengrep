@@ -93,7 +93,7 @@ let o_config : string list Term.t =
       ~env:(Cmd.Env.info "SEMGREP_RULES")
       ~doc:
         {|YAML configuration file, directory of YAML files ending in
-.yml|.yaml, URL of a configuration file, or Semgrep registry entry name.
+.yml|.yaml, URL of a configuration file, or Opengrep registry entry name.
 |}
   in
   Arg.value (Arg.opt_all Arg.string [] info)
@@ -174,7 +174,7 @@ let man : Cmdliner.Manpage.block list =
   ]
   @ CLI_common.help_page_bottom
 
-let cmdline_info : Cmd.info = Cmd.info "semgrep test" ~doc ~man
+let cmdline_info : Cmd.info = Cmd.info "opengrep test" ~doc ~man
 
 (*****************************************************************************)
 (* Entry point *)

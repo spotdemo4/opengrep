@@ -96,7 +96,7 @@ let test_publish (caps : < Cap.network ; Cap.stdout ; Cap.tmp ; Cap.exec >) () =
       with_mocks (fun () ->
           let valid_target = tests_path in
           let valid_single_file_target =
-            tests_path / "e2e" / "targets" / "semgrep-publish" / "valid"
+            tests_path / "e2e" / "targets" / "opengrep-publish" / "valid"
             / "valid1.yaml"
           in
 
@@ -109,7 +109,7 @@ let test_publish (caps : < Cap.network ; Cap.stdout ; Cap.tmp ; Cap.exec >) () =
 
           (* should require login *)
           let exit_code =
-            Publish_subcommand.main caps [| "semgrep-publish"; !!valid_target |]
+            Publish_subcommand.main caps [| "opengrep-publish"; !!valid_target |]
           in
           Exit_code.Check.fatal exit_code;
 
@@ -124,38 +124,38 @@ let test_publish (caps : < Cap.network ; Cap.stdout ; Cap.tmp ; Cap.exec >) () =
 
           (* fails if no rule specified *)
           let exit_code =
-            Publish_subcommand.main caps [| "semgrep-publish" |]
+            Publish_subcommand.main caps [| "opengrep-publish" |]
           in
           Exit_code.Check.fatal exit_code;
 
           (* fails if invalid rule specified *)
           let exit_code =
             let path =
-              tests_path / "e2e" / "targets" / "semgrep-publish" / "invalid"
+              tests_path / "e2e" / "targets" / "opengrep-publish" / "invalid"
             in
-            Publish_subcommand.main caps [| "semgrep-publish"; !!path |]
+            Publish_subcommand.main caps [| "opengrep-publish"; !!path |]
           in
           Exit_code.Check.fatal exit_code;
 
           (* fails if a yaml with more than one rule is specified *)
           let exit_code =
             let path =
-              tests_path / "e2e" / "targets" / "semgrep-publish" / "multirule"
+              tests_path / "e2e" / "targets" / "opengrep-publish" / "multirule"
             in
-            Publish_subcommand.main caps [| "semgrep-publish"; !!path |]
+            Publish_subcommand.main caps [| "opengrep-publish"; !!path |]
           in
           Exit_code.Check.fatal exit_code;
 
           let exit_code =
             Publish_subcommand.main caps
-              [| "semgrep-publish"; "--visibility=public"; !!valid_target |]
+              [| "opengrep-publish"; "--visibility=public"; !!valid_target |]
           in
           Exit_code.Check.fatal exit_code;
 
           let exit_code =
             Publish_subcommand.main caps
               [|
-                "semgrep-publish";
+                "opengrep-publish";
                 "--visibility=public";
                 !!valid_single_file_target;
               |]

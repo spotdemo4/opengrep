@@ -2,6 +2,8 @@
 #
 # Run a semgrep test on a Docker image to ensure it works.
 #
+# TODO: Change semgrep => opengrep (TODO: put issue number here!)
+# 
 set -eu -o pipefail
 
 prog_name=$(basename "$0")

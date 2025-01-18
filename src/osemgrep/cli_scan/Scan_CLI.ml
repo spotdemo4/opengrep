@@ -55,8 +55,8 @@ type conf = {
   version_check : bool;
   (* Debugging/logging/profiling options *)
   common : CLI_common.conf;
-  trace : bool;
-  trace_endpoint : string option;
+  (* trace : bool;
+     trace_endpoint : string option; *)
   (* Ugly: should be in separate subcommands *)
   version : bool;
   show : Show_CLI.conf option;
@@ -94,8 +94,8 @@ let default : conf =
         logging_level = Some Logs.Warning;
         maturity = Maturity.Default;
       };
-    trace = false;
-    trace_endpoint = None;
+    (* trace = false;
+       trace_endpoint = None; *)
     engine_type = OSS;
     output = None;
     output_conf = Output.default;
@@ -128,9 +128,9 @@ let o_metrics : Metrics_.config Term.t =
     Arg.info [ "metrics" ]
       ~env:(Cmd.Env.info "SEMGREP_SEND_METRICS")
       ~doc:
-        {|Configures how usage metrics are sent to the Semgrep server. If
+        {|Configures how usage metrics are sent to the Opengrep server. If
 'auto', metrics are sent whenever the --config value pulls from the
-Semgrep server. If 'on', metrics are always sent. If 'off', metrics
+Opengrep server. If 'on', metrics are always sent. If 'off', metrics
 are disabled altogether and not sent. If absent, the
 SEMGREP_SEND_METRICS environment variable value will be used. If no
 environment variable, defaults to 'auto'.
@@ -145,7 +145,7 @@ let o_version_check : bool Term.t =
     ~default:default.version_check
     ~env:(Cmd.Env.info "SEMGREP_ENABLE_VERSION_CHECK")
     ~doc:
-      {|Checks Semgrep servers to see if the latest version is run; disabling
+      {|Checks Opengrep servers to see if the latest version is run; disabling
  this may reduce exit time after returning results.
 |}
 
@@ -184,7 +184,7 @@ let o_include : string list Term.t =
   let info =
     Arg.info [ "include" ] ~docv:"PATTERN"
       ~doc:
-        {|Specify files or directories that should be scanned by semgrep,
+        {|Specify files or directories that should be scanned by opengrep,
 excluding other files.
 This filter is applied after these other filters: '--exclude' options,
 any filtering done by git (or other SCM), and filtering by '.semgrepignore'
@@ -211,7 +211,7 @@ let o_max_target_bytes : int Term.t =
     Arg.info [ "max-target-bytes" ]
       ~doc:
         (spf
-           {|Maximum size for a file to be scanned by Semgrep, e.g
+           {|Maximum size for a file to be scanned by Opengrep, e.g
 '1.5MB'. Any input program larger than this will be ignored. A zero or
 negative value disables this filter. Defaults to %d bytes|}
            default)
@@ -227,13 +227,13 @@ let o_use_git : bool Term.t =
   H.negatable_flag [ "use-git-ignore" ] ~neg_options:[ "no-git-ignore" ]
     ~default:default.targeting_conf.respect_gitignore
     ~doc:
-      {|'--no-git-ignore' causes semgrep to not call 'git' and not consult
-        '.gitignore' files to determine which files semgrep should scan.
+      {|'--no-git-ignore' causes opengrep to not call 'git' and not consult
+        '.gitignore' files to determine which files opengrep should scan.
         As a result of '--no-git-ignore', gitignored files and git submodules
         will be scanned.
         This flag has no effect if the scanning root is not
         in a git repository.
-        '--use-git-ignore' is semgrep's default behavior.|}
+        '--use-git-ignore' is opengrep's default behavior.|}
 
 let o_ignore_semgrepignore_files : bool Term.t =
   let info =
@@ -241,7 +241,7 @@ let o_ignore_semgrepignore_files : bool Term.t =
       [ "x-ignore-semgrepignore-files" ]
       ~doc:
         {|[INTERNAL] Ignore all '.semgrepignore' files found in the project
-tree for the purpose of selecting target files to be scanned by semgrep.
+tree for the purpose of selecting target files to be scanned by opengrep.
 Other filters may still apply.
 THIS OPTION IS NOT PART OF THE SEMGREP API AND MAY
 CHANGE OR DISAPPEAR WITHOUT NOTICE.
@@ -260,7 +260,7 @@ let o_scan_unknown_extensions : bool Term.t =
          {|If true, target files specified directly on the command line
 will bypass normal language detection. They will be analyzed according to
 the value of --lang if applicable, or otherwise with the analyzers/languages
-specified in the Semgrep rule(s) regardless of file extension or file type.
+specified in the Opengrep rule(s) regardless of file extension or file type.
 This setting doesn't apply to target files discovered by scanning folders.
 Defaults to %b.
 |}
@@ -444,8 +444,7 @@ let o_matching_explanations : bool Term.t =
       [ "matching-explanations" ]
       ~doc:
         {|Add debugging information in the JSON output to trace how
-different parts of a rule are matched (a.k.a., "Inspect Rule"
-in the Semgrep playground)|}
+different parts of a rule are matched.|}
   in
   Arg.value (Arg.flag info)
 
@@ -465,26 +464,28 @@ let o_time : bool Term.t =
  provides times for each pair (rule, target). This feature is meant for internal use and may be changed or removed without warning. At the current moment, --trace is better supported.
 |}
 
-let o_trace : bool Term.t =
-  H.negatable_flag [ "trace" ] ~neg_options:[ "no-trace" ]
-    ~default:default.trace
-    ~doc:
-      {|Record traces from Semgrep scans to help debugging. This feature is
-meant for internal use and may be changed or removed without warning.
-|}
+(* TODO: Remove, it's disabled. *)
+(* let o_trace : bool Term.t =
+     H.negatable_flag [ "trace" ] ~neg_options:[ "no-trace" ]
+       ~default:default.trace
+       ~doc:
+         {|Record traces from Semgrep scans to help debugging. This feature is
+   meant for internal use and may be changed or removed without warning.
+   |} *)
 
-let o_trace_endpoint : string option Term.t =
-  let info =
-    Arg.info [ "trace-endpoint" ]
-      ~env:(Cmd.Env.info "SEMGREP_OTEL_ENDPOINT")
-      ~doc:
-        {|Endpoint to send OpenTelemetry traces to, if `--trace` is present.
-The value may be `semgrep-prod` (default), `semgrep-dev`,
-`semgrep-local`, or any valid URL.  This feature is meant for
-internal use and may be changed or removed wihtout warning.
-|}
-  in
-  Arg.value (Arg.opt Arg.(some string) None info)
+(* TODO: Remove, it's disabled. *)
+(* let o_trace_endpoint : string option Term.t =
+     let info =
+       Arg.info [ "trace-endpoint" ]
+         ~env:(Cmd.Env.info "SEMGREP_OTEL_ENDPOINT")
+         ~doc:
+           {|Endpoint to send OpenTelemetry traces to, if `--trace` is present.
+   The value may be `semgrep-prod` (default), `semgrep-dev`,
+   `semgrep-local`, or any valid URL.  This feature is meant for
+   internal use and may be changed or removed wihtout warning.
+   |}
+     in
+     Arg.value (Arg.opt Arg.(some string) None info) *)
 
 let o_nosem : bool Term.t =
   H.negatable_flag ~default:true [ "enable-nosem" ]
@@ -511,7 +512,7 @@ let o_text : bool Term.t =
 
 let o_json : bool Term.t =
   let info =
-    Arg.info [ "json" ] ~doc:{|Output results in Semgrep's JSON format.|}
+    Arg.info [ "json" ] ~doc:{|Output results in Opengrep's JSON format.|}
   in
   Arg.value (Arg.flag info)
 
@@ -605,6 +606,7 @@ let o_junit_xml_outputs = make_o_format_outputs ~fancy:"JUnit XML" "junit-xml"
 (* Run Secrets Post Processors                                  *)
 (* ------------------------------------------------------------------ *)
 
+(* FIXME: Remove. *)
 let o_secrets : bool Term.t =
   let info =
     Arg.info [ "secrets" ]
@@ -621,6 +623,7 @@ let o_no_secrets_validation : bool Term.t =
   in
   Arg.value (Arg.flag info)
 
+(* FIXME: Remove or adapt. *)
 let o_allow_untrusted_validators : bool Term.t =
   let info =
     Arg.info
@@ -641,6 +644,7 @@ let o_historical_secrets : bool Term.t =
 (* Engine type (mutually exclusive) *)
 (* ------------------------------------------------------------------ *)
 
+(* FIXME: Remove. *)
 let o_oss : bool Term.t =
   let info =
     Arg.info [ "oss-only" ]
@@ -684,6 +688,7 @@ let o_pro : bool Term.t =
   in
   Arg.value (Arg.flag info)
 
+(* TODO: Remove this, or adapt to Opengrep. *)
 (* ------------------------------------------------------------------ *)
 (* Configuration options ('scan' only, not reused in 'ci') *)
 (* ------------------------------------------------------------------ *)
@@ -823,7 +828,7 @@ let o_show_supported_languages : bool Term.t =
     Arg.info
       [ "show-supported-languages" ]
       ~doc:
-        {|Print a list of languages that are currently supported by Semgrep.|}
+        {|Print a list of languages that are currently supported by Opengrep.|}
   in
   Arg.value (Arg.flag info)
 
@@ -881,7 +886,7 @@ let o_allow_local_builds : bool Term.t =
   let info =
     Arg.info [ "allow-local-builds" ]
       ~doc:
-        {|Experimental: allow building projects contained in the repository. This allows Semgrep to identify dependencies
+        {|Experimental: allow building projects contained in the repository. This allows Opengrep to identify dependencies
           and dependency relationships when lockfiles are not present or are insufficient. However, building code may inherently
           require the execution of code contained in the scanned project or in its dependencies, which is a security risk.|}
   in
@@ -898,7 +903,7 @@ let o_allow_local_builds : bool Term.t =
 let o_target_roots : string list Term.t =
   let info =
     Arg.info [] ~docv:"TARGETS"
-      ~doc:{|Files or folders to be scanned by semgrep.|}
+      ~doc:{|Files or folders to be scanned by opengrep.|}
   in
   Arg.value
     (Arg.pos_all Arg.string
@@ -913,10 +918,10 @@ let o_project_root : string option Term.t =
   let info =
     Arg.info [ "project-root" ]
       ~doc:
-        {|Semgrep normally determines the type of project (git or novcs)
+        {|Opengrep normally determines the type of project (git or novcs)
           and the project root automatically. The project root is then used
           to locate and use '.gitignore' and '.semgrepignore' files which
-          determine target files that should be ignored by semgrep.
+          determine target files that should be ignored by opengrep.
           This option forces the project root to be a specific folder
           and assumes a local project without version control (novcs).
           This option is useful to ensure the '.semgrepignore' file that
@@ -1293,7 +1298,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       replacement rewrite_rule_ids sarif sarif_outputs scan_unknown_extensions
       secrets severity show_supported_languages strict target_roots test
       test_ignore_todo text text_outputs time_flag timeout
-      _timeout_interfileTODO timeout_threshold trace trace_endpoint use_git
+      _timeout_interfileTODO timeout_threshold (*  trace trace_endpoint *) use_git
       validate version version_check vim vim_outputs
       x_ignore_semgrepignore_files x_ls x_ls_long =
     (* Print a warning if any of the internal or experimental options.
@@ -1302,7 +1307,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       Logs.warn (fun m ->
           m
             "!!! You're using one or more options starting with '--x-'. These \
-             options are not part of the semgrep API. They will change or will \
+             options are not part of the opengrep API. They will change or will \
              be removed without notice !!! ");
     let target_roots, imply_always_select_explicit_targets =
       replace_target_roots_by_regular_files_where_needed caps
@@ -1452,14 +1457,14 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       Logs.warn (fun m ->
           m
             "Paths that match both --include and --exclude will be skipped by \
-             Semgrep.");
+             Opengrep.");
 
-    if trace_endpoint <> None && not trace then
-      Logs.warn (fun m ->
-          m
-            "The --trace-endpoint flag or SEMGREP_OTEL_ENDPOINT environment \
-             variable is specified without --trace.\n\
-             If you intend to enable tracing, please also add the --trace flag.");
+    (* if trace_endpoint <> None && not trace then
+         Logs.warn (fun m ->
+             m
+               "The --trace-endpoint flag or SEMGREP_OTEL_ENDPOINT environment \
+                variable is specified without --trace.\n\
+                If you intend to enable tracing, please also add the --trace flag."); *)
     let ls, ls_format =
       (* --x-ls-long implies --x-ls *)
       if x_ls_long then (true, Ls_subcommand.Long)
@@ -1487,8 +1492,8 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       show;
       validate;
       test;
-      trace;
-      trace_endpoint;
+      (* trace;
+         trace_endpoint; *)
       allow_local_builds;
       ls;
       ls_format;
@@ -1516,11 +1521,11 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
     $ o_secrets $ o_severity $ o_show_supported_languages $ o_strict
     $ o_target_roots $ o_test $ Test_CLI.o_test_ignore_todo $ o_text
     $ o_text_outputs $ o_time $ o_timeout $ o_timeout_interfile
-    $ o_timeout_threshold $ o_trace $ o_trace_endpoint $ o_use_git $ o_validate
+    $ o_timeout_threshold $ (* o_trace $ o_trace_endpoint $ *) o_use_git $ o_validate
     $ o_version $ o_version_check $ o_vim $ o_vim_outputs
     $ o_ignore_semgrepignore_files $ o_ls $ o_ls_long)
 
-let doc = "run semgrep rules on files"
+let doc = "run opengrep rules on files"
 
 (* TODO: document the exit codes as defined in Exit_code.mli *)
 let man : Cmdliner.Manpage.block list =
@@ -1530,22 +1535,15 @@ let man : Cmdliner.Manpage.block list =
       "Searches TARGET paths for matches to rules or patterns. Defaults to \
        searching entire current working directory.";
     `P "To get started quickly, run";
-    `Pre "semgrep --config auto .";
+    `Pre "opengrep --config auto .";
     `P
-      "This will automatically fetch rules for your project from the Semgrep \
-       Registry. NOTE: Using `--config auto` will log in to the Semgrep \
-       Registry with your project URL.";
-    `P "For more information about Semgrep, go to https://semgrep.dev.";
-    `P
-      "NOTE: By default, Semgrep will report pseudonymous usage metrics to its \
-       server if you pull your configuration from the Semgrep registry. To \
-       learn more about how and why these metrics are collected, please see \
-       https://semgrep.dev/docs/metrics. To modify this behavior, see the \
-       --metrics option below.";
+      "This will automatically fetch rules for your project from the Opengrep \
+       Registry.";
+    `P "For more information about Opengrep, go to https://opengrep.dev.";
   ]
   @ CLI_common.help_page_bottom
 
-let cmdline_info : Cmd.info = Cmd.info "semgrep scan" ~doc ~man
+let cmdline_info : Cmd.info = Cmd.info "opengrep scan" ~doc ~man
 
 (*****************************************************************************)
 (* Entry point *)

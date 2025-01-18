@@ -11,7 +11,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior.
-If the issue is dependent on a specific rule and/or files, please paste the command line parameters and applicable file contents.  
+If the issue is dependent on a specific rule and/or files, please paste the command line parameters and applicable file contents.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.

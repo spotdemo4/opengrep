@@ -437,7 +437,9 @@ def print_scan_status(
             rule_count=secrets_rule_count,
         )
 
-    if not has_sca_rules and legacy_ux:
+    # NOTE: This should not be printed for now.
+    _FIXME_INTENTIONALLY_TRUE = True
+    if _FIXME_INTENTIONALLY_TRUE or ( not has_sca_rules and legacy_ux ):
         pass  # Skip showing an empty supply chain rules section for legacy ux
     elif legacy_ux:
         # Show the basic table for supply chain

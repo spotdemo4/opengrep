@@ -68,7 +68,7 @@ class SemgrepCore:
         """
         # This method does not bother to cache its result since it is
         # expected to not be a part of any critical path.
-        ret = compute_executable_path("semgrep-core")
+        ret = compute_executable_path("opengrep-core")
         if ret is None:
             raise Exception("Could not locate semgrep-core binary")
         return ret

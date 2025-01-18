@@ -27,4 +27,5 @@ type pro_config = {
 }
 [@@deriving show]
 
+(* TODO: Remove module. *)
 type t = OSS | PRO of pro_config [@@deriving show]
