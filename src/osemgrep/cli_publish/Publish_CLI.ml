@@ -117,18 +117,18 @@ let cmdline_term : conf Term.t =
     const combine $ CLI_common.o_common $ o_registry_id $ upload_target
     $ o_visibility)
 
-(* TODO: Remove this or adapt to opengrep. *)
-let doc = "upload rule to semgrep.dev"
+(* TODO: Adapt this to Opengrep if we decide to run a similar [open] Service. *)
+let doc = "upload rule to opengrep.dev"
 
 (* TODO: document the exit codes as defined in Exit_code.mli *)
 let man : Cmdliner.Manpage.block list =
   [
     `S Cmdliner.Manpage.s_description;
-    `P "Must be logged in to use; see `semgrep login`";
+    `P "Must be logged in to use; see `opengrep login`";
   ]
   @ CLI_common.help_page_bottom
 
-let cmdline_info : Cmd.info = Cmd.info "semgrep publish" ~doc ~man
+let cmdline_info : Cmd.info = Cmd.info "opengrep publish" ~doc ~man
 
 (*****************************************************************************)
 (* Entry point *)
