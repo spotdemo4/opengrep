@@ -1,0 +1,90 @@
+name: build-test-core-x86
+on:
+  push:
+    branches:
+      - main
+      - linux/**
+      # - dm/linux-static-build-workflow # branch where this change was introduced
+  pull_request:
+    branches:
+      - main
+  workflow_call: null
+  workflow_dispatch: null
+
+jobs:
+
+  build-core:
+    container:
+      image: ocamlpro/ocaml:5.2.1
+      # NOTE: Can also match the UID between Alpine and Ubuntu users, removing `--user root`.
+      # See: https://github.com/actions/checkout/issues/956.
+      # But this suggest to run as root: https://docs.github.com/en/enterprise-server@3.12/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
+      options: --user root
+    runs-on: ubuntu-latest
+    # env:
+    #   HOME: /home/ocaml # NOTE: Pointless?
+    steps:
+      - name: Make checkout speedy
+        run: git config --global fetch.parallel 50
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Configure git safedir properly
+        run: git config --global --add safe.directory $(pwd)
+
+      - name: Add system packages
+        run: |
+          # gnu tar and zstd needed for cache, see:
+          # https://github.com/actions/cache/issues/580
+          apk add --no-cache build-base zip bash libffi-dev \
+            libpsl-static zstd-static libidn2-static \
+            libunistring-static tar zstd
+
+      - name: Set GHA cache for OPAM 
+        uses: actions/cache@v4
+        with:
+          key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('semgrep.opam') }}
+          path: _opam
+
+      - name: Create switch
+        run: |
+          if [ ! -d "_opam" ]; then
+            opam switch --no-install create . ocaml-system
+          else
+            echo "OPAM switch already exists, skipping creation."
+          fi
+          
+          eval $(opam env)
+          opam exec -- ocaml -version
+
+      # TODO: Remove `opam update` to make it faster, it's not needed
+      # for these images since they are frequently updated.
+      - name: Install dependencies
+        run: |
+          eval $(opam env)
+          # TODO: Try without the scripts/build-static-libcurl.sh part,
+          # in which case we can embed the new apk deps into the previous
+          # step and just execute the second command.
+          make install-deps-ALPINE-for-semgrep-core
+          make install-deps-for-semgrep-core
+
+      - name: Build opengrep-core
+        run: |
+          opam exec -- make core
+  
+      - name: Test opengrep-core
+        run: |
+          opam exec -- make core-test
+
+      - name: Make artifact for bin/opengrep-core
+        run: |
+          mkdir artifacts
+          cp bin/opengrep-core artifacts/
+          tar czf artifacts.tgz artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opengrep-core-x86-artifact
+          path: artifacts.tgz
