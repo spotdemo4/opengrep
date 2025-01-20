@@ -88,3 +88,8 @@ jobs:
         with:
           name: opengrep-core-x86-artifact
           path: artifacts.tgz
+
+  build-test-manylinux-x86:
+    needs:
+      - build-core
+    uses: ./.github/workflows/build-test-manylinux-x86.yml
