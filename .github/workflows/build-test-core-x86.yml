@@ -89,7 +89,36 @@ jobs:
           name: opengrep-core-x86-artifact
           path: artifacts.tgz
 
+  build-musllinux-x86:
+    needs:
+      - build-core
+    container: quay.io/pypa/musllinux_1_2_x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make checkout speedy
+        run: git config --global fetch.parallel 50
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - run: |
+          apk update
+          apk add --no-cache zip python3 py3-pip py3-virtualenv python3-dev gcc musl-dev
+      - uses: actions/download-artifact@v4
+        with:
+          name: opengrep-core-x86-artifact
+      - run: |
+          tar xf artifacts.tgz
+          cp artifacts/opengrep-core cli/src/semgrep/bin
+          python3 -m venv venv
+          . venv/bin/activate
+          ./scripts/build-wheels.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: musllinux-x86-wheel
+          path: cli/dist.zip
+
   build-test-manylinux-x86:
     needs:
       - build-core
+      - build-musllinux-x86
     uses: ./.github/workflows/build-test-manylinux-x86.yml
