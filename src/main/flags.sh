@@ -67,7 +67,7 @@ else
             # old: was just '--copt -static --copy -no-pie' before we depended
             # on libcurl
             FLAGS=()
-            CCLIB=("-lssl" "-lcrypto" "-lz")
+            CCLIB=("-lidn2" "-lunistring" "-lpsl" "-lssl" "-lcrypto" "-lz")
             CCOPT=("-static" "-no-pie")
         else
             # On non-Alpine Linux distros (e.g., Ubuntu), we just dynamically
