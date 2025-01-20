@@ -10,12 +10,12 @@ LIBS = \
   libs/semgrep.libsonnet \
 
 # NOTE: Removed temporarily because we don't generate from jsonnet right now:
-# build-test-windows-x86.yml, build-test-core-x86.yml
+# build-test-windows-x86.yml, build-test-core-x86.yml build-test-manylinux-x86.yml 
 OBJS = \
   semgrep.yml \
   lint.yml \
   build-test-osx-x86.yml build-test-osx-arm64.yml \
-  build-test-manylinux-x86.yml build-test-manylinux-aarch64.yml \
+  build-test-manylinux-aarch64.yml \
   tests.yml \
   test-e2e-semgrep-ci.yml nightly.yml \
   build-test-docker.yml push-docker.yml \
