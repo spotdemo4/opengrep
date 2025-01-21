@@ -133,7 +133,7 @@ def welcome() -> None:
     logo = with_logo_color("▢▢▢▢")
     click.echo(
         f"""
-┌──── {logo} ────┐
+┌──────────────┐
 │ Opengrep CLI │
 └──────────────┘
 """,
