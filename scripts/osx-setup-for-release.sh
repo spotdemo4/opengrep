@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eux
 
-# Setup the environment under MacOS to build and release semgrep-core.
+# Setup the environment under MacOS to build and release opengrep-core.
 
 # history: there used to be a separate osx-m1-release.sh script
 # that was mostly a copy of this file, but now the
@@ -24,13 +24,13 @@ opam init --no-setup --bare
 # Some CI runners have tree-sitter preinstalled which interfere with
 # out static linking plans below so better to remove it.
 # TODO: fix setup-m1-builder.sh instead?
-brew uninstall --force semgrep
+# brew uninstall --force semgrep
 brew uninstall --force tree-sitter
 
-SWITCH_NAME="${1:-4.14.0}"
+SWITCH_NAME="${1:-5.2.1}"
 
 #coupling: this should be the same version than in our Dockerfile
-if opam switch "${SWITCH_NAME}" ; then
+if opam switch "${SWITCH_NAME}" 2>/dev/null; then
     # This happens because the self-hosted CI runners do not
     # cleanup things between each run.
     echo "Switch ${SWITCH_NAME} exists, continuing"
