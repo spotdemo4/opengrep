@@ -28,9 +28,6 @@ Using <MASKED> as the merge-base of <MASKED> and <MASKED>
 
   CODE RULES
   Scanning 1 file with 4 python rules.
-
-  SUPPLY CHAIN RULES
-  Scanning 1 file.
   Current version has 15 findings.
 
 Creating git worktree from '<MASKED>' to scan baseline.
@@ -47,9 +44,6 @@ Creating git worktree from '<MASKED>' to scan baseline.
 
   CODE RULES
   Scanning 1 file with 4 python rules.
-
-  SUPPLY CHAIN RULES
-  Scanning 1 file.
 
 
 ┌──────────────────────────┐

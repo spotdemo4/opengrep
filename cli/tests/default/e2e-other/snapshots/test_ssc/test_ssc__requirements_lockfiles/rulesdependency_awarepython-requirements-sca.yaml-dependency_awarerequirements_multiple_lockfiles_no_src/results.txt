@@ -79,9 +79,6 @@
   CODE RULES
   Nothing to scan.
 
-  SUPPLY CHAIN RULES
-  Nothing to scan.
-
 
 ┌──────────────┐
 │ Scan Summary │

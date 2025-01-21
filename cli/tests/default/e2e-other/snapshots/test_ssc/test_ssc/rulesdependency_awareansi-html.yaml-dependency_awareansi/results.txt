@@ -92,9 +92,6 @@
   CODE RULES
   Nothing to scan.
 
-  SUPPLY CHAIN RULES
-  Scanning 1 file.
-
 
 ┌──────────────┐
 │ Scan Summary │

@@ -29,19 +29,6 @@
 
   CODE RULES
   Nothing to scan.
-
-  SUPPLY CHAIN RULES
-
-  Ecosystem   Rules   Files   Lockfiles
- ─────────────────────────────────────────
-  Pypi            3       1   poetry.lock
-
-
-  Analysis   Rules
- ──────────────────
-  Basic          2
-  Unknown        1
-
   Current version has 3 findings.
 
 Creating git worktree from '<MASKED>' to scan baseline.
@@ -58,19 +45,6 @@ Creating git worktree from '<MASKED>' to scan baseline.
 
   CODE RULES
   Nothing to scan.
-
-  SUPPLY CHAIN RULES
-
-  Ecosystem   Rules   Files   Lockfiles
- ─────────────────────────────────────────
-  Pypi            3       1   poetry.lock
-
-
-  Analysis   Rules
- ──────────────────
-  Basic          2
-  Unknown        1
-
 
 
 ┌──────────────┐

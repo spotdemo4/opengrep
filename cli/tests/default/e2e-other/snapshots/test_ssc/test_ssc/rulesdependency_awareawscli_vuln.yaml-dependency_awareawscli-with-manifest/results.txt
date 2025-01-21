@@ -453,18 +453,6 @@
   CODE RULES
   Nothing to scan.
 
-  SUPPLY CHAIN RULES
-
-  Ecosystem   Rules   Files   Lockfiles
- ────────────────────────────────────────────────────────────────────────────────────────
-  Pypi            6       1   targets/dependency_aware/awscli-with-manifest/Pipfile.lock
-
-
-  Analysis   Rules
- ──────────────────
-  Unknown        6
-
-
 
 ┌──────────────┐
 │ Scan Summary │

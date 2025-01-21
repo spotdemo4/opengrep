@@ -62,9 +62,6 @@
   CODE RULES
   Scanning 1 file.
 
-  SUPPLY CHAIN RULES
-  Scanning 1 file.
-
 
 ┌──────────────┐
 │ Scan Summary │
