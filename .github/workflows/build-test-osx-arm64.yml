@@ -47,7 +47,7 @@ jobs:
         run: opam exec -- make core-test
       - name: Make artifact for ./bin/opengrep-core
         run: |
-          mkdir -p artifacts/lib
+          mkdir artifacts
           
           cp ./bin/opengrep-core artifacts/
 
