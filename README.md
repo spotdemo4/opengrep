@@ -1,10 +1,10 @@
 <br />
 <p align="center">
-  <a href="https://opengrep.dev">
+  <a href="https://github.com/opengrep">
     <picture>
-      <source media="(prefers-color-scheme: light)" srcset="images/opengrep-modern-banner-dark.png">
-      <source media="(prefers-color-scheme: dark)" srcset="images/opengrep-modern-banner-dark.png">
-      <img src="https://raw.githubusercontent.com/opengrep/opengrep/main/images/opengrep-modern-banner-dark.png" width="100%" alt="Opengrep logo"/>
+      <source media="(prefers-color-scheme: light)" srcset="images/opengrep-github-banner.svg">
+      <source media="(prefers-color-scheme: dark)" srcset="images/opengrep-github-banner.svg">
+      <img src="https://raw.githubusercontent.com/opengrep/opengrep/main/images/opengrep-github-banner.svg" width="100%" alt="Opengrep logo"/>
     </picture>
   </a>
 </p>
