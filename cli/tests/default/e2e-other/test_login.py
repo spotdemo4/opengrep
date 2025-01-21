@@ -7,9 +7,12 @@ from semgrep.config_resolver import ConfigLoader
 
 expected_logout_str = "Logged out (log back in with `semgrep login`)\n"
 
+# NOTE: Disabled because `login` is no longer a command.
+# TODO: Remove.
 
 # it should be ok to logout when not logged in and to logout twice
 @pytest.mark.slow
+@pytest.mark.pysemfail
 def test_logout_not_logged_in(tmp_path, mocker):
     runner = SemgrepRunner(
         env={"SEMGREP_SETTINGS_FILE": str(tmp_path / ".settings.yaml")},
@@ -27,6 +30,7 @@ def test_logout_not_logged_in(tmp_path, mocker):
 # it should fail when run from a non-terminal shell
 @pytest.mark.slow
 @pytest.mark.osemfail
+@pytest.mark.pysemfail
 def test_login_no_tty(tmp_path, mocker):
     runner = SemgrepRunner(
         env={"SEMGREP_SETTINGS_FILE": str(tmp_path / ".settings.yaml")},
@@ -50,6 +54,7 @@ def test_login_no_tty(tmp_path, mocker):
 # it should login by using SEMGREP_APP_TOKEN
 @pytest.mark.slow
 @pytest.mark.osemfail
+@pytest.mark.pysemfail
 def test_login_env_token(tmp_path, mocker):
     runner = SemgrepRunner(
         env={"SEMGREP_SETTINGS_FILE": str(tmp_path / ".settings.yaml")},
@@ -88,6 +93,7 @@ def test_login_env_token(tmp_path, mocker):
 # it should give access to the registry once logged in
 @pytest.mark.slow
 @pytest.mark.osemfail
+@pytest.mark.pysemfail
 def test_login_and_use_registry(tmp_path, mocker):
     runner = SemgrepRunner(
         env={"SEMGREP_SETTINGS_FILE": str(tmp_path / ".settings.yaml")},
