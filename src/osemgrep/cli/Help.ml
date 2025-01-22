@@ -41,7 +41,7 @@ let print_help (stdout : Cap.Console.stdout) =
   (* TODO: add a Out.printf_color? *)
   CapConsole.ocolor_format_printf stdout
     {|
-┌──── @{<green>▢▢▢▢@} ────┐
+┌──────────────┐
 │ Opengrep CLI │
 └──────────────┘
 Opengrep CLI scans your code for bugs, security and dependency vulnerabilities.

@@ -567,9 +567,6 @@
   CODE RULES
   Scanning 1 file with 4 python rules.
 
-  SUPPLY CHAIN RULES
-  Scanning 1 file.
-
 
 ┌──────────────┐
 │ Scan Summary │

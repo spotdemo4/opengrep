@@ -6,10 +6,12 @@ from tests.semgrep_runner import SemgrepRunner
 
 from semgrep.cli import cli
 
+# TODO: Remove? We may have something similar in the future.
 
 @pytest.mark.kinda_slow
 # osemfail, but now translated to Test_publish_subcommand.ml
 @pytest.mark.osemfail
+@pytest.mark.pysemfail
 def test_publish(tmp_path, mocker):
     runner = SemgrepRunner(
         env={"SEMGREP_SETTINGS_FILE": str(tmp_path / ".settings.yaml")},

@@ -316,7 +316,7 @@ let print_logo () : unit =
   let logo =
     Ocolor_format.asprintf
       {|
-┌──── @{<green>▢▢▢▢@} ────┐
+┌──────────────┐
 │ Opengrep CLI │
 └──────────────┘
 |}

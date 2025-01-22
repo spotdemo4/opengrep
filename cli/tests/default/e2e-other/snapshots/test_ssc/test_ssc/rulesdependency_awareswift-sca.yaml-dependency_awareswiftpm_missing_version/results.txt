@@ -29,11 +29,6 @@
   CODE RULES
   Nothing to scan.
 
-  SUPPLY CHAIN RULES
-  Scanning 1 file.
-  Failed to parse [bold]targets/dependency_aware/swiftpm_missing_version/Package.resolved[/bold] - Unable to determine
-  version of swift lockfile
-
 
 ┌──────────────┐
 │ Scan Summary │

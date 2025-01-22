@@ -130,9 +130,6 @@
   CODE RULES
   Nothing to scan.
 
-  SUPPLY CHAIN RULES
-  Scanning 3 files.
-
 
 ┌──────────────┐
 │ Scan Summary │

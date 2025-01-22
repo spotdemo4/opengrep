@@ -13,7 +13,7 @@ Initialized empty Git repository in <TMP>/<MASKED>/.git/
  create mode 100644 rules.yml
  create mode 100644 stupid.py
 
-┌──── [32m▢▢▢▢[39m ────┐
+┌──────────────┐
 │ Opengrep CLI │
 └──────────────┘
 

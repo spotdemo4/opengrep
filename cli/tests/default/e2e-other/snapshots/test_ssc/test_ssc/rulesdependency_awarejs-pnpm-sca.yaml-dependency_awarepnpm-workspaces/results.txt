@@ -124,18 +124,6 @@
   CODE RULES
   Nothing to scan.
 
-  SUPPLY CHAIN RULES
-
-  Ecosystem   Rules   Files   Lockfiles
- ─────────────────────────────────────────────────────────────────────────────────────
-  Npm             2       1   targets/dependency_aware/pnpm-workspaces/pnpm-lock.yaml
-
-
-  Analysis   Rules
- ──────────────────
-  Unknown        2
-
-
 
 ┌──────────────┐
 │ Scan Summary │

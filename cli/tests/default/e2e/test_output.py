@@ -355,7 +355,7 @@ def test_json_output_with_dataflow_traces(run_semgrep_in_tmp: RunSemgrep, snapsh
 
 IGNORE_LOG_REPORT_FIRST_LINE = "Some files were skipped or only partially analyzed."
 IGNORE_LOG_REPORT_LAST_LINE = (
-    "  For a full list of skipped files, run semgrep with the --verbose flag."
+    "  For a full list of skipped files, run opengrep with the --verbose flag.\n"
 )
 
 
