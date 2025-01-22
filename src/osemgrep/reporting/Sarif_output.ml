@@ -119,7 +119,7 @@ let rule hide_nudge (rule_id, rule) : Sarif.reporting_descriptor =
     match JSON.member "shortDescription" metadata with
     | Some (JSON.String shortDescription) -> shortDescription
     | Some _ -> raise Impossible
-    | None -> spf "Semgrep Finding: %s" (Rule_ID.to_string rule_id)
+    | None -> spf "Opengrep Finding: %s" (Rule_ID.to_string rule_id)
   and source =
     match JSON.member "source" metadata with
     | Some (JSON.String source) -> Some source
@@ -157,7 +157,7 @@ let rule hide_nudge (rule_id, rule) : Sarif.reporting_descriptor =
   let text_suffix = if hide_nudge then "" else nudge_plaintext in
   let markdown_interstitial = if hide_nudge then "" else nudge_md in
   let references =
-    Option.to_list (Option.map (fun s -> spf "[Semgrep Rule](%s)" s) source)
+    Option.to_list (Option.map (fun s -> spf "[Opengrep Rule](%s)" s) source)
   in
   let other_references =
     match JSON.member "references" metadata with
@@ -198,7 +198,7 @@ let rule hide_nudge (rule_id, rule) : Sarif.reporting_descriptor =
 let sarif_fixes (cli_match : Out.cli_match) : Sarif.fix list option =
   let* fixed_lines = cli_match.extra.fixed_lines in
   let description_text =
-    spf "%s\n Autofix: Semgrep rule suggested fix" cli_match.extra.message
+    spf "%s\n Autofix: Opengrep rule suggested fix" cli_match.extra.message
   in
   let fix =
     let artifact_change =
@@ -402,7 +402,7 @@ let sarif_output hrules (cli_output : Out.cli_output)
     let tool =
       let driver =
         Sarif.create_tool_component
-          ~name:(spf "Semgrep %s" engine_label)
+          ~name:(spf "Opengrep %s" engine_label)
           ~semantic_version:Version.version ?rules ()
       in
       Sarif.create_tool ~driver ()
