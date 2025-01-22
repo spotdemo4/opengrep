@@ -13,6 +13,8 @@ python3 -m pip install --upgrade pip
 # Need latest versions here otherwise we end up with a malformed package where
 # it marks the README as an RST file which fails to parse.
 python3 -m pip install --upgrade setuptools wheel twine
+# NOTE: https://packaging.python.org/en/latest/discussions/setup-py-deprecated/
+# So we should do `python3 -m build`.
 cd cli && python3 setup.py sdist bdist_wheel "$@"
 
 # Do some sanity checks on the built packages. These checks are done as part of
