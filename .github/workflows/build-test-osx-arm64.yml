@@ -1,10 +1,10 @@
 name: build-test-osx-arm64
 on:
   push:
-      branches:
-        - main
-        - osx/**
-        # - dm/osx-arm64-build # branch where this change was introduced
+    branches:
+      - main
+      - osx/**
+      # - dm/osx-arm64-build # branch where this change was introduced
   workflow_call:
     inputs:
       use-cache:
@@ -101,7 +101,7 @@ jobs:
           tar czf artifacts.tgz artifacts
       - uses: actions/upload-artifact@v4
         with:
-          name: opengrep-osx-arm64 #-${{ github.sha }}
+          name: opengrep-osx-arm64
           path: artifacts.tgz
 
   build-wheels:
@@ -117,7 +117,7 @@ jobs:
           submodules: true
       - uses: actions/download-artifact@v4
         with:
-          name: opengrep-osx-arm64 #-${{ github.sha }}
+          name: opengrep-osx-arm64
       - run: |
           tar xvfz artifacts.tgz
           cp artifacts/* cli/src/semgrep/bin
