@@ -31,9 +31,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - name: Debug use-cache input
+        run: |
+          echo "use-cache value: ${{ inputs.use-cache }}"
       - env:
           SEGMENT_DOWNLOAD_TIMEOUT_MINS: 2
-        if: ${{ inputs.use-cache == 'true' || inputs.use-cache == null }}
+        # if: ${{ inputs.use-cache == 'true' || inputs.use-cache == '' }}
         name: Set GHA cache for OPAM in ~/.opam
         uses: actions/cache@v4
         with:
