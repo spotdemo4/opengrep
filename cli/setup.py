@@ -61,9 +61,7 @@ else:
 
 if IS_WINDOWS and not SEMGREP_FORCE_INSTALL:
     raise Exception(
-        "Semgrep does not support Windows yet, please try again with WSL "
-        "or visit the following for more information: "
-        "https://github.com/semgrep/semgrep/issues/1330"
+        "Opengrep does not support Windows yet, please try again with WSL."
     )
 
 try:
@@ -111,6 +109,7 @@ install_requires = [
     # coupling: if you add a dep here, it would be appreciated if you could add
     # it to the top level flake.nix file as well, in
     # pysemgrep.propagatedBuildInputs
+    # NOTE: maybe add here `protobuf` and `jaraco`.
     "attrs>=21.3",
     "boltons~=21.0",
     "click-option-group~=0.5",
@@ -141,12 +140,13 @@ setuptools.setup(
     version="1.100.0",
     author="Semgrep Inc.",
     author_email="support@semgrep.com",
+    # TODO: Edit this?
     description="Lightweight static analysis for many languages. Find bug variants with patterns that look like source code.",
     cmdclass=cmdclass,
     install_requires=install_requires,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/returntocorp/semgrep",
+    url="https://github.com/opengrep/opengrep",
     # creates a .exe wrapper on windows
     entry_points={
         "console_scripts": [

@@ -45,15 +45,9 @@ The Semgrep project has two main parts:
 ## Reproducible and standalone build with Docker
 
 The main [`Dockerfile`](Dockerfile) serves as a reference on how to
-build Semgrep for Linux. The usual instructions for building a Docker
+build Opengrep for Linux. The usual instructions for building a Docker
 image apply. It should be:
 
 ```
 $ docker build -t opengrep .
 ```
-
-## Contribution guidelines
-
-Contribution guidelines and developer documentation
-are [available from Semgrep's documentation
-website](https://semgrep.dev/docs/contributing/contributing/).

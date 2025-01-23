@@ -1,0 +1,69 @@
+name: rolling-release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: the tag to use
+        required: true
+        default: v1.0.0-alpha
+        type: string
+  # push:
+  #   tags:
+  #     - 'v*'
+  #   # branches:
+  #   #   - dm/** # for testing.
+
+permissions:
+  contents: write
+
+jobs:
+
+  build-linux-x86:
+    uses: ./.github/workflows/build-test-core-x86.yml
+
+  build-osx-arm64:
+    uses: ./.github/workflows/build-test-osx-arm64.yml
+
+  release:
+    runs-on: ubuntu-latest
+
+    needs:
+      - build-linux-x86
+      - build-osx-arm64
+
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          # merge-multiple: true
+          path: artifacts/
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Prepare wheels
+        run: |
+          pushd artifacts/
+          unzip -j ./manylinux-x86-wheel/dist.zip "*.whl"
+          unzip -j ./osx-arm64-wheel/dist.zip "*.whl"
+          ls -R
+          for file in *.whl; do
+            mv "$file" "${file/semgrep-/opengrep-}"
+          done
+          ls -l *.whl
+          popd
+
+      - name: Create or Update Rolling Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: Rolling Release (Latest Build)
+          draft: true
+          prerelease: true
+          body: |
+            This is a rolling release from `main`.
+          files: |
+            artifacts/*.whl
+          # fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
