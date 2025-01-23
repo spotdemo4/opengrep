@@ -36,7 +36,7 @@ jobs:
           alternatives --auto python3
       - uses: actions/download-artifact@v4
         with:
-          name: opengrep-core-x86-artifact
+          name: opengrep-core-x86
       - run: |
           tar xf artifacts.tgz
           cp artifacts/opengrep-core cli/src/semgrep/bin

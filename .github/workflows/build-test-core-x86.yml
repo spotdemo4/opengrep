@@ -90,7 +90,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: opengrep-core-x86-artifact
+          name: opengrep-core-x86
           path: artifacts.tgz
 
   build-musllinux-x86:
@@ -109,7 +109,7 @@ jobs:
           apk add --no-cache zip python3 py3-pip py3-virtualenv python3-dev gcc musl-dev
       - uses: actions/download-artifact@v4
         with:
-          name: opengrep-core-x86-artifact
+          name: opengrep-core-x86
       - run: |
           tar xf artifacts.tgz
           cp artifacts/opengrep-core cli/src/semgrep/bin
