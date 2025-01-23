@@ -5,9 +5,13 @@ on:
       - main
       - linux/**
       # - dm/linux-static-build-workflow # branch where this change was introduced
+    paths-ignore:
+      - '**.md'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
   workflow_call: null
   workflow_dispatch: null
 

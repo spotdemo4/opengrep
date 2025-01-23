@@ -5,10 +5,12 @@
 name: build-test-windows-x86
 on:
   push:
-      branches:
-        - main
-        - windows/**
-        # - dm/disable-tracing-pt-i # branch where this change was introduced
+    branches:
+      - main
+      - windows/**
+      # - dm/disable-tracing-pt-i # branch where this change was introduced
+    paths-ignore:
+    - '**.md'
   workflow_call:
     inputs:
       use-cache:

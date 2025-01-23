@@ -5,6 +5,8 @@ on:
       - main
       - osx/**
       # - dm/osx-arm64-build # branch where this change was introduced
+    paths-ignore:
+      - '**.md'
   workflow_call:
     inputs:
       use-cache:
