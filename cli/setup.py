@@ -65,7 +65,7 @@ if IS_WINDOWS and not SEMGREP_FORCE_INSTALL:
     )
 
 try:
-    with open(os.path.join(REPO_ROOT, "README.md")) as f:
+    with open(os.path.join(REPO_ROOT, "README.md"), "r", encoding="utf-8") as f:
         long_description = f.read()
 except FileNotFoundError:
     long_description = "**SETUP: README NOT FOUND**"
