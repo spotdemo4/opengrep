@@ -10,11 +10,20 @@
 </p>
 
 ### Welcome to Opengrep, a fork of Semgrep, under the LGPL 2.1 license
-This project is a fork of Semgrep, created by Semgrep Inc. Opengrep is not affiliated with or endorsed by Semgrep Inc.
+
+Opengrep is a fork of Semgrep, created by Semgrep Inc. Opengrep is not affiliated with or endorsed by Semgrep Inc.
+
+Open-source license changes by private vendors are no small matter, often leading to disruption and uncertainty for contributors and users of those projects. In such cases, the future of the community hangs in doubt as community members must work to continue and protect an open future. As Semgrep clamps down on its open source projects, we unite behind Opengrep to ensure that discovering security issues remains accessible to all. 
+
+Opengrep stands to empower every developer with open and transparent static code analysis. Let's make secure software development a shared standard.
+
+To learn more, read the manifesto at [opengrep.dev](https://opengrep.dev/). Opengrep is initiated by a collective of AppSec organizations, including: Aikido.dev, Arnica, Amplify, Endor, Jit, Kodem, Mobb, and Orca. To join as a sponsor, open an [issue](https://github.com/opengrep/opengrep/issues). 
+
+Opengrep is open to any individual or organization to leverage and contribute, [join the open roadmap sessions](https://lu.ma/opengrep).
 
 # Opengrep: Fast and Powerful Code Pattern Search
 
-Opengrep is a lightning-fast static analysis tool for searching code patterns with the power of semantic grep. Analyze code at the speed of thought with intuitive pattern matching and customizable rules.
+Opengrep is an ultra-fast static analysis tool for searching code patterns with the power of semantic grep. Analyze large code bases at the speed of thought with intuitive pattern matching and customizable rules. Fix and fix security vulnerabilities, fast– ship more secure code.
 
 Opengrep supports 30+ languages, including:
 
