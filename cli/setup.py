@@ -65,7 +65,7 @@ if IS_WINDOWS and not SEMGREP_FORCE_INSTALL:
     )
 
 try:
-    with open(os.path.join(REPO_ROOT, "README.md")) as f:
+    with open(os.path.join(REPO_ROOT, "README.md"), "r", encoding="utf-8") as f:
         long_description = f.read()
 except FileNotFoundError:
     long_description = "**SETUP: README NOT FOUND**"
@@ -136,11 +136,10 @@ install_requires = [
 
 
 setuptools.setup(
-    name="semgrep",
-    version="1.100.0",
+    name="opengrep",
+    version="v1.0.0-alpha.1",
     author="Semgrep Inc.",
     author_email="support@semgrep.com",
-    # TODO: Edit this?
     description="Lightweight static analysis for many languages. Find bug variants with patterns that look like source code.",
     cmdclass=cmdclass,
     install_requires=install_requires,
