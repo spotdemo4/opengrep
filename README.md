@@ -23,7 +23,7 @@ Opengrep is open to any individual or organization to leverage and contribute, [
 
 # Opengrep: Fast and Powerful Code Pattern Search
 
-Opengrep is an ultra-fast static analysis tool for searching code patterns with the power of semantic grep. Analyze large code bases at the speed of thought with intuitive pattern matching and customizable rules. Fix and fix security vulnerabilities, fast– ship more secure code.
+Opengrep is an ultra-fast static analysis tool for searching code patterns with the power of semantic grep. Analyze large code bases at the speed of thought with intuitive pattern matching and customizable rules. Find and fix security vulnerabilities, fast – ship more secure code.
 
 Opengrep supports 30+ languages, including:
 
@@ -31,7 +31,7 @@ Apex · Bash · C · C++ · C# · Clojure · Dart · Dockerfile · Elixir · HTM
 
 ## Installation
 
-Get started in seconds with our pre-built packages. Requires Python 3.7+.
+Get started in seconds with our pre-built packages. Requires Python 3.9+.
 
 ```bash
 # For macOS (Apple Silicon)
