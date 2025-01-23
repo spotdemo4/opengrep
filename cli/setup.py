@@ -39,7 +39,7 @@ if WHEEL_CMD in sys.argv:
             # and a few workflows as show for example in this PR:
             # https://github.com/semgrep/semgrep-proprietary/pull/2606/files
             # coupling: semgrep.libsonnet default_python_version
-            python = "cp39.cp310.cp311.py39.py310.py311"
+            python = "cp39.cp310.cp311.cp312.cp313.py39.py310.py311.py312.py313"
 
             # We don't require a specific Python ABI
             abi = "none"

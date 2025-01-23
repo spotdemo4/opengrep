@@ -23,7 +23,7 @@ Opengrep is open to any individual or organization to leverage and contribute, [
 
 # Opengrep: Fast and Powerful Code Pattern Search
 
-Opengrep is an ultra-fast static analysis tool for searching code patterns with the power of semantic grep. Analyze large code bases at the speed of thought with intuitive pattern matching and customizable rules. Fix and fix security vulnerabilities, fast– ship more secure code.
+Opengrep is an ultra-fast static analysis tool for searching code patterns with the power of semantic grep. Analyze large code bases at the speed of thought with intuitive pattern matching and customizable rules. Find and fix security vulnerabilities, fast – ship more secure code.
 
 Opengrep supports 30+ languages, including:
 
@@ -31,16 +31,16 @@ Apex · Bash · C · C++ · C# · Clojure · Dart · Dockerfile · Elixir · HTM
 
 ## Installation
 
-Get started in seconds with our pre-built packages. Requires Python 3.7+.
+Get started in seconds with our pre-built packages. Requires Python 3.9+.
 
 ```bash
 # For macOS (Apple Silicon)
-pip install opengrep --find-links https://github.com/opengrep/opengrep/releases/download/v1.0.0-alpha.1/opengrep-1.0.0a1-cp39.cp310.cp311.py39.py310.py311-none-macosx_11_0_arm64.whl
+pip install opengrep --find-links https://github.com/opengrep/opengrep/releases/download/v1.0.0-alpha.2/opengrep-1.0.0a1-cp39.cp310.cp311.cp312.cp313.py39.py310.py311.py312.py313-none-macosx_11_0_arm64.whl
 ```
 
 ```bash
 # For Linux (x86_64)
-pip install opengrep --find-links https://github.com/opengrep/opengrep/releases/download/v1.0.0-alpha.1/opengrep-1.0.0a1-cp39.cp310.cp311.py39.py310.py311-none-musllinux_1_0_x86_64.manylinux2014_x86_64.whl
+pip install opengrep --find-links https://github.com/opengrep/opengrep/releases/download/v1.0.0-alpha.2/opengrep-1.0.0a1-cp39.cp310.cp311.cp312.cp313.py39.py310.py311.py312.py313-none-musllinux_1_0_x86_64.manylinux2014_x86_64.whl
 ```
  
 ## Getting started
