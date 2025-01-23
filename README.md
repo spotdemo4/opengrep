@@ -45,39 +45,31 @@ pip install opengrep --find-links https://github.com/opengrep/opengrep/releases/
  
 ## Getting started
 
-Create a file with a rule as follows: 
+Create `rules/demo-rust-unwrap.yaml` with the following content:
 
-```bash
-───────┬──────────────────────────────────────────────────────────────────
-       │ File: rules/demo-rust-unwrap.yaml
-───────┼──────────────────────────────────────────────────────────────────
-   1   │ rules:
-   2   │ - id: unwrapped-result
-   3   │   pattern: $VAR.unwrap()
-   4   │   message: "Unwrap detected - potential panic risk"
-   5   │   languages: [rust]
-   6   │   severity: WARNING
-───────┴──────────────────────────────────────────────────────────────────
+```yml
+rules:
+- id: unwrapped-result
+  pattern: $VAR.unwrap()
+  message: "Unwrap detected - potential panic risk"
+  languages: [rust]
+  severity: WARNING
 ```
 
-and a file to check: 
+and `code/rust/main.rs` with the following content (that contains a risky unwrap):
 
 ```rust
-───────┬──────────────────────────────────────────────────────────────────
-       │ File: code/rust/main.rs
-───────┼──────────────────────────────────────────────────────────────────
-   1   │ fn divide(a: i32, b: i32) -> Result<i32, String> {
-   2   │     if b == 0 {
-   3   │         return Err("Division by zero".to_string());
-   4   │     }
-   5   │     Ok(a / b)
-   6   │ }
-   7   │
-   8   │ fn main() {
-   9   │     let result = divide(10, 0).unwrap(); // Risky unwrap!
-  10   │     println!("Result: {}", result);
-  11   │ }
-───────┴──────────────────────────────────────────────────────────────────
+fn divide(a: i32, b: i32) -> Result<i32, String> {
+    if b == 0 {
+        return Err("Division by zero".to_string());
+    }
+    Ok(a / b)
+}
+
+fn main() {
+    let result = divide(10, 0).unwrap(); // Risky unwrap!
+    println!("Result: {}", result);
+}
 ```
 
 You should now have: 
