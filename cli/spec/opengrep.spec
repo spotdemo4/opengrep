@@ -1,12 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
 datas = []
-datas += [("semgrepinstall/semgrep/semgrep_interfaces", "semgrep/semgrep_interfaces")]
-datas += [("semgrepinstall/semgrep/templates", "semgrep/templates")]
+datas += [("_opengrepinstall/semgrep/semgrep_interfaces", "semgrep/semgrep_interfaces")]
+datas += [("_opengrepinstall/semgrep/templates", "semgrep/templates")]
 
-binaries = [("semgrepinstall/semgrep/bin", "semgrep/bin")]
+binaries = [("_opengrepinstall/semgrep/bin", "semgrep/bin")]
 
 a = Analysis(
-    ['semgrepinstall/semgrep/main.py'],
+    ['_opengrepinstall/semgrep/main.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
