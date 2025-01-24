@@ -1,0 +1,80 @@
+name: build-osx-binary-arm64
+on:
+  workflow_call: null
+  workflow_dispatch: null
+
+jobs:
+
+  build-self-contained-osx-binary:
+    runs-on: macos-13-xlarge
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Install pyinstaller
+        run: pipenv run pip install pyinstaller protobuf
+      
+      - uses: actions/download-artifact@v4
+        with:
+          name: osx-arm64-wheel
+
+      # - name: Authenticate GitHub CLI
+      #   run: |
+      #     gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+
+      # - name: Get Latest Successful Run ID
+      #   id: get-run-id
+      #   run: |
+      #     # Fetch the latest successful run ID for the workflow
+      #     RUN_ID=$(gh run list --repo opengrep/opengrep --workflow build-test-osx-arm64 --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+      #     echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      # - name: Output Run ID
+      #   run: |
+      #     echo "The latest successful run ID is: ${{ steps.get-run-id.outputs.run_id }}"
+
+      # - name: Download Artifact
+      #   run: |
+      #     gh run download ${{ steps.get-run-id.outputs.run_id }} \
+      #       -R opengrep/opengrep -n osx-arm64-wheel
+          
+      - run: unzip dist.zip
+
+      - name: install package
+        run: pipenv run pip install dist/*.whl --target ./_opengrepinstall
+      - name: Rename file 
+        run: |
+          { echo '#!/usr/bin/env python3'; cat ./_opengrepinstall/semgrep/main.py; echo 'sys.exit(main())';} > tempfile
+          mv tempfile ./_opengrepinstall/semgrep/main.py
+          cp ./_opengrepinstall/semgrep/main.py ./_opengrepinstall/semgrep/__main__.py
+          cat ./_opengrepinstall/semgrep/main.py
+
+      - name: Build executable
+        run: |
+          cp cli/spec/opengrep.spec .
+          pipenv run pyinstaller opengrep.spec
+
+      - name: Zip artifact
+        run: zip -j opengrep.zip dist/opengrep
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opengrep_osx_binary_arm64
+          path: opengrep.zip 
+
+  test-osx-binary:
+    needs: build-self-contained-osx-binary
+    runs-on: macos-13-xlarge
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: opengrep_osx_binary_arm64
+      - run: unzip opengrep.zip
+      - run: chmod +x opengrep 
+      - run: |
+          ./opengrep --version
+      - run: |
+          echo '1 == 1' | ./opengrep -l python -e '$X == $X' -

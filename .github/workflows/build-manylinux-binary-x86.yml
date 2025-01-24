@@ -1,0 +1,109 @@
+name: build-manylinux-binary-x86
+on:
+  workflow_call: null
+  workflow_dispatch: null
+
+jobs:
+
+  build-self-contained-manylinux-binary:
+    # NOTE: The image below has GLIBC 2.28, but there are others for even older version.
+    # See: https://github.com/pypa/manylinux
+    container:
+      image: quay.io/pypa/manylinux_2_28_x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - run: yum install -y zip
+          
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/download-artifact@v4
+        with:
+          name: manylinux-x86-wheel
+
+      # - name: Install GitHub CLI
+      #   run: |
+      #     # Install yum-utils if not already installed
+      #     type -p yum-config-manager >/dev/null || yum install -y yum-utils
+
+      #     # Add GitHub CLI repository
+      #     yum-config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+
+      #     # Install GitHub CLI
+      #     yum install -y gh
+
+      # - name: Authenticate GitHub CLI
+      #   run: |
+      #     gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+
+      # - name: Get Latest Successful Run ID
+      #   id: get-run-id
+      #   run: |
+      #     # Fetch the latest successful run ID for the workflow
+      #     RUN_ID=$(gh run list --repo opengrep/opengrep --workflow build-test-core-x86 --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+      #     echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      # - name: Output Run ID
+      #   run: |
+      #     echo "The latest successful run ID is: ${{ steps.get-run-id.outputs.run_id }}"
+
+      # - name: Download Artifact
+      #   run: |
+      #     gh run download ${{ steps.get-run-id.outputs.run_id }} \
+      #       -R opengrep/opengrep -n manylinux-x86-wheel
+          
+      - run: unzip dist.zip
+
+      - name: install pyinstaller
+        run: |
+          /opt/python/cp312-cp312/bin/pip install pyinstaller
+          # python3 -m pip install pyinstaller
+      - name: install package
+        run: |
+          /opt/python/cp312-cp312/bin/pip install dist/*.whl --target ./_opengrepinstall
+          # python3 -m pip install dist/*.whl --target ./_opengrepinstall
+
+      - name: Create executable
+        run: |
+          export PATH=/opt/python/cp312-cp312/bin:$PATH
+          export LD_LIBRARY_PATH=/__t/Python/3.12.8/x64/lib/:$LD_LIBRARY_PATH
+
+          { echo '#!/usr/bin/env python3'; cat ./_opengrepinstall/semgrep/main.py; echo 'sys.exit(main())';} > tempfile
+
+          mv tempfile ./_opengrepinstall/semgrep/main.py
+
+          cp ./_opengrepinstall/semgrep/main.py ./_opengrepinstall/semgrep/__main__.py
+
+          cat ./_opengrepinstall/semgrep/main.py
+
+          # Package Opengrep using PyInstaller 
+
+          pip install --upgrade setuptools
+          pip install protobuf
+
+          cp cli/spec/opengrep.spec .
+
+          pyinstaller opengrep.spec
+          
+      - name: Zip artifact
+        run: zip -j opengrep.zip dist/opengrep
+      
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opengrep_manylinux_binary_x86_64
+          path: opengrep.zip
+
+  test-manylinux-binary:
+    needs: build-self-contained-manylinux-binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: opengrep_manylinux_binary_x86_64
+      - run: unzip opengrep.zip
+      - run: chmod +x opengrep
+      - run: |
+          ./opengrep --version
+      - run: |
+          echo '1 == 1' | ./opengrep -l python -e '$X == $X' -
