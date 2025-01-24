@@ -31,7 +31,7 @@ Apex · Bash · C · C++ · C# · Clojure · Dart · Dockerfile · Elixir · HTM
 
 ## Installation
 
-binary releases coming soon
+Binaries available in the latest alpha [release](https://github.com/opengrep/opengrep/releases).
  
 ## Getting started
 
