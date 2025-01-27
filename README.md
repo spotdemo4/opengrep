@@ -11,13 +11,11 @@
 
 ### Welcome to Opengrep, a fork of Semgrep, under the LGPL 2.1 license
 
-Opengrep is a fork of Semgrep, created by Semgrep Inc. Opengrep is not affiliated with or endorsed by Semgrep Inc.
+_Opengrep is a fork of Semgrep, created by Semgrep Inc. Opengrep is not affiliated with or endorsed by Semgrep Inc._
 
-Open-source license changes by private vendors are no small matter, often leading to disruption and uncertainty for contributors and users of those projects. In such cases, the future of the community hangs in doubt as community members must work to continue and protect an open future. As Semgrep clamps down on its open source projects, we unite behind Opengrep to ensure that discovering security issues remains accessible to all. 
+Let's make secure software development a shared standard. Opengrep provides every developer and organization with open and advanced static code analysis. 
 
-Opengrep stands to empower every developer with open and transparent static code analysis. Let's make secure software development a shared standard.
-
-To learn more, read the manifesto at [opengrep.dev](https://opengrep.dev/). Opengrep is initiated by a collective of AppSec organizations, including: Aikido.dev, Arnica, Amplify, Endor, Jit, Kodem, Mobb, and Orca. To join as a sponsor, open an [issue](https://github.com/opengrep/opengrep/issues). 
+Opengrep is initiated by a collective of AppSec organizations, including: Aikido.dev, Arnica, Amplify, Endor, Jit, Kodem, Mobb, and Orca Security. To join as a sponsor or contributor, open an [issue](https://github.com/opengrep/opengrep/issues). To learn more, read the manifesto at [opengrep.dev](https://opengrep.dev/). We aim to make SAST widely accessible, advance the engine with new impactful features, and ensure it remains open and vendor-neutral for the long-term.
 
 Opengrep is open to any individual or organization to leverage and contribute, [join the open roadmap sessions](https://lu.ma/opengrep).
 
