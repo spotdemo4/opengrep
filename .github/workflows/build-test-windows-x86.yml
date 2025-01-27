@@ -43,7 +43,7 @@ jobs:
         with:
           submodules: true
 
-      - uses: ocaml/setup-ocaml@v3
+      - uses: ocaml/setup-ocaml@v3.2.4 # This is not super cool, but c'est la vie.
         with:
           ocaml-compiler: 5.2.1
           opam-local-packages: dont_install_local_packages.opam
