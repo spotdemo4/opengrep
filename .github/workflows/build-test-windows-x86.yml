@@ -212,5 +212,4 @@ jobs:
       - name: test package
         run: opengrep --version
       - name: e2e opengrep-core test
-        # TODO: This fails only on the Windows workflow, investigate.
-        run: echo '1 == 1' | opengrep -l python -e '$X == $X' -
+        run: echo '1 == 1' | opengrep -v -l python -e '$X == $X' -
