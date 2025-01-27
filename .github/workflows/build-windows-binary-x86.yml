@@ -65,6 +65,7 @@ jobs:
       - name: Build executable
         run: |
           cp cli/spec/opengrep.spec .
+          cp cli/spec/opengrep.ico .
           pyinstaller opengrep.spec
 
       - run: cp dist/opengrep opengrep.exe
