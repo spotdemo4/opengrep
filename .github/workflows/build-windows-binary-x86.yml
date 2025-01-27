@@ -1,0 +1,89 @@
+
+name: build-windows-binary-x86
+on:
+  workflow_call: null
+  workflow_dispatch: null
+
+jobs:
+
+  build-self-contained-windows-binary:
+    defaults:
+      run:
+        shell: bash
+    runs-on: windows-latest
+    steps:
+      - name: Create BASH_ENV configuration
+        shell: bash
+        run: >-
+          echo "set -o igncr" >> bash_env.sh;
+          echo "set -eo pipefail" >> bash_env.sh
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install setuptools with --upgrade
+        run: pip3 install --upgrade setuptools
+      - name: Install pyinstaller
+        run: pip3 install pyinstaller protobuf
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-x86-wheel
+
+      # - name: Authenticate GitHub CLI
+      #   run: |
+      #     gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+
+      # - name: Get Latest Successful Run ID
+      #   id: get-run-id
+      #   run: |
+      #     # Fetch the latest successful run ID for the workflow
+      #     RUN_ID=$(gh run list --repo opengrep/opengrep --workflow build-test-windows-x86 --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+      #     echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      # - name: Output Run ID
+      #   run: |
+      #     echo "The latest successful run ID is: ${{ steps.get-run-id.outputs.run_id }}"
+
+      # - name: Download Artifact
+      #   run: |
+      #     gh run download ${{ steps.get-run-id.outputs.run_id }} \
+      #       -R opengrep/opengrep -n windows-x86-wheel
+          
+      - run: tar -xvzf dist.tgz
+
+      - name: Install package
+        run: pip3 install dist/*.whl --target ./_opengrepinstall
+      - name: Rename file 
+        run: |
+          { echo '#!/usr/bin/env python3'; cat ./_opengrepinstall/semgrep/main.py; echo 'sys.exit(main())';} > tempfile
+          mv tempfile ./_opengrepinstall/semgrep/main.py
+          cp ./_opengrepinstall/semgrep/main.py ./_opengrepinstall/semgrep/__main__.py
+          cat ./_opengrepinstall/semgrep/main.py
+
+      - name: Build executable
+        run: |
+          cp cli/spec/opengrep.spec .
+          pyinstaller opengrep.spec
+
+      - run: cp dist/opengrep opengrep.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opengrep_windows_binary_x86
+          path: opengrep.exe 
+
+  test-windows-binary:
+    defaults:
+      run:
+        shell: bash
+    needs: build-self-contained-windows-binary
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: opengrep_windows_binary_x86
+      - run: chmod +x opengrep.exe 
+      - run: time ./opengrep.exe --version
+      - run: echo '1 == 1' | ./opengrep.exe -v -j 1 -l python -e '$X == $X' -
