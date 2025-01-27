@@ -26,6 +26,10 @@ on:
         required: true
         type: boolean
 
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: ${{ github.event_name == 'push' }}
+
 jobs:
 
   build-core:
@@ -39,7 +43,7 @@ jobs:
         with:
           submodules: true
 
-      - uses: ocaml/setup-ocaml@v3
+      - uses: ocaml/setup-ocaml@v3.2.4 # This is not super cool, but c'est la vie.
         with:
           ocaml-compiler: 5.2.1
           opam-local-packages: dont_install_local_packages.opam
@@ -47,7 +51,7 @@ jobs:
       - name: Add extra cygwin packages
         shell: pwsh
         # NOTE: The openssl install is a hack but it's needed... for now.
-        run: C:\hostedtoolcache\windows\cygwin\3.5.5\x86_64\setup-x86_64.exe --packages=mingw64-x86_64-curl,mingw64-x86_64-gmp,mingw64-x86_64-pcre,mingw64-x86_64-pcre2,mingw64-x86_64-openssl=1.0.2u+za-1 --quiet-mode --root=D:\cygwin --site=https://mirrors.kernel.org/sourceware/cygwin/ --symlink-type=sys
+        run: C:\hostedtoolcache\windows\cygwin\3.5.6\x86_64\setup-x86_64.exe --packages=mingw64-x86_64-curl,mingw64-x86_64-gmp,mingw64-x86_64-pcre,mingw64-x86_64-pcre2,mingw64-x86_64-openssl=1.0.2u+za-1 --quiet-mode --root=D:\cygwin --site=https://mirrors.kernel.org/sourceware/cygwin/ --symlink-type=sys
 
       # FIXME: This fails when the extra _opam cache is restored.
       # - name: Restore GHA cache for OPAM in _opam
@@ -208,5 +212,4 @@ jobs:
       - name: test package
         run: opengrep --version
       - name: e2e opengrep-core test
-        # TODO: This fails only on the Windows workflow, investigate.
-        run: echo '1 == 1' | opengrep -l python -e '$X == $X' -
+        run: echo '1 == 1' | opengrep -v -l python -e '$X == $X' -
