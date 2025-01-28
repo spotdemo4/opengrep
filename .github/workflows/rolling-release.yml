@@ -84,7 +84,6 @@ jobs:
             This is a rolling release from `main`.
             Note that the Windows version is not yet functional.
           files: |
-            artifacts/*.whl
             artifacts/opengrep_manylinux_binary_x86_64/opengrep_manylinux_x86
             artifacts/opengrep_osx_binary_arm64/opengrep_osx_arm64
             artifacts/opengrep_windows_binary_x86/opengrep_windows_x86.exe
