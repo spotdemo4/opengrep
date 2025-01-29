@@ -171,7 +171,6 @@ def open_and_ignore(fname: str) -> None:
     except BaseException:
         pass  # Expected outcome
 
-
 class StreamingSemgrepCore:
     """
     Handles running semgrep-core in a streaming fashion
@@ -235,11 +234,14 @@ class StreamingSemgrepCore:
         """
         stdout_lines: List[bytes] = []
         num_total_targets: int = self._total
+        num_bytes_to_swallow = 3 if IS_WINDOWS else 2
+        line_bytes_for_platform = b".\r\n" if IS_WINDOWS else b".\n"
 
-        # Start out reading two bytes at a time (".\n")
+        # Start out reading two or three bytes at a time (".\n", ".\r\n")
+        # depending on platform.
         get_input: Callable[
             [asyncio.StreamReader], Coroutine[Any, Any, bytes]
-        ] = lambda s: s.readexactly(2)
+        ] = lambda s: s.readexactly(num_bytes_to_swallow)
         reading_json = False
         # Read ".\n" repeatedly until we reach the JSON output.
         # TODO: read progress from one channel and JSON data from another.
@@ -247,7 +249,7 @@ class StreamingSemgrepCore:
         # we don't have to hack a parser together.
         has_started = False
         while True:
-            # blocking read if buffer doesnt contain any lines or EOF
+            # blocking read if buffer doesn't contain any lines or EOF
             try:
                 line_bytes = await get_input(stream)
             except asyncio.IncompleteReadError:
@@ -265,14 +267,14 @@ class StreamingSemgrepCore:
 
                     The most common reason this happens is because it used too much memory.
                     If your repo is large (~10k files or more), you have three options:
-                    1. Increase the amount of memory available to semgrep
-                    2. Reduce the number of jobs semgrep runs with via `-j <jobs>`. We
+                    1. Increase the amount of memory available to opengrep
+                    2. Reduce the number of jobs opengrep runs with via `-j <jobs>`. We
                         recommend using 1 job if you are running out of memory.
                     3. Scan the repo in parts (contact us for help)
 
-                    Otherwise, it is likely that semgrep is hitting the limit on only some
+                    Otherwise, it is likely that opengrep is hitting the limit on only some
                     files. In this case, you can try to set the limit on the amount of memory
-                    semgrep can use on each file with `--max-memory <memory>`. We recommend
+                    opengrep can use on each file with `--max-memory <memory>`. We recommend
                     lowering this to a limit 70% of the available memory. For CI runs with
                     interfile analysis, the default max-memory is 5000MB. Without, the default
                     is unlimited.
@@ -283,7 +285,7 @@ class StreamingSemgrepCore:
                     If you have tried all these steps and still are seeing this error, please
                     contact us.
 
-                       Error: semgrep-core exited with unexpected output
+                       Error: opengrep-core exited with unexpected output
 
                        {self._stderr}
                     """,
@@ -302,7 +304,7 @@ class StreamingSemgrepCore:
                 self._stdout = b"".join(stdout_lines).decode("utf-8", "replace")
                 break
 
-            if line_bytes == b".\n" and not reading_json:
+            if line_bytes == line_bytes_for_platform and not reading_json:
                 # We expect to see 3 dots for each target, when running interfile analysis:
                 # - once when finishing phase 4, name resolution, on that target
                 # - once when finishing phase 5, taint configs, on that target
@@ -636,23 +638,23 @@ class CoreRunner:
                     else resource.getrlimit(resource.RLIMIT_STACK)
                 )
                 tip = f"""
-                Semgrep exceeded system resources. This may be caused by
+                Opengrep exceeded system resources. This may be caused by
                     1. Stack overflow. Try increasing the stack limit to
                        `{soft_limit}` by running `ulimit -s {soft_limit}`
-                       before running Semgrep.
+                       before running Opengrep.
                     2. Out of memory. Try increasing the memory available to
                        your container (if running in CI). If that is not
-                       possible, run `semgrep` with `--max-memory
+                       possible, run `opengrep` with `--max-memory
                        $YOUR_MEMORY_LIMIT`.
                     3. Some extremely niche compiler/c-bindings bug. (We've
                        never seen this, but it's always possible.)
-                    You can also try reducing the number of processes Semgrep
-                    uses by running `semgrep` with `--jobs 1` (or some other
+                    You can also try reducing the number of processes Opengrep
+                    uses by running `opengrep` with `--jobs 1` (or some other
                     number of jobs). If you are running in CI, please try
                     running the same command locally.
                 """
             else:
-                tip = f"Semgrep encountered an internal error: {exn}."
+                tip = f"Opengrep encountered an internal error: {exn}."
             self._fail(
                 f"{tip}",
                 shell_command,
@@ -682,24 +684,24 @@ class CoreRunner:
         a response json, this method will print those out also
 
         """
-        expected_json_msg = "unexpected non-json output while invoking semgrep-core:"
+        expected_json_msg = "unexpected non-json output while invoking opengrep-core:"
         if semgrep_errors:
             errors_str = "\n".join([f"   {error}" for error in semgrep_errors])
-            expected_json_msg = f"unexpected errors in json output after invoking semgrep-core:\n{errors_str}"
+            expected_json_msg = f"unexpected errors in json output after invoking opengrep-core:\n{errors_str}"
 
         # Once we require python >= 3.8, switch to using shlex.join instead
         # for proper quoting of the command line.
         details = with_color(
             Colors.white,
-            f"semgrep-core exit code: {returncode}\n"
-            f"semgrep-core command: {shell_command}\n"
+            f"opengrep-core exit code: {returncode}\n"
+            f"opengrep-core command: {shell_command}\n"
             f"{expected_json_msg}\n"
-            "--- semgrep-core stdout ---\n"
+            "--- opengrep-core stdout ---\n"
             f"{semgrep_output}"
-            "--- end semgrep-core stdout ---\n"
-            "--- semgrep-core stderr ---\n"
+            "--- end opengrep-core stdout ---\n"
+            "--- opengrep-core stderr ---\n"
             f"{semgrep_error_output}"
-            "--- end semgrep-core stderr ---\n",
+            "--- end opengrep-core stderr ---\n",
         )
         raise SemgrepError(
             f"Error while matching: {reason}\n{details}" f"{PLEASE_FILE_ISSUE_TEXT}"

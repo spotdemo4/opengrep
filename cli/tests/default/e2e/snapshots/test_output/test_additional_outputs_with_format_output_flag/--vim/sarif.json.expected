@@ -41,7 +41,7 @@
       ],
       "tool": {
         "driver": {
-          "name": "Semgrep OSS",
+          "name": "Opengrep OSS",
           "rules": [
             {
               "defaultConfiguration": {
@@ -61,7 +61,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: rules.assert-eqeq-is-ok"
+                "text": "Opengrep Finding: rules.assert-eqeq-is-ok"
               }
             },
             {
@@ -83,7 +83,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: rules.eqeq-is-bad"
+                "text": "Opengrep Finding: rules.eqeq-is-bad"
               }
             },
             {
@@ -104,7 +104,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: rules.javascript-basic-eqeq-bad"
+                "text": "Opengrep Finding: rules.javascript-basic-eqeq-bad"
               }
             },
             {
@@ -125,7 +125,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: rules.python37-compatability-os-module"
+                "text": "Opengrep Finding: rules.python37-compatability-os-module"
               }
             }
           ],

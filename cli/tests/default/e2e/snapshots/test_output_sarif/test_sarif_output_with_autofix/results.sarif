@@ -36,7 +36,7 @@
                 }
               ],
               "description": {
-                "text": "Use `.get()` method to avoid a KeyNotFound error\n Autofix: Semgrep rule suggested fix"
+                "text": "Use `.get()` method to avoid a KeyNotFound error\n Autofix: Opengrep rule suggested fix"
               }
             }
           ],
@@ -92,7 +92,7 @@
                 }
               ],
               "description": {
-                "text": "Use `.get()` method to avoid a KeyNotFound error\n Autofix: Semgrep rule suggested fix"
+                "text": "Use `.get()` method to avoid a KeyNotFound error\n Autofix: Opengrep rule suggested fix"
               }
             }
           ],
@@ -124,7 +124,7 @@
       ],
       "tool": {
         "driver": {
-          "name": "Semgrep OSS",
+          "name": "Opengrep OSS",
           "rules": [
             {
               "defaultConfiguration": {
@@ -144,7 +144,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: rules.autofix.use-dict-get"
+                "text": "Opengrep Finding: rules.autofix.use-dict-get"
               }
             }
           ],

@@ -75,7 +75,7 @@
       ],
       "tool": {
         "driver": {
-          "name": "Semgrep OSS",
+          "name": "Opengrep OSS",
           "rules": [
             {
               "defaultConfiguration": {
@@ -95,7 +95,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: rules.regex.detected-aws-account-id"
+                "text": "Opengrep Finding: rules.regex.detected-aws-account-id"
               }
             }
           ],
