@@ -12,8 +12,15 @@ jobs:
       image: quay.io/pypa/manylinux_2_28_x86_64
     runs-on: ubuntu-latest
     steps:
-      # - run: find / -name "libpython*"; exit 1
-      - run: yum install -y zip
+      - run: |
+          yum update -y
+          yum install -y zip python3-pip python3.9
+          alternatives --remove-all python3
+          alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
+          alternatives --auto python3
+      
+      # - run: find / -name "libpython*" #; exit 1
+      # - run: yum install -y zip
           
       - uses: actions/checkout@v4
         with:
@@ -58,15 +65,17 @@ jobs:
 
       - name: install pyinstaller
         run: |
-          /opt/python/cp39-cp39/bin/pip install pyinstaller
+          python3 -m pip install pyinstaller
+          # /opt/python/cp39-cp39/bin/pip install pyinstaller
       - name: install package
         run: |
-          /opt/python/cp39-cp39/bin/pip install dist/*.whl --target ./_opengrepinstall
+          python3 -m pip install dist/*.whl --target ./_opengrepinstall
+          # /opt/python/cp39-cp39/bin/pip install dist/*.whl --target ./_opengrepinstall
 
       - name: Create executable
         run: |
-          export PATH=/opt/python/cp39-cp39/bin:$PATH
-          export LD_LIBRARY_PATH=/__t/Python/3.9.21/x64/lib/:$LD_LIBRARY_PATH
+          # export PATH=/opt/python/cp39-cp39/bin:$PATH
+          # export LD_LIBRARY_PATH=/__t/Python/3.9.21/x64/lib/:$LD_LIBRARY_PATH
 
           { echo '#!/usr/bin/env python3'; cat ./_opengrepinstall/semgrep/main.py; echo 'sys.exit(main())';} > tempfile
 
@@ -78,9 +87,11 @@ jobs:
 
           # Package Opengrep using PyInstaller 
 
-          pip install --upgrade setuptools
-          pip install protobuf
-
+          python3 -m pip install --upgrade setuptools
+          python3 -m pip install protobuf
+          # pip install --upgrade setuptools
+          # pip install protobuf
+          
           cp cli/spec/opengrep.spec .
 
           pyinstaller opengrep.spec
@@ -95,13 +106,15 @@ jobs:
 
   test-manylinux-binary:
     needs: build-self-contained-manylinux-binary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04 # ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: opengrep_manylinux_binary_x86_64
       - run: unzip opengrep.zip
       - run: chmod +x opengrep
+      - run: |
+          ldd --version
       - run: |
           ./opengrep --version
       - run: |
