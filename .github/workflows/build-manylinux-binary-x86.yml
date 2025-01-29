@@ -12,6 +12,7 @@ jobs:
       image: quay.io/pypa/manylinux_2_28_x86_64
     runs-on: ubuntu-latest
     steps:
+      # - run: find / -name "libpython*"; exit 1
       - run: yum install -y zip
           
       - uses: actions/checkout@v4
@@ -52,22 +53,20 @@ jobs:
       #   run: |
       #     gh run download ${{ steps.get-run-id.outputs.run_id }} \
       #       -R opengrep/opengrep -n manylinux-x86-wheel
-          
+
       - run: unzip dist.zip
 
       - name: install pyinstaller
         run: |
-          /opt/python/cp312-cp312/bin/pip install pyinstaller
-          # python3 -m pip install pyinstaller
+          /opt/python/cp39-cp39/bin/pip install pyinstaller
       - name: install package
         run: |
-          /opt/python/cp312-cp312/bin/pip install dist/*.whl --target ./_opengrepinstall
-          # python3 -m pip install dist/*.whl --target ./_opengrepinstall
+          /opt/python/cp39-cp39/bin/pip install dist/*.whl --target ./_opengrepinstall
 
       - name: Create executable
         run: |
-          export PATH=/opt/python/cp312-cp312/bin:$PATH
-          export LD_LIBRARY_PATH=/__t/Python/3.12.8/x64/lib/:$LD_LIBRARY_PATH
+          export PATH=/opt/python/cp39-cp39/bin:$PATH
+          export LD_LIBRARY_PATH=/__t/Python/3.9.21/x64/lib/:$LD_LIBRARY_PATH
 
           { echo '#!/usr/bin/env python3'; cat ./_opengrepinstall/semgrep/main.py; echo 'sys.exit(main())';} > tempfile
 
@@ -85,7 +84,7 @@ jobs:
           cp cli/spec/opengrep.spec .
 
           pyinstaller opengrep.spec
-          
+
       - name: Zip artifact
         run: zip -j opengrep.zip dist/opengrep
       
