@@ -70,7 +70,7 @@
       ],
       "tool": {
         "driver": {
-          "name": "Semgrep OSS",
+          "name": "Opengrep OSS",
           "rules": [
             {
               "defaultConfiguration": {
@@ -94,7 +94,7 @@
                 ]
               },
               "shortDescription": {
-                "text": "Semgrep Finding: rules.rule-with-cwe-tag"
+                "text": "Opengrep Finding: rules.rule-with-cwe-tag"
               }
             }
           ],

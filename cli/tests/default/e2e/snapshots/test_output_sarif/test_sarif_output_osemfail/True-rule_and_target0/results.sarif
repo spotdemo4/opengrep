@@ -179,7 +179,7 @@
       ],
       "tool": {
         "driver": {
-          "name": "Semgrep OSS",
+          "name": "Opengrep OSS",
           "rules": [
             {
               "defaultConfiguration": {
@@ -199,7 +199,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: rules.taint-trace"
+                "text": "Opengrep Finding: rules.taint-trace"
               }
             }
           ],

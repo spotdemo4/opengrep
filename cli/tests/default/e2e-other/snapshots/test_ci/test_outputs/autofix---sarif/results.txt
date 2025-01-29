@@ -259,7 +259,7 @@
                 }
               ],
               "description": {
-                "text": "useless comparison to 5\n Autofix: Semgrep rule suggested fix"
+                "text": "useless comparison to 5\n Autofix: Opengrep rule suggested fix"
               }
             }
           ],
@@ -315,7 +315,7 @@
                 }
               ],
               "description": {
-                "text": "useless comparison to 5\n Autofix: Semgrep rule suggested fix"
+                "text": "useless comparison to 5\n Autofix: Opengrep rule suggested fix"
               }
             }
           ],
@@ -475,7 +475,7 @@
       ],
       "tool": {
         "driver": {
-          "name": "Semgrep OSS",
+          "name": "Opengrep OSS",
           "rules": [
             {
               "defaultConfiguration": {
@@ -496,7 +496,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: eqeq-bad"
+                "text": "Opengrep Finding: eqeq-bad"
               }
             },
             {
@@ -518,7 +518,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: eqeq-five"
+                "text": "Opengrep Finding: eqeq-five"
               }
             },
             {
@@ -540,7 +540,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: eqeq-four"
+                "text": "Opengrep Finding: eqeq-four"
               }
             },
             {
@@ -562,7 +562,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: supply-chain1"
+                "text": "Opengrep Finding: supply-chain1"
               }
             },
             {
@@ -584,7 +584,7 @@
                 "tags": []
               },
               "shortDescription": {
-                "text": "Semgrep Finding: taint-test"
+                "text": "Opengrep Finding: taint-test"
               }
             }
           ],
