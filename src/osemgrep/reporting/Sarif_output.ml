@@ -157,7 +157,7 @@ let rule hide_nudge (rule_id, rule) : Sarif.reporting_descriptor =
   let text_suffix = if hide_nudge then "" else nudge_plaintext in
   let markdown_interstitial = if hide_nudge then "" else nudge_md in
   let references =
-    Option.to_list (Option.map (fun s -> spf "[Opengrep Rule](%s)" s) source)
+    Option.to_list (Option.map (fun s -> spf "[Semgrep Rule](%s)" s) source)
   in
   let other_references =
     match JSON.member "references" metadata with
