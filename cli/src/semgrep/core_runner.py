@@ -234,11 +234,14 @@ class StreamingSemgrepCore:
         """
         stdout_lines: List[bytes] = []
         num_total_targets: int = self._total
+        num_bytes_to_swallow = 3 if IS_WINDOWS else 2
+        line_bytes_for_platform = b".\r\n" if IS_WINDOWS else b".\n"
 
-        # Start out reading two bytes at a time (".\n")
+        # Start out reading two or three bytes at a time (".\n", ".\r\n")
+        # depending on platform.
         get_input: Callable[
             [asyncio.StreamReader], Coroutine[Any, Any, bytes]
-        ] = lambda s: s.readexactly(2)
+        ] = lambda s: s.readexactly(num_bytes_to_swallow)
         reading_json = False
         # Read ".\n" repeatedly until we reach the JSON output.
         # TODO: read progress from one channel and JSON data from another.
@@ -246,7 +249,7 @@ class StreamingSemgrepCore:
         # we don't have to hack a parser together.
         has_started = False
         while True:
-            # blocking read if buffer doesnt contain any lines or EOF
+            # blocking read if buffer doesn't contain any lines or EOF
             try:
                 line_bytes = await get_input(stream)
             except asyncio.IncompleteReadError:
@@ -301,7 +304,7 @@ class StreamingSemgrepCore:
                 self._stdout = b"".join(stdout_lines).decode("utf-8", "replace")
                 break
 
-            if line_bytes == b".\n" and not reading_json:
+            if line_bytes == line_bytes_for_platform and not reading_json:
                 # We expect to see 3 dots for each target, when running interfile analysis:
                 # - once when finishing phase 4, name resolution, on that target
                 # - once when finishing phase 5, taint configs, on that target
