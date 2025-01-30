@@ -67,7 +67,7 @@ jobs:
         run: |
           python3 -m pip install pyinstaller
           # /opt/python/cp39-cp39/bin/pip install pyinstaller
-      - name: install package
+      - name: Install package
         run: |
           python3 -m pip install dist/*.whl --target ./_opengrepinstall
           # /opt/python/cp39-cp39/bin/pip install dist/*.whl --target ./_opengrepinstall
