@@ -8,7 +8,7 @@ on:
     branches:
       - main
       - windows/**
-      # - dm/disable-tracing-pt-i # branch where this change was introduced
+      # - dm/** # branch where this change was introduced
     paths-ignore:
     - '**.md'
   workflow_call:
@@ -30,61 +30,233 @@ on:
 #   group: ${{ github.workflow }}-${{ github.ref }}
 #   cancel-in-progress: ${{ github.event_name == 'push' }}
 
+env:
+  CYGWIN: winsymlinks:native
+  OPAMROOT: D:/.opam
+  DUNE_CACHE_ROOT: D:/dune
+  OPAMCONFIRMLEVEL: unsafe-yes
+  OCAML_VERSION: "5.2.1"
+  OPAM_VERSION: "2.3.0"
+
 jobs:
 
   build-core:
-    defaults:
-      run:
-        shell: bash
+    # defaults:
+    #   run:
+    #     shell: bash
 
     runs-on: windows-latest
+
     steps:
+
+      # NOTE: This is what `setup-ocaml` does, may not be needed here.
+      - name: Query and set SymlinkEvaluation
+        shell: pwsh
+        run: |
+          # Query the current SymlinkEvaluation settings
+          fsutil behavior query SymlinkEvaluation
+
+          # Set SymlinkEvaluation to enable R2L and R2R
+          fsutil behavior set symlinkEvaluation R2L:1 R2R:1
+
+          # Query the updated SymlinkEvaluation settings
+          fsutil behavior query SymlinkEvaluation
+
+      - name: Set-up Git
+        run: >-
+          git config --global core.autocrlf input;
+          git config --system core.longpaths true;
+          git config --global fetch.parallel 50
+      
       - uses: actions/checkout@v4
         with:
           submodules: true
 
-      - uses: ocaml/setup-ocaml@v3
+      - name: Set-up cygwin
+        # if: steps.cache.outputs.cache-hit != 'true'
+        uses: cygwin/cygwin-install-action@master
         with:
-          ocaml-compiler: 5.2.1
-          opam-local-packages: dont_install_local_packages.opam
+          install-dir: D:/cygwin
+          packages: curl,diffutils,m4,make,mingw64-i686-gcc-core,mingw64-i686-gcc-g++,mingw64-i686-openssl=1.0.2u+za-1,mingw64-x86_64-gcc-core,mingw64-x86_64-gcc-g++,mingw64-x86_64-openssl=1.0.2u+za-1,patch,perl,rsync,unzip,mingw64-x86_64-libssh2,mingw64-x86_64-nghttp2,mingw64-x86_64-pcre,mingw64-x86_64-pcre2,mingw64-x86_64-win-iconv,mingw64-x86_64-zstd,mingw64-x86_64-gettext,mingw64-x86_64-libidn2,mingw64-x86_64-curl,gnupg2,mingw64-x86_64-gmp
 
-      - name: Add extra cygwin packages
-        shell: pwsh
-        # NOTE: The openssl install is a hack but it's needed... for now.
-        run: C:\hostedtoolcache\windows\cygwin\3.5.7\x86_64\setup-x86_64.exe --packages=mingw64-x86_64-curl,mingw64-x86_64-gmp,mingw64-x86_64-pcre,mingw64-x86_64-pcre2,mingw64-x86_64-openssl=1.0.2u+za-1 --quiet-mode --root=D:\cygwin --site=https://mirrors.kernel.org/sourceware/cygwin/ --symlink-type=sys
+      - name: Create BASH_ENV configuration
+        shell: bash
+        run: >-
+          echo "set -o igncr" >> bash_env.sh;
+          echo "set -eo pipefail" >> bash_env.sh
 
-      # FIXME: This fails when the extra _opam cache is restored.
-      # - name: Restore GHA cache for OPAM in _opam
-      #   env:
-      #     SEGMENT_DOWNLOAD_TIMEOUT_MINS: 2
-      #   id: cache-opam-win32-amd64
-      #   uses: actions/cache@v4
-      #   with:
-      #     key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('semgrep.opam') }}
-      #     path: _opam
-
-      - name: Debug stuff
+      - name: Debug
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+        shell: bash
         run: |
-          cygcheck --version
-          ls
-          # to see the bin symlink for example
-          ls -l
-          set
-          which ar
-          ar --version
-          which opam
-          # this should be 2.2.* or later
-          opam --version
-          opam repo
-          # we should be on 5.2.1
-          opam switch
-          opam var
-          echo $PATH | tr ':' '\n'
+          echo "CYGWIN = $CYGWIN"
+
+          ls /usr/x86_64-w64-mingw32/sys-root/mingw/bin | grep dll
           
-      - env:
-          CC: x86_64-w64-mingw32-gcc
-        name: Build tree-sitter
+          ls -la
+
+          echo " "
+          uname -a
+          pwd
+          cygpath -w $(pwd)
+          cygpath -w /usr/x86_64-w64-mingw32/sys-root/mingw/bin/
+          which ar
+          ls /cygdrive/c/mingw64/bin
+          echo $PATH | tr ':' '\n'
+          ls -l /usr/bin
+          ls -l /usr/x86_64-w64-mingw32/bin
+          which x86_64-w64-mingw32-gcc
+
+          echo " "
+          echo "Cygwin packages"
+          cygcheck -c
+
+      - name: Restore Dune cache
+        id: cache-dune-win32-64
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.DUNE_CACHE_ROOT }}
+          key: dune-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ github.run_id }}
+          restore-keys: dune-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-
+      
+      - name: Restore _opam
+        id: cache-opam-win32-64
+        uses: actions/cache/restore@v4
+        with:
+          path: _opam
+          key: opam-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('*.opam') }}
+
+      - name: Restore OPAM_ROOT
+        id: cache-opamroot-win32-64
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.OPAMROOT }} # C:\Users\runneradmin\AppData\Local\opam
+          key: opamroot-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('*.opam') }}
+          
+      - name: Install OPAM
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+          OPAMYES: 1
+          # OPAMCONFIRMLEVEL: unsafe-yes
+          OPAMSOLVERTIMEOUT: 600
+          OPAMCOLOR: always
+        shell: bash
         run: |
+          # Define variables
+          OPAM_VERSION=${{ env.OPAM_VERSION }}
+          OCAML_VERSION=${{ env.OCAML_VERSION }}
+          OPAM_BIN="opam-${OPAM_VERSION}-x86_64-windows.exe"
+          OPAM_SIG="${OPAM_BIN}.sig"
+          DOWNLOAD_URL="https://github.com/ocaml/opam/releases/download/${OPAM_VERSION}"
+          GPG_KEY_URL="https://opam.ocaml.org/opam-dev-pubkey.pgp"
+          DEST_DIR="/usr/bin"
+          OPAM_DEST="${DEST_DIR}/opam.exe"
+
+          # Download the binary, signature, and GPG public key
+          echo "Downloading opam binary, signature, and GPG public key..."
+          curl -fsSL "${DOWNLOAD_URL}/${OPAM_BIN}" -o "${OPAM_BIN}"
+          curl -fsSL "${DOWNLOAD_URL}/${OPAM_SIG}" -o "${OPAM_SIG}"
+          curl -fsSL "${GPG_KEY_URL}" -o opam-dev-pubkey.pgp
+
+          # Import the GPG public key
+          echo "Importing OCaml's GPG public key..."
+          gpg --import opam-dev-pubkey.pgp
+
+          # Verify the signature
+          echo "Verifying the signature..."
+          gpg --verify "${OPAM_SIG}" "${OPAM_BIN}"
+          if [ $? -ne 0 ]; then
+              echo "Signature verification failed. Aborting."
+              exit 1
+          fi
+
+          # Move and make the binary executable
+          echo "Moving the binary to ${DEST_DIR}..."
+          mv "${OPAM_BIN}" "${OPAM_DEST}"
+          chmod +x "${OPAM_DEST}"
+
+          # Clean up signature and public key files
+          rm -f "${OPAM_SIG}" opam-dev-pubkey.pgp
+
+          echo "Opam ${OPAM_VERSION} installed successfully at ${OPAM_DEST}"
+
+          # Check opam version
+          opam --version
+
+      - name: OPAM Init
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+          OPAMYES: 1
+          # OPAMCONFIRMLEVEL: unsafe-yes
+          OPAMSOLVERTIMEOUT: 600
+          OPAMCOLOR: always
+          # OPAMROOT: C:/Users/runneradmin/AppData/Local/opam
+        shell: bash
+        if: steps.cache-opamroot-win32-64.outputs.cache-hit != 'true'
+        # if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
+        run: |
+          opam init \
+          --no-setup \
+          --bare \
+          --disable-shell-hook \
+          --disable-sandboxing \
+          --cygwin-local-install \
+          --cygwin-location=D:/cygwin
+
+          opam var
+
+      - name: Create Switch
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+          OPAMYES: 1
+          # OPAMCONFIRMLEVEL: unsafe-yes
+          OPAMSOLVERTIMEOUT: 600
+          OPAMCOLOR: always
+          # OCAML_VERSION: "5.2.1"
+        shell: bash
+        if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
+        run: |
+          export OCAML_VERSION=${{ env.OCAML_VERSION  }}
+          echo "Creating local switch with OCaml $OCAML_VERSION..."
+          opam switch --no-install --packages="ocaml-base-compiler.$OCAML_VERSION" create .
+
+          eval $(opam env)
+
+          # Check OCaml version
+          opam exec -- ocaml -version
+
+          # XXX: Is that needed here?
+          # opam update
+
+      - name: Prepare Switch
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+          # OPAMCONFIRMLEVEL: unsafe-yes
+          OPAMCOLOR: always
+        shell: bash
+        if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
+        run: |
+          eval $(opam env)
+
+          opam env
+
+          # opam pin --no-action add semgrep.dev .
+          echo "Pinning local packages..."
+          for f in $(ls *.opam);
+            do opam pin --no-action add "$(basename "$f" .opam).dev" .; done;
+
+          echo "Installing dune..."
+          opam install dune
+          
+      - name: Build tree-sitter
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+          CC: x86_64-w64-mingw32-gcc
+        shell: bash
+        run: |
+          eval $(opam env)
+
           cd libs/ocaml-tree-sitter-core
           ./configure
           ./scripts/download-tree-sitter --lazy
@@ -93,29 +265,54 @@ jobs:
           make PREFIX="$PREFIX_TS" CFLAGS="-O3 -Wall -Wextra"
           make PREFIX="$PREFIX_TS" install
 
-      - env:
+      - name: Install OPAM dependencies
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
           CC: x86_64-w64-mingw32-gcc # Needed for ocurl
-          OPAMCONFIRMLEVEL: unsafe-yes
-        name: Install OPAM deps
-        # if: steps.cache-opam-win32-amd64.outputs.cache-hit != 'true'
+          # OPAMCONFIRMLEVEL: unsafe-yes
+        shell: bash
+        if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
         run: |
+          eval $(opam env)
+
           export CYGWIN_ROOT_BIN=/cygdrive/d/cygwin/bin
           export CYGWIN_MINGW_BIN=/usr/x86_64-w64-mingw32/sys-root/mingw/bin
           export PATH="${CYGWIN_ROOT_BIN}:${PATH}:${CYGWIN_MINGW_BIN}"
           make install-deps-WINDOWS-for-semgrep-core
           make install-opam-deps
 
-      # NOTE: This makes testing stuff faster, because the cache is saved even on
-      # # failed runs of the workflow. Not sure how this interacts with setup-ocaml's
-      # # caching though.
-      # - name: Save GHA cache for OPAM in _opam
-      #   # if: steps.cache-opam-win32-amd64.outputs.cache-hit != 'true'
-      #   uses: actions/cache/save@v4
-      #   with:
-      #     path: _opam
-      #     key: ${{ steps.cache-opam-win32-amd64.outputs.cache-primary-key }}
+      - name: Prepare _opam for saving
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+        shell: bash
+        run: |
+          opam clean --all-switches \
+            --download-cache \
+            --logs \
+            --repo-cache \
+            --untracked \
+            --unused-repositories
+
+      - name: Save _opam
+        if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
+        id: cache-opam-win32-64-save
+        uses: actions/cache/save@v4
+        with:
+          path: _opam
+          key: ${{ steps.cache-opam-win32-64.outputs.cache-primary-key }}
+
+      - name: Save OPAM_ROOT
+        if: steps.cache-opamroot-win32-64.outputs.cache-hit != 'true'
+        id: cache-opamroot-win32-64-save
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.OPAMROOT }} # C:\Users\runneradmin\AppData\Local\opam
+          key: ${{ steps.cache-opamroot-win32-64.outputs.cache-primary-key }}
           
       - name: Build opengrep-core
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+        shell: bash
         run: |
           export TREESITTER_INCDIR=$(pwd)/libs/ocaml-tree-sitter-core/tree-sitter/include
           export TREESITTER_LIBDIR=$(pwd)/libs/ocaml-tree-sitter-core/tree-sitter/lib
@@ -135,17 +332,34 @@ jobs:
           # make this fail to compile.
           PATH="${CYGWIN_ROOT_BIN}:$(opam exec -- printenv PATH)" dune build _build/install/default/bin/opengrep-core.exe
 
-      - name: Test opengrep-core
+      - name: Trim Dune cache
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+        shell: bash
         run: |
+          opam exec -- dune cache trim --size=1000MB
+
+      - name: Test opengrep-core
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+        shell: bash
+        run: |
+          export CYGWIN_MINGW_BIN=/usr/x86_64-w64-mingw32/sys-root/mingw/bin
+          export PATH="${CYGWIN_MINGW_BIN}:${PATH}"
+          
+          ldd _build/install/default/bin/opengrep-core.exe
+
+          _build/install/default/bin/opengrep-core.exe -version
           _build/install/default/bin/opengrep-core.exe -l python -rules tests/windows/rules.yml -json tests/windows/test.py
 
       - name: Package opengrep-core
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+        shell: bash
         run: |
           mkdir artifacts
           cp _build/install/default/bin/opengrep-core.exe artifacts/
 
-          # TODO (sg): somehow upgrade to the latest flexdll, which should allow us
-          # to statically link these libraries
           cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libstdc++-6.dll artifacts/
           cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libgcc_s_seh-1.dll artifacts/
           cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libwinpthread-1.dll artifacts/
