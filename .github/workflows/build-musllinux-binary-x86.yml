@@ -1,49 +1,34 @@
-name: build-manylinux-binary-x86
+name: build-musllinux-binary-x86
 on:
   workflow_call: null
   workflow_dispatch: null
 
 jobs:
 
-  build-self-contained-manylinux-binary:
-    # NOTE: The image below has GLIBC 2.28, but there are others for even older version.
-    # See: https://github.com/pypa/manylinux
-    container:
-      image: quay.io/pypa/manylinux_2_28_x86_64
+  build-self-contained-musllinux-binary:
+    container: quay.io/pypa/musllinux_1_2_x86_64
     runs-on: ubuntu-latest
     steps:
       - run: |
-          yum update -y
-          yum install -y zip python3-pip python3.9
-          alternatives --remove-all python3
-          alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
-          alternatives --auto python3
-      
-      # - run: find / -name "libpython*" #; exit 1
-      # - run: yum install -y zip
+          apk update
+          apk add --no-cache zip python3 py3-pip py3-virtualenv python3-dev gcc musl-dev
           
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
+      # NOTE: In fact both linux wheels should work.
       - uses: actions/download-artifact@v4
         with:
-          name: manylinux-x86-wheel
+          name: musllinux-x86-wheel
 
       # - name: Install GitHub CLI
       #   run: |
-      #     # Install yum-utils if not already installed
-      #     type -p yum-config-manager >/dev/null || yum install -y yum-utils
-
-      #     # Add GitHub CLI repository
-      #     yum-config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-
-      #     # Install GitHub CLI
-      #     yum install -y gh
+      #     apk add --no-cache github-cli jq
 
       # - name: Authenticate GitHub CLI
       #   run: |
-      #     gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+      #     echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       # - name: Get Latest Successful Run ID
       #   id: get-run-id
@@ -59,23 +44,26 @@ jobs:
       # - name: Download Artifact
       #   run: |
       #     gh run download ${{ steps.get-run-id.outputs.run_id }} \
-      #       -R opengrep/opengrep -n manylinux-x86-wheel
+      #       -R opengrep/opengrep -n musllinux-x86-wheel
 
       - run: unzip dist.zip
 
-      - name: install pyinstaller
+      - name: Create venv
         run: |
+          python3 -m venv venv
+
+      - name: Install pyinstaller
+        run: |
+          . venv/bin/activate
           python3 -m pip install pyinstaller
-          # /opt/python/cp39-cp39/bin/pip install pyinstaller
       - name: Install package
         run: |
+          . venv/bin/activate
           python3 -m pip install dist/*.whl --target ./_opengrepinstall
-          # /opt/python/cp39-cp39/bin/pip install dist/*.whl --target ./_opengrepinstall
 
       - name: Create executable
         run: |
-          # export PATH=/opt/python/cp39-cp39/bin:$PATH
-          # export LD_LIBRARY_PATH=/__t/Python/3.9.21/x64/lib/:$LD_LIBRARY_PATH
+          . venv/bin/activate
 
           { echo '#!/usr/bin/env python3'; cat ./_opengrepinstall/semgrep/main.py; echo 'sys.exit(main())';} > tempfile
 
@@ -101,20 +89,19 @@ jobs:
       
       - uses: actions/upload-artifact@v4
         with:
-          name: opengrep_manylinux_binary_x86_64
+          name: opengrep_musllinux_binary_x86_64
           path: opengrep.zip
 
-  test-manylinux-binary:
-    needs: build-self-contained-manylinux-binary
-    runs-on: ubuntu-20.04 # ubuntu-latest
+  test-musllinux-binary:
+    needs: build-self-contained-musllinux-binary
+    container: quay.io/pypa/musllinux_1_2_x86_64
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: opengrep_manylinux_binary_x86_64
+          name: opengrep_musllinux_binary_x86_64
       - run: unzip opengrep.zip
       - run: chmod +x opengrep
-      - run: |
-          ldd --version
       - run: |
           ./opengrep --version
       - run: |
