@@ -8,7 +8,7 @@ on:
     branches:
       - main
       - windows/**
-      - dm/** # branch where this change was introduced
+      # - dm/** # branch where this change was introduced
     paths-ignore:
     - '**.md'
   workflow_call:
@@ -32,7 +32,11 @@ on:
 
 env:
   CYGWIN: winsymlinks:native
-  OCAML_VERSION: "5.2.1" # TODO: Move more variables here.
+  OPAMROOT: D:/.opam
+  DUNE_CACHE_ROOT: D:/dune
+  OPAMCONFIRMLEVEL: unsafe-yes
+  OCAML_VERSION: "5.2.1"
+  OPAM_VERSION: "2.3.0"
 
 jobs:
 
@@ -72,6 +76,7 @@ jobs:
         # if: steps.cache.outputs.cache-hit != 'true'
         uses: cygwin/cygwin-install-action@master
         with:
+          install-dir: D:/cygwin
           packages: curl,diffutils,m4,make,mingw64-i686-gcc-core,mingw64-i686-gcc-g++,mingw64-i686-openssl=1.0.2u+za-1,mingw64-x86_64-gcc-core,mingw64-x86_64-gcc-g++,mingw64-x86_64-openssl=1.0.2u+za-1,patch,perl,rsync,unzip,mingw64-x86_64-libssh2,mingw64-x86_64-nghttp2,mingw64-x86_64-pcre,mingw64-x86_64-pcre2,mingw64-x86_64-win-iconv,mingw64-x86_64-zstd,mingw64-x86_64-gettext,mingw64-x86_64-libidn2,mingw64-x86_64-curl,gnupg2,mingw64-x86_64-gmp
 
       - name: Create BASH_ENV configuration
@@ -107,13 +112,14 @@ jobs:
           echo "Cygwin packages"
           cygcheck -c
 
-      # TODO: Cache _build and other Dune caches;
-      # see https://dune.readthedocs.io/en/stable/caching.html
-      # Note that this must be trimmed, for example on every run.
-      # See the `setup-ocaml` action: packages/setup-ocaml/src/constants.ts,
-      # in `export const DUNE_CACHE_ROOT` which is the env var we must export.
-
-      # Cache _opam
+      - name: Restore Dune cache
+        id: cache-dune-win32-64
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.DUNE_CACHE_ROOT }}
+          key: dune-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ github.run_id }}
+          restore-keys: dune-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-
+      
       - name: Restore _opam
         id: cache-opam-win32-64
         uses: actions/cache/restore@v4
@@ -125,21 +131,21 @@ jobs:
         id: cache-opamroot-win32-64
         uses: actions/cache/restore@v4
         with:
-          path: C:\Users\runneradmin\AppData\Local\opam
+          path: ${{ env.OPAMROOT }} # C:\Users\runneradmin\AppData\Local\opam
           key: opamroot-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('*.opam') }}
           
       - name: Install OPAM
         env:
           BASH_ENV: ${{ github.workspace }}/bash_env.sh
           OPAMYES: 1
-          OPAMCONFIRMLEVEL: unsafe-yes
+          # OPAMCONFIRMLEVEL: unsafe-yes
           OPAMSOLVERTIMEOUT: 600
           OPAMCOLOR: always
         shell: bash
         run: |
           # Define variables
-          OPAM_VERSION="2.3.0"
-          OCAML_VERSION="5.2.1"
+          OPAM_VERSION=${{ env.OPAM_VERSION }}
+          OCAML_VERSION=${{ env.OCAML_VERSION }}
           OPAM_BIN="opam-${OPAM_VERSION}-x86_64-windows.exe"
           OPAM_SIG="${OPAM_BIN}.sig"
           DOWNLOAD_URL="https://github.com/ocaml/opam/releases/download/${OPAM_VERSION}"
@@ -182,7 +188,7 @@ jobs:
         env:
           BASH_ENV: ${{ github.workspace }}/bash_env.sh
           OPAMYES: 1
-          OPAMCONFIRMLEVEL: unsafe-yes
+          # OPAMCONFIRMLEVEL: unsafe-yes
           OPAMSOLVERTIMEOUT: 600
           OPAMCOLOR: always
           # OPAMROOT: C:/Users/runneradmin/AppData/Local/opam
@@ -196,7 +202,7 @@ jobs:
           --disable-shell-hook \
           --disable-sandboxing \
           --cygwin-local-install \
-          --cygwin-location=C:/cygwin
+          --cygwin-location=D:/cygwin
 
           opam var
 
@@ -204,13 +210,14 @@ jobs:
         env:
           BASH_ENV: ${{ github.workspace }}/bash_env.sh
           OPAMYES: 1
-          OPAMCONFIRMLEVEL: unsafe-yes
+          # OPAMCONFIRMLEVEL: unsafe-yes
           OPAMSOLVERTIMEOUT: 600
           OPAMCOLOR: always
-          OCAML_VERSION: "5.2.1"
+          # OCAML_VERSION: "5.2.1"
         shell: bash
         if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
         run: |
+          export OCAML_VERSION=${{ env.OCAML_VERSION  }}
           echo "Creating local switch with OCaml $OCAML_VERSION..."
           opam switch --no-install --packages="ocaml-base-compiler.$OCAML_VERSION" create .
 
@@ -225,7 +232,7 @@ jobs:
       - name: Prepare Switch
         env:
           BASH_ENV: ${{ github.workspace }}/bash_env.sh
-          OPAMCONFIRMLEVEL: unsafe-yes
+          # OPAMCONFIRMLEVEL: unsafe-yes
           OPAMCOLOR: always
         shell: bash
         if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
@@ -262,13 +269,13 @@ jobs:
         env:
           BASH_ENV: ${{ github.workspace }}/bash_env.sh
           CC: x86_64-w64-mingw32-gcc # Needed for ocurl
-          OPAMCONFIRMLEVEL: unsafe-yes
+          # OPAMCONFIRMLEVEL: unsafe-yes
         shell: bash
         if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
         run: |
           eval $(opam env)
 
-          export CYGWIN_ROOT_BIN=/cygdrive/c/cygwin/bin
+          export CYGWIN_ROOT_BIN=/cygdrive/d/cygwin/bin
           export CYGWIN_MINGW_BIN=/usr/x86_64-w64-mingw32/sys-root/mingw/bin
           export PATH="${CYGWIN_ROOT_BIN}:${PATH}:${CYGWIN_MINGW_BIN}"
           make install-deps-WINDOWS-for-semgrep-core
@@ -285,8 +292,7 @@ jobs:
             --repo-cache \
             --untracked \
             --unused-repositories
-          
-      # NOTE: No point to try to save on hit, it exists and it will fail.
+
       - name: Save _opam
         if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
         id: cache-opam-win32-64-save
@@ -296,11 +302,11 @@ jobs:
           key: ${{ steps.cache-opam-win32-64.outputs.cache-primary-key }}
 
       - name: Save OPAM_ROOT
-        if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
+        if: steps.cache-opamroot-win32-64.outputs.cache-hit != 'true'
         id: cache-opamroot-win32-64-save
         uses: actions/cache/save@v4
         with:
-          path: C:\Users\runneradmin\AppData\Local\opam
+          path: ${{ env.OPAMROOT }} # C:\Users\runneradmin\AppData\Local\opam
           key: ${{ steps.cache-opamroot-win32-64.outputs.cache-primary-key }}
           
       - name: Build opengrep-core
@@ -326,6 +332,13 @@ jobs:
           # make this fail to compile.
           PATH="${CYGWIN_ROOT_BIN}:$(opam exec -- printenv PATH)" dune build _build/install/default/bin/opengrep-core.exe
 
+      - name: Trim Dune cache
+        env:
+          BASH_ENV: ${{ github.workspace }}/bash_env.sh
+        shell: bash
+        run: |
+          opam exec -- dune cache trim --size=1000MB
+
       - name: Test opengrep-core
         env:
           BASH_ENV: ${{ github.workspace }}/bash_env.sh
@@ -347,22 +360,22 @@ jobs:
           mkdir artifacts
           cp _build/install/default/bin/opengrep-core.exe artifacts/
 
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libstdc++-6.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libgcc_s_seh-1.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libwinpthread-1.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libpcre-1.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libgmp-10.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libcurl-4.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libpcre2-8-0.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libeay32.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libidn2-0.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libnghttp2-14.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libssh2-1.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/ssleay32.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libzstd-1.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/zlib1.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/iconv.dll artifacts/
-          cp c:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libintl-8.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libstdc++-6.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libgcc_s_seh-1.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libwinpthread-1.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libpcre-1.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libgmp-10.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libcurl-4.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libpcre2-8-0.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libeay32.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libidn2-0.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libnghttp2-14.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libssh2-1.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/ssleay32.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libzstd-1.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/zlib1.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/iconv.dll artifacts/
+          cp d:/cygwin/usr/x86_64-w64-mingw32/sys-root/mingw/bin/libintl-8.dll artifacts/
 
           tar czvf artifacts.tgz artifacts
 
