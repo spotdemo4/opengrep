@@ -513,7 +513,7 @@ For more information see https://opengrep.dev.
     parmap
     semver
     (timedesc (>= 2.0.0)) ; used via git-wrapper
-    (lsp (= 1.15.1-5.0))
+    (lsp (= 1.22.0))
     git
     ; tracing
     trace
@@ -541,10 +541,10 @@ For more information see https://opengrep.dev.
     lwt_ppx
     (conf-libev (<> :os win32)) ; for lwt, to get better FD perf
     ; jsoo
-    (js_of_ocaml (= 5.8.2))
-    (js_of_ocaml-compiler (= 5.8.2))
-    (js_of_ocaml-ppx (= 5.8.2))
-    (js_of_ocaml-lwt (= 5.8.2))
+    (js_of_ocaml (= 5.9.1))
+    (js_of_ocaml-compiler (= 5.9.1))
+    (js_of_ocaml-ppx (= 5.9.1))
+    (js_of_ocaml-lwt (= 5.9.1))
     integers_stubs_js
     ;TODO: this is for secrets and should be in ../dune-project but doing so
     ; slows down a lot our CI because it pulls dependencies that seem

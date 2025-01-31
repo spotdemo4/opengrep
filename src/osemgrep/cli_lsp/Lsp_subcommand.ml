@@ -18,6 +18,8 @@ module Io : RPC_server.LSIO = struct
       (struct
         include Lwt
 
+        type 'a t = 'a Lwt.t
+
         module O = struct
           let ( let* ) x f = Lwt.bind x f
           let ( let+ ) x f = Lwt.map f x
@@ -30,7 +32,9 @@ module Io : RPC_server.LSIO = struct
         type output = Lwt_io.output_channel
 
         let read_line = Lwt_io.read_line_opt
-        let write = Lwt_io.write
+        (* XXX: I'm not 100% sure about this... but tests pass and it seems to be
+         * the reasonable thing to do. *)
+        let write = (fun o s_list -> Lwt_list.iter_s (fun s -> Lwt_io.write o s) s_list)
 
         (* LWT doesn't implement this in a nice way *)
         let read_exactly inc n =
