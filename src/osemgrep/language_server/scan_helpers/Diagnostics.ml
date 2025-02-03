@@ -37,7 +37,7 @@ let diagnostic_of_match is_intellij (m : OutJ.cli_match) =
   let diagnostic =
     Diagnostic.create
       ~range:(Conv.range_of_cli_match m)
-      ~code ~severity ~source:"Semgrep" ~message
+      ~code ~severity ~source:"Semgrep" ~message:(`String message)
   in
   match codeDescription with
   | None -> diagnostic ()

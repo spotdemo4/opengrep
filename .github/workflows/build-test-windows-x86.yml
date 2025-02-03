@@ -35,12 +35,14 @@ env:
   OPAMROOT: D:/.opam
   DUNE_CACHE_ROOT: D:/dune
   OPAMCONFIRMLEVEL: unsafe-yes
-  OCAML_VERSION: "5.2.1"
   OPAM_VERSION: "2.3.0"
 
 jobs:
 
   build-core:
+    strategy:
+      matrix:
+        ocaml_version: ["5.3.0"]
     # defaults:
     #   run:
     #     shell: bash
@@ -117,22 +119,22 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.DUNE_CACHE_ROOT }}
-          key: dune-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ github.run_id }}
-          restore-keys: dune-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-
+          key: dune-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ github.run_id }}
+          restore-keys: dune-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-
       
       - name: Restore _opam
         id: cache-opam-win32-64
         uses: actions/cache/restore@v4
         with:
           path: _opam
-          key: opam-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('*.opam') }}
+          key: opam-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ hashFiles('*.opam') }}
 
       - name: Restore OPAM_ROOT
         id: cache-opamroot-win32-64
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.OPAMROOT }} # C:\Users\runneradmin\AppData\Local\opam
-          key: opamroot-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-5.2.1-${{ hashFiles('*.opam') }}
+          key: opamroot-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ hashFiles('*.opam') }}
           
       - name: Install OPAM
         env:
@@ -145,7 +147,7 @@ jobs:
         run: |
           # Define variables
           OPAM_VERSION=${{ env.OPAM_VERSION }}
-          OCAML_VERSION=${{ env.OCAML_VERSION }}
+          OCAML_VERSION=${{ matrix.ocaml_version }}
           OPAM_BIN="opam-${OPAM_VERSION}-x86_64-windows.exe"
           OPAM_SIG="${OPAM_BIN}.sig"
           DOWNLOAD_URL="https://github.com/ocaml/opam/releases/download/${OPAM_VERSION}"
@@ -213,11 +215,10 @@ jobs:
           # OPAMCONFIRMLEVEL: unsafe-yes
           OPAMSOLVERTIMEOUT: 600
           OPAMCOLOR: always
-          # OCAML_VERSION: "5.2.1"
         shell: bash
         if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
         run: |
-          export OCAML_VERSION=${{ env.OCAML_VERSION  }}
+          export OCAML_VERSION=${{ matrix.ocaml_version }}
           echo "Creating local switch with OCaml $OCAML_VERSION..."
           opam switch --no-install --packages="ocaml-base-compiler.$OCAML_VERSION" create .
 
