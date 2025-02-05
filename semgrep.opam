@@ -87,6 +87,7 @@ depends: [
   "js_of_ocaml-lwt" {= "5.9.1"}
   "integers_stubs_js"
   "git-unix"
+  "memprof-limits" {= "dev"}
   "odoc" {with-doc}
 ]
 build: [
