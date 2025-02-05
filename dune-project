@@ -3,6 +3,10 @@
 ;; This file is used both to configure 'dune' as usual, and
 ;; to autogenerate the semgrep.opam for 'opam'.
 
+(pin
+ (url "git+https://gitlab.com/dimitris-m/memprof-limits.git#dm/ocaml-5.3.0")
+ (package (name memprof-limits)))
+ 
 ;; classic dune-project settings
 (name semgrep)
 (using menhir 2.1)
@@ -360,7 +364,7 @@ parsers, especially ocamlyacc/menhir based parsers.
 
 (package
   (name process_limits)
-  (version 1.5.5)
+  (version 1.5.5) ; TODO: Bump version.
   (synopsis "Setting time and memory limits for your program")
   (description "\
 This is a small library of utilities used by Semgrep and
@@ -373,9 +377,10 @@ time and memory used by Semgrep.
   (license "LGPL-2.1-only")
 
   (depends
-    (ocaml (>= "4.13.0"))
+    (ocaml (>= "5.3.0"))
     (dune (>= "3.2.0" ))
     (commons (>= "1.5.5"))
+    (memprof-limits (= "dev"))
   )
 )
 
@@ -518,7 +523,7 @@ For more information see https://opengrep.dev.
     ; tracing
     trace
     ppx_trace
-    (opentelemetry (>= 0.9))
+    (opentelemetry (= 0.10)) ; TODO: Remove ppx_trace which forces trace = 0.9.
     ; needed by opentelemetry-client-ocurl but the latest, 0.9.2
     ; does not work under windows (see https://github.com/ygrek/ocurl/issues/77)
     ; hence the pin to 0.9.1
@@ -552,6 +557,7 @@ For more information see https://opengrep.dev.
     ; make our GHA opam cache useless. We might need to install here instead
     ; packages that would avoid this effect.
     git-unix
+    (memprof-limits (= "dev")) ; NOTE: Just to invalidate CI cache for now.
   )
 )
 
