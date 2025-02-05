@@ -14,6 +14,7 @@
  *)
 open Common
 module Log = Log_process_limits.Log
+module M = Memprof_limits
 
 (*****************************************************************************)
 (* Prelude *)
@@ -44,68 +45,20 @@ exception Timeout = Exception.Timeout
 let string_of_timeout_info { Exception.name; max_duration } =
   spf "%s:%g" name max_duration
 
-let current_timer = ref None
-
-(* it seems that the toplevel block such signals, even with this explicit
- *  command :(
- *  let _ = Unix.sigprocmask Unix.SIG_UNBLOCK [Sys.sigalrm]
- *)
-
 (* could be in Control section *)
 
-(*
-   This is tricky stuff.
-
-   We have to make sure that timeout is not intercepted before here, so
-   avoid exn handle such as try (...) with _ -> cos timeout will not bubble up
-   enough. In such case, add a case before such as
-   with Timeout -> raise Timeout | _ -> ...
-
-  question: can we have a signal and so exn when in a exn handler ?
-*)
-let set_timeout (caps : < Cap.time_limit >) ~name max_duration f =
-  (match !current_timer with
-  | None -> ()
-  | Some { Exception.name = running_name; max_duration = running_val } ->
-      invalid_arg
-        (spf
-           "Common.set_timeout: cannot set a timeout %S of %g seconds. A timer \
-            for %S of %g seconds is still running."
-           name max_duration running_name running_val));
-  let info (* private *) = { Exception.name; max_duration } in
-  let raise_timeout () = raise (Timeout info) in
-  let clear_timer () =
-    current_timer := None;
-    CapUnix.setitimer caps#time_limit Unix.ITIMER_REAL
-      { Unix.it_value = 0.; it_interval = 0. }
-    |> ignore
-  in
-  let set_timer () =
-    current_timer := Some info;
-    CapUnix.setitimer caps#time_limit Unix.ITIMER_REAL
-      { Unix.it_value = max_duration; it_interval = 0. }
-    |> ignore
-  in
-  try
-    Sys.set_signal Sys.sigalrm (Sys.Signal_handle (fun _ -> raise_timeout ()));
-    set_timer ();
-    let x = f () in
-    clear_timer ();
-    Some x
-  with
-  | Timeout { Exception.name; max_duration } ->
-      clear_timer ();
+(* TODO: Limit by allocations. *)
+let set_timeout (_caps : < Cap.time_limit >) ~name max_duration f =
+  let token = M.Token.create () in
+  let timeout () = Thread.delay max_duration; M.Token.set token in
+  ignore (Thread.create timeout ());
+  match M.limit_with_token ~token f with
+  | Ok res -> Some res
+  | Error _exn -> 
       Log.warn (fun m -> m "%S timeout at %g s (we abort)" name max_duration);
       None
-  | exn ->
+  | exception exn ->
       let e = Exception.catch exn in
-      (* It's important to disable the alarm before relaunching the exn,
-         otherwise the alarm is still running.
-
-         robust?: and if alarm launched after the log (...) ?
-         Maybe signals are disabled when process an exception handler ?
-      *)
-      clear_timer ();
       Log.err (fun m -> m "exn while in set_timeout");
       Exception.reraise e
 
