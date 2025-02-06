@@ -46,7 +46,7 @@ a = Analysis(
 pyz = PYZ(a.pure)
 
 # Optimised interpreter.
-options = [('O', None, 'OPTION')]
+options = [('O', None, 'OPTION'), ('X utf8', None, 'OPTION')]
 
 exe = EXE(
     pyz,

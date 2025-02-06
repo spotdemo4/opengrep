@@ -87,6 +87,4 @@ jobs:
           name: opengrep_windows_binary_x86
       - run: chmod +x opengrep.exe 
       - run: time ./opengrep.exe --version
-      - run: >-
-          export PYTHONIOENCODING=utf-8;
-          echo '1 == 1' | ./opengrep.exe -v -j 1 -l python -e '$X == $X' -
+      - run: echo '1 == 1' | ./opengrep.exe -v -j 1 -l python -e '$X == $X' -
