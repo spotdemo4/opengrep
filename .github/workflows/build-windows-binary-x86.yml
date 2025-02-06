@@ -88,6 +88,5 @@ jobs:
       - run: chmod +x opengrep.exe 
       - run: time ./opengrep.exe --version
       - run: >-
-          chcp 65001;
           export PYTHONIOENCODING=utf-8;
           echo '1 == 1' | ./opengrep.exe -v -j 1 -l python -e '$X == $X' -
