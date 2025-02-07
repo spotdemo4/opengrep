@@ -1,6 +1,7 @@
 import contextlib
 import json
 import tempfile
+import os
 from typing import Any
 from typing import Iterable
 from typing import Mapping
@@ -33,51 +34,57 @@ class SarifFormatter(base.BaseFormatter):
     ) -> Optional[out.SarifFormatReturn]:
         exit_stack = contextlib.ExitStack()
         with exit_stack:
-            rule_file = exit_stack.enter_context(
-                tempfile.NamedTemporaryFile("w+", suffix=".json")
-            )
-            rule_file_contents = json.dumps(
-                {"rules": [rule._raw for rule in rules]}, indent=2, sort_keys=True
-            )
-            rule_file.write(rule_file_contents)
-            rule_file.flush()
-            rules_path = out.Fpath(rule_file.name)
+            rule_file = None
+            try: 
+              rule_file = exit_stack.enter_context(
+                  tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False)
+              )
+              rule_file_contents = json.dumps(
+                  {"rules": [rule._raw for rule in rules]}, indent=2, sort_keys=True
+              )
+              rule_file.write(rule_file_contents)
+              rule_file.flush()
+              rule_file.close()
+              rules_path = out.Fpath(rule_file.name)
 
-            """
-            Exclude Semgrep notice for users who
-            1. log in
-            2. use pro engine
-            3. are not using registry
-            """
-            is_pro = (
-                cli_output_extra.engine_requested
-                and cli_output_extra.engine_requested == out.EngineKind(out.PRO_())
-            )
-            hide_nudge = ctx.is_logged_in or is_pro or not ctx.is_using_registry
+              """
+              Exclude Semgrep notice for users who
+              1. log in
+              2. use pro engine
+              3. are not using registry
+              """
+              is_pro = (
+                  cli_output_extra.engine_requested
+                  and cli_output_extra.engine_requested == out.EngineKind(out.PRO_())
+              )
+              hide_nudge = ctx.is_logged_in or is_pro or not ctx.is_using_registry
 
-            engine_label = "PRO" if is_pro else "OSS"
+              engine_label = "PRO" if is_pro else "OSS"
 
-            show_dataflow_traces = extra.get("dataflow_traces", False)
+              show_dataflow_traces = extra.get("dataflow_traces", False)
 
-            # Sort according to RuleMatch.get_ordering_key
-            sorted_findings = sorted(rule_matches)
-            cli_matches = [
-                base.rule_match_to_CliMatch(rule_match)
-                for rule_match in sorted_findings
-            ]
-            cli_errors = [e.to_CliError() for e in semgrep_structured_errors]
+              # Sort according to RuleMatch.get_ordering_key
+              sorted_findings = sorted(rule_matches)
+              cli_matches = [
+                  base.rule_match_to_CliMatch(rule_match)
+                  for rule_match in sorted_findings
+              ]
+              cli_errors = [e.to_CliError() for e in semgrep_structured_errors]
 
-            rpc_params = out.SarifFormatParams(
-                hide_nudge=hide_nudge,
-                engine_label=engine_label,
-                rules=rules_path,
-                cli_matches=cli_matches,
-                cli_errors=cli_errors,
-                show_dataflow_traces=show_dataflow_traces,
-            )
-            formatted_output = semgrep.rpc_call.sarif_format(ctx, rpc_params)
-            if formatted_output:
-                return formatted_output.value
+              rpc_params = out.SarifFormatParams(
+                  hide_nudge=hide_nudge,
+                  engine_label=engine_label,
+                  rules=rules_path,
+                  cli_matches=cli_matches,
+                  cli_errors=cli_errors,
+                  show_dataflow_traces=show_dataflow_traces,
+              )
+              formatted_output = semgrep.rpc_call.sarif_format(ctx, rpc_params)
+              if formatted_output:
+                  return formatted_output.value
+            finally:
+                if rule_file is not None and os.path.exists(rule_file.name):
+                    os.unlink(rule_file.name)
         return None
 
     def format(
