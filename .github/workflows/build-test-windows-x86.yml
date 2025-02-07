@@ -427,6 +427,8 @@ jobs:
         run: pip3 install dist/*.whl
       - name: test package
         run: opengrep --version
+      - name: test help output
+        run: opengrep --help
       # Test SARIF output which previously failed on Windows only:
       - uses: actions/checkout@v4
         with:
