@@ -25,4 +25,11 @@ let pysemgrep (caps : < Cap.exec >) argv =
         |> String.concat " "));
   (* pysemgrep should be in the PATH, thx to the code in
      ../../../cli/bin/semgrep *)
-  CapUnix.execvp caps#exec "pyopengrep" argv
+  match Sys.getenv_opt "_OPENGREP_BINARY" with
+  | Some entrypoint ->
+    CapUnix.execvp caps#exec entrypoint
+      (Array.concat [[|argv.(0)|];
+                     [| "--legacy" |];
+                     Array.sub argv 1 (Array.length argv - 1)]) 
+  | None ->
+    CapUnix.execvp caps#exec "pyopengrep" argv

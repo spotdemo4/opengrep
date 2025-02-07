@@ -27,13 +27,24 @@
 #
 # NOTE: if you modify this file, you will need to `pipenv install --dev`
 # if you want to test the change under `pipenv shell`.
+
+# Should be done before requests is imported...
+import sys
+if __name__ == "__main__" and getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):  # PyInstaller
+    import multiprocessing
+    multiprocessing.freeze_support()
+
 import importlib.resources
 import os
 import platform
 import shutil
-import sys
 import sysconfig
 import warnings
+# import unicodedata
+# import requests
+import semgrep.main
+import semgrep.cli
+# from semgrep import tracing
 
 # alt: you can also add '-W ignore::DeprecationWarning' after the python3 above,
 # but setuptools and pip adjust this line when installing semgrep so we need
@@ -131,7 +142,9 @@ def find_semgrep_core_path(pro=False, extra_message=""):
 # TODO: we should fix --test instead.
 # The past investigation of Austin is available in #8360 PR comments
 def exec_pysemgrep():
-    import semgrep.main
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):  # PyInstaller
+        os.environ["SEMGREP_NEW_CLI_UX"] = f"{int(sys.stdout.isatty())}"
+    # import semgrep.main
 
     sys.exit(semgrep.main.main())
 
@@ -165,7 +178,7 @@ def exec_osemgrep():
 
     # If you call opengrep-core as opengrep-cli, then we get
     # opengrep-cli behavior, see src/main/Main.ml
-    sys.argv[0] = "opengrep-cli"
+    sys.argv[0] = "opengrep-cli" 
 
     # nosem: dangerous-os-exec-tainted-env-args
     os.execvp(str(path), sys.argv)
@@ -174,6 +187,12 @@ def exec_osemgrep():
 # Needed for similar reasons as in pysemgrep, but only for the legacy
 # flag to work
 def main():
+
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):  # PyInstaller
+        os.environ["_OPENGREP_BINARY"] = sys.executable
+        if IS_WINDOWS: # Because `execvp` on windows does not replace the current process.
+            os.environ["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+    
     # escape hatch for users to pysemgrep in case of problems (they
     # can also call directly 'pysemgrep').
     if "--legacy" in sys.argv:

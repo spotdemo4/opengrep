@@ -6,13 +6,19 @@ datas += [("_opengrepinstall/semgrep/templates", "semgrep/templates")]
 binaries = [("_opengrepinstall/semgrep/bin", "semgrep/bin")]
 
 a = Analysis(
-    ['_opengrepinstall/semgrep/main.py'],
+    ['_opengrepinstall/semgrep/__main__.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
     hiddenimports=[
         'jaraco',
-        'google.protobuf'
+        'google.protobuf',
+        # 'contextvars',
+        # 'unicodedata',
+        # 'requests',
+        # 'certifi',
+        'chardet'
+        # 'charset_normalizer'
         # 'attrs', 
         # 'boltons', 
         # 'click-option-group', 
@@ -25,7 +31,10 @@ a = Analysis(
         # 'opentelemetry-api', 
         # 'opentelemetry-sdk', 
         # 'opentelemetry-exporter-otlp-proto-http', 
-        # 'opentelemetry-instrumentation-requests', 
+        # 'opentelemetry-instrumentation-requests',
+        # 'opentelemetry.context',
+        # 'opentelemetry.context.contextvars_context',
+        # 'opentelemetry.context.threading_context',
         # 'packaging', 
         # 'peewee', 
         # 'requests', 

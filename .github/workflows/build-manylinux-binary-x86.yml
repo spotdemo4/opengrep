@@ -77,20 +77,16 @@ jobs:
           # export PATH=/opt/python/cp39-cp39/bin:$PATH
           # export LD_LIBRARY_PATH=/__t/Python/3.9.21/x64/lib/:$LD_LIBRARY_PATH
 
-          { echo '#!/usr/bin/env python3'; cat ./_opengrepinstall/semgrep/main.py; echo 'sys.exit(main())';} > tempfile
-
-          mv tempfile ./_opengrepinstall/semgrep/main.py
-
-          cp ./_opengrepinstall/semgrep/main.py ./_opengrepinstall/semgrep/__main__.py
-
-          cat ./_opengrepinstall/semgrep/main.py
+          cp ./_opengrepinstall/semgrep/console_scripts/entrypoint.py \
+             ./_opengrepinstall/semgrep/__main__.py
 
           # Package Opengrep using PyInstaller 
 
           python3 -m pip install --upgrade setuptools
           python3 -m pip install protobuf
-          # pip install --upgrade setuptools
-          # pip install protobuf
+
+          # install some dependencies for windows (pyinstaller only)
+          python3 -m pip install chardet charset-normalizer
           
           cp cli/spec/opengrep.spec .
 
@@ -117,5 +113,7 @@ jobs:
           ldd --version
       - run: |
           ./opengrep --version
+      - run: |
+          ./opengrep --help
       - run: |
           echo '1 == 1' | ./opengrep -l python -e '$X == $X' -
