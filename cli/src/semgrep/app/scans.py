@@ -294,7 +294,7 @@ class ScanHandler:
         x.config.rules = save
 
         otel_trace.get_current_span()
-        get_state().traces.set_scan_info(self.scan_response.info)
+        # get_state().traces.set_scan_info(self.scan_response.info)
 
     def report_failure(self, exit_code: int) -> None:
         """

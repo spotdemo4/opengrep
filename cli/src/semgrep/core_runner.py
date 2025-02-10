@@ -413,7 +413,7 @@ class StreamingSemgrepCore:
 
         # Set parent span id as close to fork as possible to ensure core
         # spans nest under the correct pysemgrep parent span.
-        get_state().traces.inject()
+        # get_state().traces.inject()
         if IS_WINDOWS:
             process = await asyncio.create_subprocess_exec(
                 *self._cmd,
