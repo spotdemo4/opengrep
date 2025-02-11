@@ -597,7 +597,7 @@ let check_targets_with_rules
             (List.length rules)
             (List.length invalid_rules)
             (List.length targets));
-      Logs.info (fun m -> m "running the semgrep engine");
+      Logs.info (fun m -> m "running the opengrep engine");
       let (result_or_exn : Core_result.result_or_exn) =
         match conf.targeting_conf.baseline_commit with
         | None ->
