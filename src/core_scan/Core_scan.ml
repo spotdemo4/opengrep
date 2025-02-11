@@ -888,7 +888,7 @@ let scan_exn (caps : < caps ; .. >) (config : Core_scan_config.t)
   in
 
   (* TODO: Delete any lockfile-only findings whose rule produced a code+lockfile
-     finding in that lockfile  in scanned_targets?
+     finding in that lockfile in scanned_targets?
   *)
 
   (* the OSS engine was invoked so no interfile langs *)
@@ -926,6 +926,7 @@ let scan_exn (caps : < caps ; .. >) (config : Core_scan_config.t)
  * coupling: If you modify this function, you probably need also to modify
  * Deep_scan.scan() in semgrep-pro which is mostly a copy-paste of this file.
  *)
+(* NOTE: Where new and old cli meet, to invoke scan. *)
 let scan (caps : < caps ; .. >) (config : Core_scan_config.t) :
     Core_result.result_or_exn =
   try

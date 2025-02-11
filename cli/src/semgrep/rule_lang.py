@@ -584,17 +584,17 @@ def validate_yaml(
                     raise NotImplementedError(
                         "Cannot execute RPC validation without a rules_tmp_path"
                     )
-                with tracing.TRACER.start_as_current_span("rpc.validate"):
-                    run_rpc_validate(rules_tmp_path=rules_tmp_path)
-                    logger.debug("RPC validation succeeded")
-                    # If we reach this line, the RPC-based validation passed and we can early return
-                    return errors
+                # with tracing.TRACER.start_as_current_span("rpc.validate"):
+                run_rpc_validate(rules_tmp_path=rules_tmp_path)
+                logger.debug("RPC validation succeeded")
+                # If we reach this line, the RPC-based validation passed and we can early return
+                return errors
             except (RpcValidationError, NotImplementedError) as e:
                 logger.debug(f"run_rpc_validate failed: {e}")
 
         # Now enter the jsonschema validation for the custom error messages
-        with tracing.TRACER.start_as_current_span("jsonschema.validate"):
-            jsonschema.validate(data.unroll(), RuleSchema.get(), cls=Draft7Validator)
+        # with tracing.TRACER.start_as_current_span("jsonschema.validate"):
+        jsonschema.validate(data.unroll(), RuleSchema.get(), cls=Draft7Validator)
         # At this point we have successfully validated the rules
         # and can return any errors
         return errors

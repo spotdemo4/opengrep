@@ -40,7 +40,7 @@ def maybe_set_git_safe_directories() -> None:
         )
 
 
-@click.group(cls=DefaultGroup, default_command="scan", name="semgrep")
+@click.group(cls=DefaultGroup, default_command="scan", name="opengrep")
 @click.help_option("--help", "-h")
 @click.pass_context
 def cli(ctx: click.Context) -> None:

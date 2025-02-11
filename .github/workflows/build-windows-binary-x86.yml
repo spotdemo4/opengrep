@@ -53,14 +53,15 @@ jobs:
           
       - run: tar -xvzf dist.tgz
 
+      - name: install some dependencies for windows (pyinstaller only)
+        run: pip3 install chardet charset-normalizer requests
+
       - name: Install package
         run: pip3 install dist/*.whl --target ./_opengrepinstall
       - name: Rename file 
         run: |
-          { echo '#!/usr/bin/env python3'; cat ./_opengrepinstall/semgrep/main.py; echo 'sys.exit(main())';} > tempfile
-          mv tempfile ./_opengrepinstall/semgrep/main.py
-          cp ./_opengrepinstall/semgrep/main.py ./_opengrepinstall/semgrep/__main__.py
-          cat ./_opengrepinstall/semgrep/main.py
+          cp ./_opengrepinstall/semgrep/console_scripts/entrypoint.py \
+          ./_opengrepinstall/semgrep/__main__.py
 
       - name: Build executable
         run: |
@@ -87,4 +88,5 @@ jobs:
           name: opengrep_windows_binary_x86
       - run: chmod +x opengrep.exe 
       - run: time ./opengrep.exe --version
-      - run: echo '1 == 1' | ./opengrep.exe -v -j 1 -l python -e '$X == $X' -
+      - run: ./opengrep.exe --help
+      - run: echo '1 == 1' | ./opengrep.exe -v -j 1 -l python -e "\$X == \$X" -
