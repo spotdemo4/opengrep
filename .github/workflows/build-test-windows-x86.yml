@@ -425,21 +425,17 @@ jobs:
       - run: tar xzvf dist.tgz
       - name: install package
         run: pip3 install dist/*.whl
-      - name: test package
+      - name: test version output
         run: opengrep --version
       - name: test help output
         run: opengrep --help
+      - name: e2e opengrep-core test
+        run: >-
+          export PYTHONIOENCODING=utf-8;
+          echo '1 == 1' | opengrep -j 1 -l python -e '$X == $X' -
       # Test SARIF output which previously failed on Windows only:
       - uses: actions/checkout@v4
         with:
           submodules: false
       - name: sarif output test
         run: opengrep scan -j 1 --sarif -f tests/windows/rules.yml tests/windows/test.py
-      # NOTE: This fails for some strange reason, not worth too much attention at this moment
-      # because in general the wheel works, modulo known issues unrelated to this. The above
-      # sarif test is enough for the purposes of checking that the wheel can be used to invoke
-      # a scan.
-      # - name: e2e opengrep-core test
-      #   run: >-
-      #     export PYTHONIOENCODING=utf-8;
-      #     echo '1 == 1' | opengrep -v -l python -e '$X == $X' -
