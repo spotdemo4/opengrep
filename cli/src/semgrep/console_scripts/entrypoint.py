@@ -40,6 +40,7 @@ import platform
 import shutil
 import sysconfig
 import warnings
+import subprocess
 # import unicodedata
 # import requests
 import semgrep.main
@@ -178,11 +179,14 @@ def exec_osemgrep():
 
     # If you call opengrep-core as opengrep-cli, then we get
     # opengrep-cli behavior, see src/main/Main.ml
-    sys.argv[0] = "opengrep-cli" 
+    sys.argv[0] = "opengrep-cli"
 
-    # nosem: dangerous-os-exec-tainted-env-args
-    os.execvp(str(path), sys.argv)
-
+    if IS_WINDOWS:
+      cp = subprocess.run(sys.argv, executable=str(path), close_fds=True)
+      sys.exit(cp.returncode)
+    else:
+      # nosem: dangerous-os-exec-tainted-env-args
+      os.execvp(str(path), sys.argv)
 
 # Needed for similar reasons as in pysemgrep, but only for the legacy
 # flag to work
