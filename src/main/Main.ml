@@ -121,7 +121,9 @@ let () =
                 (* adding --experimental so we don't default back to pysemgrep *)
                 CLI.main
                   (caps :> CLI.caps)
-                  (Array.append argv [| "--experimental" |])
+                  (Array.concat [[|argv.(0)|];
+                     [| "--experimental" |];
+                     Array.sub argv 1 (Array.length argv - 1)])
             | _else_ -> CLI.main (caps :> CLI.caps) argv
           in
           if not (Exit_code.Equal.ok exit_code) then
