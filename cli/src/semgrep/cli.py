@@ -36,7 +36,7 @@ def maybe_set_git_safe_directories() -> None:
         git_check_output(["git", "config", "--global", "--add", "safe.directory", "*"])
     except Exception as e:
         logger.info(
-            f"Semgrep failed to set the safe.directory Git config option. Git commands might fail: {e}"
+            f"Opengrep failed to set the safe.directory Git config option. Git commands might fail: {e}"
         )
 
 
