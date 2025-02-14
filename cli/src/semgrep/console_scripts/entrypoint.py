@@ -40,6 +40,7 @@ import platform
 import shutil
 import sysconfig
 import warnings
+import subprocess
 # import unicodedata
 # import requests
 import semgrep.main
@@ -178,11 +179,14 @@ def exec_osemgrep():
 
     # If you call opengrep-core as opengrep-cli, then we get
     # opengrep-cli behavior, see src/main/Main.ml
-    sys.argv[0] = "opengrep-cli" 
+    sys.argv[0] = "opengrep-cli"
 
-    # nosem: dangerous-os-exec-tainted-env-args
-    os.execvp(str(path), sys.argv)
-
+    if IS_WINDOWS:
+      cp = subprocess.run(sys.argv, executable=str(path), close_fds=True)
+      sys.exit(cp.returncode)
+    else:
+      # nosem: dangerous-os-exec-tainted-env-args
+      os.execvp(str(path), sys.argv)
 
 # Needed for similar reasons as in pysemgrep, but only for the legacy
 # flag to work
@@ -190,8 +194,9 @@ def main():
 
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):  # PyInstaller
         os.environ["_OPENGREP_BINARY"] = sys.executable
-        if IS_WINDOWS: # Because `execvp` on windows does not replace the current process.
-            os.environ["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+        # NOTE: Not needed because we now use `subprocess.run` and we wait for completion.
+        # if IS_WINDOWS: # Because `execvp` on windows does not replace the current process.
+        #     os.environ["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
     
     # escape hatch for users to pysemgrep in case of problems (they
     # can also call directly 'pysemgrep').
