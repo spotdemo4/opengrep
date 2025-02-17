@@ -437,5 +437,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: false
+      - name: include paths test
+        # NOTE: Add `SEMGREP_LOG_SRCS="semgrep.targeting"` and `--debug` for debugging.
+        run: PYTHONIOENCODING=utf-8 opengrep scan -j 1 -f tests/windows/rules.yml tests/windows/test.py
       - name: sarif output test
-        run: opengrep scan -j 1 --sarif -f tests/windows/rules.yml tests/windows/test.py
+        run: PYTHONIOENCODING=utf-8 opengrep scan -j 1 --sarif -f tests/windows/rules.yml tests/windows/test.py

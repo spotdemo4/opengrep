@@ -194,9 +194,6 @@ def main():
 
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):  # PyInstaller
         os.environ["_OPENGREP_BINARY"] = sys.executable
-        # NOTE: Not needed because we now use `subprocess.run` and we wait for completion.
-        # if IS_WINDOWS: # Because `execvp` on windows does not replace the current process.
-        #     os.environ["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
     
     # escape hatch for users to pysemgrep in case of problems (they
     # can also call directly 'pysemgrep').

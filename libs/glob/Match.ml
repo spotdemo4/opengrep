@@ -131,14 +131,26 @@ let translate_root pat =
 (*****************************************************************************)
 
 (* Compile a pattern into an ocaml-re regexp for fast matching *)
+(* TODO: For windows, we should probably make lowecase since it's not
+ * case sensitive. Then paths should also be transformed in the same
+ * way. *)
 let compile ~source pat =
   let pcre = translate_root pat in
   let re = Pcre2_.regexp pcre in
   { source; re }
 [@@profiling "Glob.Match.compile"]
 
+let normalise_fpath_str pth_str =
+  match Sys.os_type with
+  | "Win32" -> String.map (fun c -> if Char.equal c '\\' then '/' else c) pth_str
+  | _ -> pth_str
+
+(* XXX: We ensure paths use forward slashes here, which is not optimal but should
+ * only have a performance effect on Windows, if any. We do this because it's safer
+ * to only do this here, avoiding other instances of this bug to creep in. *)
 let run matcher path =
-  let res = Pcre2_.pmatch_noerr ~rex:matcher.re path in
+  let normalised_path = normalise_fpath_str path in
+  let res = Pcre2_.pmatch_noerr ~rex:matcher.re normalised_path in
   (* perf: this gets called a lot. The match-with is expected to make things
      faster by creating a closure for the anonymous function only in debug
      mode. *)
@@ -146,8 +158,11 @@ let run matcher path =
   (match Logs.level () with
   | Some Debug ->
       Log.debug (fun m ->
-          m "glob: %S  pcre: %s  path: %S  matches: %B"
-            matcher.source.line_contents matcher.re.pattern path res)
+        let extra_path_info = match Sys.os_type with
+            | "Win32" -> Printf.sprintf " (normalized: %S)" normalised_path
+            | _ -> "" in
+        m "glob: %S  pcre: %s  path: %S%S  matches: %B"
+          matcher.source.line_contents matcher.re.pattern path extra_path_info res)
   | _ -> ());
   res
 [@@profiling "Glob.Match.run"]

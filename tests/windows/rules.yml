@@ -4,3 +4,6 @@ rules:
     message: Basic test
     severity: ERROR
     languages: [python]
+    paths:
+      include:
+        - test.py

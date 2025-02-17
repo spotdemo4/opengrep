@@ -1,6 +1,6 @@
 (*
    Matching of a glob pattern against a path.
-   This is purely syntaxic: the file system is not accessed.
+   This is purely syntactic: the file system is not accessed.
 *)
 
 (* A compiled pattern matcher. *)
