@@ -84,15 +84,16 @@ let filter_paths (paths : Rule.paths) (path : Fpath.t) : bool =
     let pat2 =
       Glob.Pattern.(append [ Any_subpath ] (append (snd pat) [ Any_subpath ]))
     in
-
     let cpat1 =
       Glob.Match.(compile ~source:(string_loc ~source_kind:None (fst pat)) pat1)
     in
     let cpat2 =
       Glob.Match.(compile ~source:(string_loc ~source_kind:None (fst pat)) pat2)
     in
-    Glob.Match.run cpat1 (Fpath.to_string path)
-    || Glob.Match.run cpat2 (Fpath.to_string path)
+    let path_str = Fpath.to_string path
+    in
+    Glob.Match.run cpat1 path_str
+    || Glob.Match.run cpat2 path_str
   in
 
   let { Rule.require; exclude } = paths in

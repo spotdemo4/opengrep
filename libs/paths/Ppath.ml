@@ -294,7 +294,7 @@ let remove_prefix root path =
 let make_absolute path =
   if Fpath.is_rel path then Fpath.(v (Unix.getcwd ()) // path)
   else
-    (* Here, we must make a syscall, bceause we are making an unnormalized path absolute
+    (* Here, we must make a syscall, because we are making an unnormalized path absolute
        so that we can compare it to a normalized path.
        However, in the presence of symlinks, certain relationships like prefixes and
        naive string operations do not work properly, because they are not cognizant of

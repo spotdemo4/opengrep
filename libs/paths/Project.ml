@@ -52,7 +52,7 @@ type scanning_root_info = { project_root : Rfpath.t; inproject_path : Ppath.t }
      scanning root: a.py -> foo/a.py
      project root: /path/to/foo  (not '.')
 
-   To avoid relying on this nonobvious behavior, we recommend that users
+   To avoid relying on this non-obvious behavior, we recommend that users
    run semgrep on the current folder '.'.
 
    This function assumes that the path exists.
