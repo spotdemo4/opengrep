@@ -499,8 +499,12 @@ let fix_regex_newline_on_windows str =
   | "Win32" ->
     let len = String.length str in
     if len > 0 && Char.equal str.[len - 1] '\n' then
-      let newline_match = "\r?\n" in
-      (String.sub str 0 (len - 1)) ^ newline_match
+      (* HACK: Assume the '\n' is erroneous, from |, and remove it.
+       * Hopefully this is not too much of a hack, and we don't have
+       * multi-line strings here. This also means that we cannot have
+       * a regex on windows that ends with '\n'.
+       * TODO: Investigate if this is acceptable. *)
+      (String.sub str 0 (len - 1))
     else
       str
   | _ -> str
