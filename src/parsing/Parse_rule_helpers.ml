@@ -494,9 +494,21 @@ let parse_str_or_dict env (value : G.expr) :
 (* Other *)
 (*****************************************************************************)
 
+let fix_regex_newline_on_windows str =
+  match Sys.os_type with
+  | "Win32" ->
+    let len = String.length str in
+    if len > 0 && Char.equal str.[len - 1] '\n' then
+      let newline_match = "\r?\n" in
+      (String.sub str 0 (len - 1)) ^ newline_match
+    else
+      str
+  | _ -> str
+
 let parse_regexp env (s, t) =
   (* We try to compile the regexp just to make sure it's valid, but we store
    * the raw string, see notes attached to 'Xpattern.xpattern_kind'. *)
+  let s = fix_regex_newline_on_windows s in
   try
     (* calls `pcre.compile` *)
     Mvar.mvars_of_regexp_string s
