@@ -6,7 +6,7 @@
 (pin
  (url "git+https://gitlab.com/dimitris-m/memprof-limits.git#dm/ocaml-5.3.0")
  (package (name memprof-limits)))
- 
+
 ;; classic dune-project settings
 (name semgrep)
 (using menhir 2.1)
@@ -462,7 +462,6 @@ For more information see https://opengrep.dev.
     ; core deps
     (ocaml (>= 5.2.1))
     (dune (>= 3.7))
-    base
     ; parser generators
     (menhir (= 20230608))
     ; standard libraries
