@@ -75,8 +75,8 @@ let parse (filename : Fpath.t) =
     { Parsing_result.ast = xs; tokens = toks; stat }
   with
   | Parsing_error.Syntax_error cur
-    when !Flag.error_recovery && not !Flag.debug_parser ->
-      if !Flag.show_parsing_error then (
+    when (Domain.DLS.get Flag.error_recovery) && not !Flag.debug_parser ->
+      if Domain.DLS.get Flag.show_parsing_error then (
         Log.err (fun m ->
             m "parse error \n = %s" (Parsing_helpers.error_message_info cur));
         let filelines = UFile.cat_array filename in

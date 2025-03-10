@@ -146,8 +146,19 @@ let finalize f cleanup =
     res)
   else protect f ~finally:cleanup
 
-(* NOTE: This is everywhere, and it's not thread-safe when the ref is non-local. *)
+(* This is everywhere, and it's not thread-safe when the ref is non-local.
+ * It's best to force this to use DLS to be safe. We already don't interleave tasks
+ * on each domain at any time. But sometimes it's used for local variables and we
+ * should not pay the cost in these cases (see Visit_rule), so we need 2 versions
+ * of this function, and we must decide on each call site which one to use. *)
 let save_excursion reference newv f =
+  let module DLS = Domain.DLS in
+  let old = DLS.get reference in
+  DLS.set reference newv;
+  finalize f (fun _ -> DLS.set reference old)
+
+(* The original non-thread-safe version. *)
+let save_excursion_unsafe reference newv f =
   let old = !reference in
   reference := newv;
   finalize f (fun _ -> reference := old)

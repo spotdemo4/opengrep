@@ -30,7 +30,7 @@ let parse_program (filename : Fpath.t) =
   try Parser_js.json lexer lexbuf_fake with
   | Parsing.Parse_error ->
       let cur = tr.Parsing_helpers.current in
-      if !Flag.show_parsing_error then
+      if Domain.DLS.get Flag.show_parsing_error then
         Log.err (fun m -> m "parse error \n = %s" (error_msg_tok cur));
       raise (Parsing_error.Syntax_error (TH.info_of_tok cur))
 

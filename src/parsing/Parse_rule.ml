@@ -196,15 +196,20 @@ let parse_paths env key value =
 let parse_options rule_id (key : key) value =
   let/ s = generic_to_json rule_id key value |> Result.map J.string_of_json in
   let options =
-    Common.save_excursion Atdgen_runtime.Util.Json.unknown_field_handler
-      (fun _src_loc field_name ->
-        (* for forward compatibility, better to not raise an exn and just
-         * ignore the new fields.
-         * old: raise (InvalidYamlException (spf "unknown opt: %s" field_name))
-         *)
-        (* nosemgrep: no-logs-in-library *)
-        Logs.warn (fun m -> m "unknown rule option: %s" field_name))
-      (fun () -> Rule_options_j.t_of_string s)
+    (* TODO: How to deal with this? It's not thread-safe but it's not easy to fix.
+     * We could fork ATD and make this DLS state, but for now I will just disable
+     * it. I will not introduce locking for this, these imperative hacks must go
+     * away. *)
+    Rule_options_j.t_of_string s
+    (* Common.save_excursion Atdgen_runtime.Util.Json.unknown_field_handler
+         (fun _src_loc field_name ->
+           (\* for forward compatibility, better to not raise an exn and just
+            * ignore the new fields.
+            * old: raise (InvalidYamlException (spf "unknown opt: %s" field_name))
+            *\)
+           (\* nosemgrep: no-logs-in-library *\)
+           Logs.warn (fun m -> m "unknown rule option: %s" field_name))
+         (fun () -> Rule_options_j.t_of_string s) *)
   in
   Ok (options, Some key)
 

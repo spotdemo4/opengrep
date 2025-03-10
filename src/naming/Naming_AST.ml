@@ -176,10 +176,10 @@ let default_scopes () = { global = ref []; blocks = ref []; imported = ref [] }
  *)
 
 let with_new_function_scope params scopes f =
-  Common.save_excursion scopes.blocks (params :: !(scopes.blocks)) f
+  Common.save_excursion_unsafe scopes.blocks (params :: !(scopes.blocks)) f
 
 let with_new_block_scope scopes f =
-  Common.save_excursion scopes.blocks ([] :: !(scopes.blocks)) f
+  Common.save_excursion_unsafe scopes.blocks ([] :: !(scopes.blocks)) f
 
 let add_ident_current_scope (s, _) resolved scopes =
   match !(scopes.blocks) with
@@ -279,7 +279,7 @@ let default_env lang =
 (*****************************************************************************)
 
 let with_new_context ctx env f =
-  Common.save_excursion env.ctx (ctx :: !(env.ctx)) f
+  Common.save_excursion_unsafe env.ctx (ctx :: !(env.ctx)) f
 
 let top_context env =
   match !(env.ctx) with
@@ -840,7 +840,7 @@ class ['self] resolve_visitor env lang =
       (* TODO: We should fix the AST of JS/TS so those `f({foo})` patterns do
        * not show as regular variables. *)
         when not (Lang.is_js lang) ->
-          Common.save_excursion env.in_lvalue true (fun () ->
+          Common.save_excursion_unsafe env.in_lvalue true (fun () ->
               super#visit_pattern venv x)
       | _ -> super#visit_pattern venv x
 
@@ -932,13 +932,13 @@ class ['self] resolve_visitor env lang =
        *)
       | Assign (e1, _, e2)
       | AssignOp (e1, _, e2) ->
-          Common.save_excursion env.in_lvalue true (fun () ->
+          Common.save_excursion_unsafe env.in_lvalue true (fun () ->
               self#visit_expr venv e1);
           self#visit_expr venv e2;
           recurse := false
       | ArrayAccess (e1, (_, e2, _)) ->
           self#visit_expr venv e1;
-          Common.save_excursion env.in_lvalue false (fun () ->
+          Common.save_excursion_unsafe env.in_lvalue false (fun () ->
               self#visit_expr venv e2);
           recurse := false
       (* specialized kname case when in expr context *)
@@ -993,7 +993,7 @@ class ['self] resolve_visitor env lang =
     method! visit_type_ venv x =
       if !(env.in_type) then super#visit_type_ venv x
       else
-        Common.save_excursion env.in_type true (fun () ->
+        Common.save_excursion_unsafe env.in_type true (fun () ->
             super#visit_type_ venv x)
 
     (* TODO: support other types of statements that create block scopes. *)

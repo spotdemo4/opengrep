@@ -42,7 +42,7 @@ let error s =
   if !Flag_php.strict_lexer
   then raise (Lexical s)
   else
-    if !Flag.verbose_lexing
+    if Domain.DLS.get Flag.verbose_lexing
     then UCommon.pr2 ("LEXER: " ^ s)
 
 (* pad: hack around ocamllex to emulate the yyless() of flex. The semantic
@@ -81,7 +81,7 @@ let t_variable_or_metavar s info =
    * token for metavariables. That way we also avoid certain
    * conflicts in the grammar.
    *)
-  if AST_generic.is_metavar_name ("$" ^ s) && !Flag.sgrep_mode
+  if AST_generic.is_metavar_name ("$" ^ s) && (Domain.DLS.get Flag.sgrep_mode)
   then T_METAVAR (case_str ("$" ^ s), info)
   else T_VARIABLE(case_str s, info)
 

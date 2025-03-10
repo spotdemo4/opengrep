@@ -224,10 +224,10 @@ let pr2_once s = xxx_once pr2 s
 (* ---------------------------------------------------------------------- *)
 let mk_pr2_wrappers aref =
   let fpr2 s =
-    if !aref then pr2 s else (* just to the log file *)
+    if (Domain.DLS.get aref) then pr2 s else (* just to the log file *)
                           out_chan_pr2 s
   in
-  let fpr2_once s = if !aref then pr2_once s else xxx_once out_chan_pr2 s in
+  let fpr2_once s = if (Domain.DLS.get aref) then pr2_once s else xxx_once out_chan_pr2 s in
   (fpr2, fpr2_once)
 
 (* ---------------------------------------------------------------------- *)

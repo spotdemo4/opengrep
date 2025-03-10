@@ -78,7 +78,7 @@ let with_mock_envvars f () =
       let new_settings =
         { !Semgrep_envvars.v with user_settings_file = tmp_settings_file }
       in
-      Common.save_excursion Semgrep_envvars.v new_settings f)
+      Common.save_excursion_unsafe Semgrep_envvars.v new_settings f)
 
 let with_mock_envvars_and_normal_responses f =
   with_mock_normal_responses (with_mock_envvars f)

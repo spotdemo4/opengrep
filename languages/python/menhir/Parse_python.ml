@@ -148,10 +148,10 @@ let rec parse ?(parsing_mode = Python) (filename : Fpath.t) =
         parse ~parsing_mode:Python2 filename
       else
         let cur = tr.Parsing_helpers.current in
-        if not !Flag.error_recovery then
+        if not (Domain.DLS.get Flag.error_recovery) then
           raise (Parsing_error.Syntax_error (TH.info_of_tok cur));
 
-        if !Flag.show_parsing_error then (
+        if Domain.DLS.get Flag.show_parsing_error then (
           Log.err (fun m -> m "parse error \n = %s" (error_msg_tok cur));
           let filelines = UFile.cat_array filename in
           let checkpoint2 = UFile.cat filename |> List.length in

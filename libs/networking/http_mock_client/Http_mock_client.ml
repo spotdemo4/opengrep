@@ -234,7 +234,7 @@ let with_testing_client make_fn test_fn () =
     end))
   in
   Http_helpers.with_client_ref new_client
-    (fun () -> Common.save_excursion Http_helpers.in_mock_context true test_fn)
+    (fun () -> Common.save_excursion_unsafe Http_helpers.in_mock_context true test_fn)
     ()
 
 (*****************************************************************************)

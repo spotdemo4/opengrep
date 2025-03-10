@@ -124,15 +124,16 @@ let fix_tokens toks =
     let retag_keywords = Hashtbl.create 101 in
     let retag_lbrace = Hashtbl.create 101 in
 
-    (match trees with
+    (let sgrep_mode = Domain.DLS.get Flag_parsing.sgrep_mode in
+     match trees with
     (* probably an object pattern
      * TODO: check that no stmt-like keywords inside body?
      *)
-    | F.Braces (t1, _body, _) :: _ when !Flag_parsing.sgrep_mode ->
+    | F.Braces (t1, _body, _) :: _ when sgrep_mode ->
         Hashtbl.add retag_lbrace t1 true
     (* TODO: skip keywords, attributes that may be before the method id *)
     | F.Tok (_s, info) :: F.Parens (i1, _, _) :: F.Braces (_, _, _) :: _
-      when !Flag_parsing.sgrep_mode && is_identifier horigin info ->
+      when sgrep_mode && is_identifier horigin info ->
         Hashtbl.add retag_lparen_method i1 true
     | _ -> ());
 
@@ -169,7 +170,7 @@ let fix_tokens toks =
          | x -> x)
   with
   | Lib_ast_fuzzy.Unclosed (msg, info) ->
-      if !Flag.error_recovery then toks
+      if Domain.DLS.get Flag.error_recovery then toks
       else raise (Parsing_error.Lexical_error (msg, info))
 
 (*****************************************************************************)

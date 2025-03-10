@@ -138,7 +138,7 @@ let with_mock_envvars f () =
   let old_settings = !Semgrep_envvars.v in
   let app_token = Some (Auth.unsafe_token_of_string "123456789") in
   let new_settings = { old_settings with app_token } in
-  Common.save_excursion Semgrep_envvars.v new_settings f
+  Common.save_excursion_unsafe Semgrep_envvars.v new_settings f
 
 (*****************************************************************************)
 (* Tests *)
