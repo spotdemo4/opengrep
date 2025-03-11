@@ -307,11 +307,6 @@ let spf = Printf.sprintf
 
 let _chan = ref UStdlib.stderr
 
-let start_log_file () =
-  let filename = spf "/tmp/debugml%d:%d" (UUnix.getuid ()) (UUnix.getpid ()) in
-  pr2 (spf "now using %s for logging" filename);
-  _chan := UStdlib.open_out_bin filename
-
 let dolog s =
   output_string !_chan (s ^ "\n");
   flush !_chan
