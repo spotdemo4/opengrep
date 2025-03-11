@@ -60,23 +60,24 @@ type state_mode =
 
 let default_state = ST_IN_CODE
 
-let _mode_stack =
-  ref [default_state]
+type state = {
+  mode: state_mode list ref;
+}
 
-let reset () =
-  _mode_stack := [default_state];
-  ()
+let create () = {
+  mode = ref [default_state];
+}
 
-let rec current_mode () =
-  match !_mode_stack with
-  | top :: _ -> top
-  | [] ->
-      Log.warn (fun m-> m "mode_stack is empty, defaulting to INITIAL");
-      reset();
-      current_mode ()
+let current_mode state =
+    match !(state.mode) with
+    | s :: _ -> s
+    | [] ->
+      Log.warn
+        (fun m-> m "mode_stack is empty, defaulting to INITIAL");
+      default_state
 
-let push_mode mode = Stack_.push mode _mode_stack
-let pop_mode () = ignore(Stack_.pop _mode_stack)
+let push_mode state mode = Stack_.push mode state.mode
+let pop_mode state = ignore(Stack_.pop state.mode)
 
 }
 
@@ -230,7 +231,7 @@ let id_after_dollar =
 (* Rule initial *)
 (*****************************************************************************)
 
-rule token = parse
+rule token state = parse
 
   (* ----------------------------------------------------------------------- *)
   (* spacing/comments *)
@@ -259,8 +260,8 @@ rule token = parse
   (* paren *)
   | '(' { LPAREN (tokinfo lexbuf) }   | ')' { RPAREN (tokinfo lexbuf) }
   | '[' { LBRACKET (tokinfo lexbuf) } | ']' { RBRACKET (tokinfo lexbuf) }
-  | '{' { push_mode ST_IN_CODE; LBRACE (tokinfo lexbuf) }
-  | '}' { pop_mode ();          RBRACE (tokinfo lexbuf) }
+  | '{' { push_mode state ST_IN_CODE; LBRACE (tokinfo lexbuf) }
+  | '}' { pop_mode state;          RBRACE (tokinfo lexbuf) }
 
   (* delim *)
   | ';'     { SEMI (tokinfo lexbuf) }
@@ -459,16 +460,16 @@ rule token = parse
   | "\"\"\"" {
       let info = tokinfo lexbuf in
       let buf = Buffer.create 127 in
-      string buf lexbuf;
+      string state buf lexbuf;
       let s = Buffer.contents buf in
       StringLiteral(s, info |> Tok.rewrap_str ("\"\"\"" ^ s ^ "\"\"\""))
     }
   (* interpolated strings *)
   | alphaid as s '"'
-   { push_mode ST_IN_INTERPOLATED_DOUBLE;
+   { push_mode state ST_IN_INTERPOLATED_DOUBLE;
      T_INTERPOLATED_START(s, tokinfo lexbuf) }
   | alphaid as s "\"\"\""
-   { push_mode ST_IN_INTERPOLATED_TRIPLE;
+   { push_mode state ST_IN_INTERPOLATED_TRIPLE;
      T_INTERPOLATED_START(s, tokinfo lexbuf) }
 
   (* ----------------------------------------------------------------------- *)
@@ -484,66 +485,66 @@ rule token = parse
 (* Multi line triple strings *)
 (*****************************************************************************)
 
-and string buf = parse
+and string state buf = parse
   (* bugfix: you can have 4 or 5 in a row! only last 3 matters *)
   | "\"" "\"\"\"" {
       Parsing_helpers.yyback 3 lexbuf;
       Buffer.add_string buf (tok lexbuf);
       (* bugfix: this is not the end! We need to recurse with string() again *)
-      string buf lexbuf
+      string state buf lexbuf
   }
   | "\"\"\""    { () }
   (* noteopti: *)
-  | [^'"']+ as s { Buffer.add_string buf s; string buf lexbuf }
-  | '"'          { Buffer.add_string buf (tok lexbuf); string buf lexbuf }
+  | [^'"']+ as s { Buffer.add_string buf s; string state buf lexbuf }
+  | '"'          { Buffer.add_string buf (tok lexbuf); string state buf lexbuf }
   | eof     { error "end of file in string" lexbuf }
   | _  {
       let s = tok lexbuf in
       error ("unrecognised symbol in string:"^s) lexbuf;
       Buffer.add_string buf s;
-      string buf lexbuf
+      string state buf lexbuf
     }
 
 (*****************************************************************************)
 (* String interpolation *)
 (*****************************************************************************)
 (* coupling: mostly same code in in_interpolated_triple below *)
-and in_interpolated_double = parse
-  | '"'  { pop_mode(); T_INTERPOLATED_END (tokinfo lexbuf) }
+and in_interpolated_double state = parse
+  | '"'  { pop_mode state; T_INTERPOLATED_END (tokinfo lexbuf) }
 
   (* not in original spec *)
   | escapeSeq as s { StringLiteral (s, tokinfo lexbuf) }
   | [^'"''$''\\']+ as s { StringLiteral (s, tokinfo lexbuf) }
-  | "${" { push_mode ST_IN_CODE; LBRACE (tokinfo lexbuf) }
+  | "${" { push_mode state ST_IN_CODE; LBRACE (tokinfo lexbuf) }
   | "$" (id_after_dollar as s) { ID_DOLLAR (s, tokinfo lexbuf) }
   | "$$" { StringLiteral("$", tokinfo lexbuf) }
 
   | eof  { error "end of file in interpolated string" lexbuf;
-           pop_mode();
+           pop_mode state;
            Unknown(tokinfo lexbuf) }
   | _  {
        error ("unrecognised symbol in interpolated string:"^tok lexbuf) lexbuf;
        Unknown(tokinfo lexbuf)
        }
 
-and in_interpolated_triple = parse
+and in_interpolated_triple state = parse
   (* bugfix: you can have 4 or 5 in a row! only last 3 matters *)
   | "\"" "\"\"\"" {
       Parsing_helpers.yyback 3 lexbuf;
       StringLiteral (tok lexbuf, tokinfo lexbuf)
   }
 
-  | "\"\"\""  { pop_mode(); T_INTERPOLATED_END (tokinfo lexbuf) }
+  | "\"\"\""  { pop_mode state; T_INTERPOLATED_END (tokinfo lexbuf) }
   | "\"" { StringLiteral (tok lexbuf, tokinfo lexbuf) }
   (* not in original spec *)
   | escapeSeq as s { StringLiteral (s, tokinfo lexbuf) }
   | [^'"''$''\\']+ as s { StringLiteral (s, tokinfo lexbuf) }
-  | "${" { push_mode ST_IN_CODE; LBRACE (tokinfo lexbuf) }
+  | "${" { push_mode state ST_IN_CODE; LBRACE (tokinfo lexbuf) }
   | "$" (id_after_dollar as s) { ID_DOLLAR (s, tokinfo lexbuf) }
   | "$$" { StringLiteral("$", tokinfo lexbuf) }
 
   | eof  { error "end of file in interpolated2 string" lexbuf;
-           pop_mode();
+           pop_mode state;
            Unknown(tokinfo lexbuf) }
   | _  {
        error("unrecognised symbol in interpolated2 string:"^tok lexbuf) lexbuf;

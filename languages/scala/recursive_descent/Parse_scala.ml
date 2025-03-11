@@ -34,15 +34,15 @@ let _error_msg_tok tok = Parsing_helpers.error_message_info (TH.info_of_tok tok)
 (*****************************************************************************)
 
 let tokens input_source =
-  Lexer_scala.reset ();
+  let state = Lexer_scala.create () in
   let token lexbuf =
     let tok =
-      match Lexer_scala.current_mode () with
-      | Lexer_scala.ST_IN_CODE -> Lexer_scala.token lexbuf
+      match Lexer_scala.current_mode state with
+      | Lexer_scala.ST_IN_CODE -> Lexer_scala.token state lexbuf
       | Lexer_scala.ST_IN_INTERPOLATED_DOUBLE ->
-          Lexer_scala.in_interpolated_double lexbuf
+          Lexer_scala.in_interpolated_double state lexbuf
       | Lexer_scala.ST_IN_INTERPOLATED_TRIPLE ->
-          Lexer_scala.in_interpolated_triple lexbuf
+          Lexer_scala.in_interpolated_triple state lexbuf
     in
     tok
   in
