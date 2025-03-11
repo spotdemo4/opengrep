@@ -514,7 +514,6 @@ For more information see https://opengrep.dev.
     ;(pcre2 (>= "7.5.3" ))
     ; misc
     ocamlgraph
-    parmap
     semver
     (timedesc (>= 2.0.0)) ; used via git-wrapper
     (lsp (= 1.22.0))
