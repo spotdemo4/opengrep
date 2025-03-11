@@ -259,8 +259,30 @@ let read_level_from_env (vars : string list) : Logs.level option option =
 
 (* Enable threaded logging. *)
 module RMutex = struct
-  (* This is a light copy/paste of the re-entrant mutex from BatteriesThread.RMutex. We do this
-     to avoid importing the massive batteries library. *)
+  (* This is a light copy/paste of the re-entrant mutex from BatteriesThread.RMutex.
+     We do this to avoid importing the massive batteries library. Ours has
+     minor changes to use precise compare instead of polymorphic compare. *)
+  (*
+  * RMutex - Reentrant mutexes
+  * Copyright (C) 2008 David Teller, LIFO, Universite d'Orleans
+  *               2011 Edgar Friendly <thelema314@gmail.com>
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version,
+  * with the special exception on linking described in file LICENSE.
+  *
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  *
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  *)
+
   type owner =
     {
       thread : int;       (**Identity of the latest owner (possibly the current owner)*)
