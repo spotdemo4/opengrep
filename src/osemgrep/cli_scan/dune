@@ -9,7 +9,6 @@
     logs
     bos
     commons
-    parmap
     parallelism
 
     semgrep_core
