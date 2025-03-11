@@ -1,4 +1,4 @@
-(lang dune 3.7)
+(lang dune 3.8)
 
 ;; This file is used both to configure 'dune' as usual, and
 ;; to autogenerate the semgrep.opam for 'opam'.
@@ -23,15 +23,17 @@
 ;; Type 'make semgrep.opam' to regenerate semgrep.opam
 ;; TODO: add it as a pre-commit hook?
 (generate_opam_files)
+; keep opam files tidy by putting them all in an 'opam' sub-directory
+(opam_file_location inside_opam_directory)
 
 ;; set here so the semgrep package below can use it and we can easily bump it
 (version 1.100.0) ; TODO (dimitris): Eventually move to Opengrep versioning.
 
 ;; Default attributes of opam packages
-(source (github semgrep/semgrep))
-(homepage "https://semgrep.dev")
-(maintainers "Semgrep authors")
-(authors "Semgrep authors")
+(source (github opengrep/opengrep))
+(homepage "https://opengrep.dev")
+(maintainers "Opengrep authors")
+(authors "Semgrep authors, Opengrep authors")
 
 ;; Opam packages (sorted alphabetically)
 

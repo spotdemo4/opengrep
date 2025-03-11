@@ -55,7 +55,7 @@ jobs:
       - name: Set GHA cache for OPAM 
         uses: actions/cache@v4
         with:
-          key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ hashFiles('semgrep.opam') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ hashFiles('opam/*.opam') }}
           path: _opam
 
       - name: Create switch

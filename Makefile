@@ -275,7 +275,7 @@ install-opam-deps:
 # This will fail if semgrep.opam isn't up-to-date (in git),
 # and dune isn't installed yet. You can always install dune with
 # 'opam install dune' to get started.
-semgrep.opam: dune-project
+opam/semgrep.opam: dune-project
 	dune build $@
 # Foolproofing
 	chmod a-w semgrep.opam
@@ -493,7 +493,7 @@ install-deps-WINDOWS-for-semgrep-core:
 # As a developer you should not run frequently 'make setup', only when
 # important dependencies change.
 .PHONY: setup
-setup: semgrep.opam
+setup: opam/semgrep.opam
 	./scripts/check-bash-version
 	$(MAKE) install-deps-for-semgrep-core
 
@@ -536,7 +536,7 @@ utop:
 # This is for tools/hello_script.ml so it can leverage the semgrep libs
 # (e.g., commons) by installing them in ~/.opam/.../
 .PHONY: install-semgrep-libs
-install-semgrep-libs: semgrep.opam
+install-semgrep-libs: opam/semgrep.opam
 	dune build
 	dune install
 
