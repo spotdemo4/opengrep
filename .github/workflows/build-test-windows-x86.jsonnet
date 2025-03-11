@@ -54,7 +54,7 @@ local build_core_job = {
     // Note: we must cache after setup-ocaml, not before, because
     // setup-ocaml would reset the cached _opam
     semgrep.cache_opam.step(
-      key=semgrep.opam_switch + "-${{ hashFiles('semgrep.opam') }}",
+      key=semgrep.opam_switch + "-${{ hashFiles('opam/semgrep.opam') }}",
       // ocaml/setup-ocaml creates the opam switch local to the repository
       // (vs. ~/.opam in our other workflows)
       path='_opam',

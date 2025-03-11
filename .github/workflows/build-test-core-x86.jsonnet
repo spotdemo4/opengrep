@@ -27,7 +27,7 @@ local job =
       actions.checkout_with_submodules(),
       gha.git_safedir,
       semgrep.cache_opam.step(
-        key=container.opam_switch + "-${{hashFiles('semgrep.opam')}}"),
+        key=container.opam_switch + "-${{hashFiles('opam/semgrep.opam')}}"),
       {
         name: 'Install dependencies',
         run: |||

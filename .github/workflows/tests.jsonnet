@@ -104,7 +104,7 @@ local test_semgrep_core_job =
       gha.git_safedir,
       semgrep.cache_opam.step(
         key=semgrep.containers.ocaml_alpine.opam_switch +
-          "-${{hashFiles('semgrep.opam')}}"
+          "-${{hashFiles('opam/semgrep.opam')}}"
        ),
       {
         name: 'Install dependencies',
