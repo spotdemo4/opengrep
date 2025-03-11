@@ -30,10 +30,10 @@
 (version 1.100.0) ; TODO (dimitris): Eventually move to Opengrep versioning.
 
 ;; Default attributes of opam packages
-(source (github semgrep/semgrep))
-(homepage "https://semgrep.dev")
-(maintainers "Semgrep authors")
-(authors "Semgrep authors")
+(source (github opengrep/opengrep))
+(homepage "https://opengrep.dev")
+(maintainers "Opengrep authors")
+(authors "Semgrep authors, Opengrep authors")
 
 ;; Opam packages (sorted alphabetically)
 

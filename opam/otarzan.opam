@@ -3,10 +3,10 @@ opam-version: "2.0"
 version: "1.100.0"
 synopsis: "XXX"
 description: "XXX"
-maintainer: ["Semgrep authors"]
-authors: ["Semgrep authors"]
-homepage: "https://semgrep.dev"
-bug-reports: "https://github.com/semgrep/semgrep/issues"
+maintainer: ["Opengrep authors"]
+authors: ["Semgrep authors, Opengrep authors"]
+homepage: "https://opengrep.dev"
+bug-reports: "https://github.com/opengrep/opengrep/issues"
 depends: [
   "dune" {>= "3.8"}
   "odoc" {with-doc}
@@ -25,4 +25,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/semgrep/semgrep.git"
+dev-repo: "git+https://github.com/opengrep/opengrep.git"

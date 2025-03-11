@@ -8,8 +8,8 @@ Uses indentation and standard braces to determine a crude parse tree
 maintainer: ["martin@semgrep.com"]
 authors: ["Semgrep authors"]
 license: "LGPL-2.1-only"
-homepage: "https://semgrep.dev"
-bug-reports: "https://github.com/semgrep/semgrep/issues"
+homepage: "https://opengrep.dev"
+bug-reports: "https://github.com/opengrep/opengrep/issues"
 depends: [
   "alcotest"
   "atdgen"
@@ -32,4 +32,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/semgrep/semgrep.git"
+dev-repo: "git+https://github.com/opengrep/opengrep.git"

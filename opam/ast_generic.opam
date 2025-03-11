@@ -29,8 +29,8 @@ the other programming languages supported by atdgen."""
 maintainer: ["Yoann Padioleau <pad@semgrep.com>"]
 authors: ["Yoann Padioleau <pad@semgrep.com>"]
 license: "LGPL-2.1-only"
-homepage: "https://semgrep.dev"
-bug-reports: "https://github.com/semgrep/semgrep/issues"
+homepage: "https://opengrep.dev"
+bug-reports: "https://github.com/opengrep/opengrep/issues"
 depends: [
   "ocaml" {>= "4.13.0"}
   "dune" {>= "3.8" & >= "3.2.0"}
@@ -54,4 +54,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/semgrep/semgrep.git"
+dev-repo: "git+https://github.com/opengrep/opengrep.git"
