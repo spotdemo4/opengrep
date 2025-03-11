@@ -22,7 +22,7 @@ homepage: "https://opengrep.dev"
 bug-reports: "https://github.com/opengrep/opengrep/issues"
 depends: [
   "ocaml" {>= "5.2.1"}
-  "dune" {>= "3.7" & >= "3.7"}
+  "dune" {>= "3.8" & >= "3.7"}
   "menhir" {= "20230608"}
   "base" {>= "v0.15.1"}
   "fpath"
