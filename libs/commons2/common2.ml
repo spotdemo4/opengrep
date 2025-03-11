@@ -840,16 +840,7 @@ let save_excursion_and_disable reference f =
 let save_excursion_and_enable reference f =
   save_excursion reference true (fun () -> f ())
 
-let memoized ?(use_cache = true) h k f =
-  if not use_cache then f ()
-  else
-    match Kcas_data.Hashtbl.find_opt h k with
-    | Some v -> v
-    | None ->
-        let v = f () in
-        (* Ok to repeat work occassionaly, if 2 domains are in this section. *)
-        Kcas_data.Hashtbl.replace h k v;
-        v
+let memoized = Common.memoized
 
 let cache_in_ref myref f =
   match !myref with
