@@ -543,7 +543,7 @@ let iter_targets_and_get_matches_and_exn_to_errors
           result
           list) =
     targets
-    |> Parmap_targets.map_targets__run_in_forked_process_do_not_modify_globals
+    |> Parallel_targets.map_targets
          (caps :> < Cap.fork >)
          config.ncores
          (fun (target : Target.t) ->

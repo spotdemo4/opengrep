@@ -42,7 +42,7 @@ let core_error_of_path_exc (internal_path : Fpath.t) (e : Exception.t) :
 (*****************************************************************************)
 
 (* Run jobs in parallel, using number of cores specified with -j *)
-let map_targets__run_in_forked_process_do_not_modify_globals caps (ncores : int)
+let map_targets caps (ncores : int)
     (f : Target.t -> 'a) (targets : Target.t list) :
     ('a, Target.t * Core_error.t) result list =
   (*

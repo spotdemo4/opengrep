@@ -1,5 +1,5 @@
 (* Run jobs in parallel, using number of cores specified with -j. *)
-val map_targets__run_in_forked_process_do_not_modify_globals :
+val map_targets :
   < Cap.fork > ->
   int (* ncores *) ->
   (Target.t -> 'a) ->
