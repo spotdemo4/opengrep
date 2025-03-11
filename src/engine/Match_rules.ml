@@ -20,7 +20,7 @@ module RP = Core_result
 module E = Core_error
 module OutJ = Semgrep_output_v1_t
 module Log = Log_engine.Log
-module TLS= Thread_local_storage
+module TLS = Thread_local_storage
 
 (*****************************************************************************)
 (* Prelude *)
