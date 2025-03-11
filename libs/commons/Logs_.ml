@@ -258,12 +258,77 @@ let read_level_from_env (vars : string list) : Logs.level option option =
 (*****************************************************************************)
 
 (* Enable threaded logging. *)
-module Mutex = BatteriesThread.RMutex
+module RMutex = struct
+  (* This is a light copy/paste of the re-entrant mutex from BatteriesThread.RMutex. We do this
+     to avoid importing the massive batteries library. *)
+  type owner =
+    {
+      thread : int;       (**Identity of the latest owner (possibly the current owner)*)
+      mutable depth : int (**Number of times the current owner owns the lock.*)
+    }
+  type t =
+    {
+      primitive : Mutex.t; (**A low-level mutex, used to protect access to [ownership]*)
+      wait      : Condition.t; (** a condition to wait on when the lock is locked *)
+      mutable ownership : owner option;
+    }
 
-let reentrant_mutex = Mutex.create ()
+  let owner_equal a b =
+    Int.equal a.thread b.thread && Int.equal a.depth b.depth
+
+  let create () =
+    {
+      primitive = Mutex.create ();
+      wait      = Condition.create ();
+      ownership = None
+    }
+
+  (**
+     Attempt to acquire the mutex, waiting indefinitely
+  *)
+  let lock m =
+    let id = Thread.id (Thread.self ()) in
+    Mutex.lock m.primitive; (******Critical section begins*)
+    (
+      match m.ownership with
+      | None -> (*Lock belongs to nobody, I can take it. *)
+        m.ownership <- Some {thread = id; depth = 1}
+      | Some s when Int.equal s.thread id -> (*Lock already belongs to me, I can keep it. *)
+        s.depth <- s.depth + 1
+      | _ -> (*Lock belongs to someone else. *)
+        while not (Option.equal owner_equal m.ownership None) do
+          Condition.wait m.wait m.primitive
+        done;
+        m.ownership <- Some {thread = id; depth = 1}
+    );
+    Mutex.unlock m.primitive (******Critical section ends*)
+
+  (** Unlock the mutex; this function checks that the thread calling
+      unlock is the owner and raises an assertion failure if this is not
+      the case. It will also raise an assertion failure if the mutex is
+      not locked. *)
+  let unlock m =
+    let id = Thread.id (Thread.self ()) in
+    Mutex.lock m.primitive; (******Critical section begins*)
+    (match m.ownership with
+     | Some s ->
+       assert (Int.equal s.thread id); (*If I'm not the owner, we have a consistency issue.*)
+       if s.depth > 1 then
+         s.depth <- s.depth - 1 (*release one depth but we're still the owner*)
+       else
+         begin
+           m.ownership <- None;  (*release once and for all*)
+           Condition.signal m.wait   (*wake up waiting threads *)
+         end
+     | _ -> assert false
+    );
+    Mutex.unlock m.primitive (******Critical section ends  *)
+end
+
+let reentrant_mutex = RMutex.create ()
 let _ =
-  let lock () = Mutex.lock reentrant_mutex
-  and unlock () = Mutex.unlock reentrant_mutex in
+  let lock () = RMutex.lock reentrant_mutex
+  and unlock () = RMutex.unlock reentrant_mutex in
 Logs.set_reporter_mutex ~lock ~unlock
 
 (* We use a re-entrant mutex above because otherwise tests using [make core-test]
@@ -350,7 +415,7 @@ let debug_trace_src = Logs.Src.create "debug_trace"
    minimal. This could cause backtraces to not show up if someone
    catches and handles them between the first and the last
    with_debug_trace call. *)
-let is_in_debug_trace_context = TLS.create () 
+let is_in_debug_trace_context = TLS.create ()
 
 let with_debug_trace ?(src = debug_trace_src) ~__FUNCTION__
     ?(pp_input : (unit -> string) option) (f : unit -> 'a) : 'a =

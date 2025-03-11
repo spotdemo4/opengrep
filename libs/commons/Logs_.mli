@@ -170,6 +170,11 @@ val list : ('a -> string) -> 'a list -> string
 val option : ('a -> string) -> 'a option -> string
 val array : ('a -> string) -> 'a array -> string
 
+(* This is a light copy/paste from BatteriesThread.RMutex *)
+module RMutex : sig
+  type t
+end
+
 (* The reentrant mutex used for logging, exposed so it can
  * be shared by pretty-printing functions. *)
-val reentrant_mutex : BatteriesThread.RMutex.t
+val reentrant_mutex : RMutex.t
