@@ -214,8 +214,8 @@ let xxx_once f s =
   | _ when !UCommon.disable_pr2_once ->
       (* nosemgrep: no-pr2 *)
       UCommon.pr2 s
-  | _ when not (Hashtbl.mem UCommon._already_printed s) ->
-      Hashtbl.add UCommon._already_printed s true;
+  | _ when not (Kcas_data.Hashtbl.mem UCommon._already_printed s) ->
+      Kcas_data.Hashtbl.replace UCommon._already_printed s true;
       f ("(ONCE) " ^ s)
   | _else_ -> ()
 
