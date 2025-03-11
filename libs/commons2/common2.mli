@@ -115,7 +115,7 @@ val with_pr2_to_string : Cap.FS.tmp -> (unit -> unit) -> string list
 val _chan : out_channel ref
 
 (* generate & use a /tmp/debugml-xxx file *)
-val start_log_file : unit -> unit
+(* val start_log_file : unit -> unit *)
 
 (* see flag: val verbose_level : int ref *)
 val log : string -> unit

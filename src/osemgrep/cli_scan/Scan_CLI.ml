@@ -301,7 +301,7 @@ let o_num_jobs : int Term.t =
   let info =
     Arg.info [ "j"; "jobs" ]
       ~doc:
-        {|Number of subprocesses to use to run checks in
+        {|Number of cores to use to run checks in
 parallel. Defaults to the number of cores detected on the system
 (1 if using --pro).
 |}

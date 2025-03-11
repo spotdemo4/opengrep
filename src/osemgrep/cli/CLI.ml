@@ -117,9 +117,9 @@ let send_metrics (caps : < Cap.network ; .. >) : unit =
 let known_subcommands =
   [
     "ci";
-    "install-semgrep-pro";
-    "login";
-    "logout";
+    (* "install-semgrep-pro";
+       "login";
+       "logout"; *)
     "lsp";
     "publish";
     "scan";

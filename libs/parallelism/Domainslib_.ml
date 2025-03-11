@@ -42,6 +42,9 @@ let parmap _caps ?(chunksize=1) ~num_domains ~exception_handler f xs =
    * storage. If we bundle such [f] together, this will not work as expected
    * since more than one task can run on the same thread. *)
   assert (Int.equal chunksize 1);
+  (* It can be detrimental to performance if we go above the CPU count, so we
+   * place an upper bound. TODO: Add a log when this happens? *)
+  let num_domains = min num_domains (get_cpu_count ()) in
   let pool = T.setup_pool ~num_domains:(num_domains - 1) () in
   let xs_array = Array.of_list xs in
   let res_array = Array.make (Array.length xs_array) None in

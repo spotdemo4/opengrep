@@ -11,16 +11,13 @@ exception Timeout of timeout_info
 val string_of_timeout_info : timeout_info -> string
 
 (*
-   Launch the specified computation and abort if it takes longer than
-   specified (in seconds).
-
-   This uses a local timer. An Invalid_argument exception will be raised
-   if the timer is already running.
+   Launch the specified computation and abort if it takes longer than the
+   time limit specified (in seconds).
 
    The [granularity_float_s] parameter is optional and specifies the amount
-   of time to sleep before checking if the memprof-limits token is set,
-   otherwise the timeout thread will make the domain wait and the scan result
-   will be delayed. 
+   of time to sleep before checking if the memprof-limits timeout token should
+   be set, otherwise the timeout thread will make the domain wait and the scan
+   result will be delayed. 
 *)
 val set_timeout :
   < Cap.time_limit > ->

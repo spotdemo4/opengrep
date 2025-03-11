@@ -177,19 +177,19 @@ let asi_insert charpos last_charpos_error tr
 (*****************************************************************************)
 
 let tokens input_source =
-  Lexer_js.reset ();
+  let state = Lexer_js.create () in
   let token lexbuf =
     let tok =
-      match Lexer_js.current_mode () with
-      | Lexer_js.ST_IN_CODE -> Lexer_js.initial lexbuf
+      match Lexer_js.current_mode state with
+      | Lexer_js.ST_IN_CODE -> Lexer_js.initial state lexbuf
       | Lexer_js.ST_IN_XHP_TAG current_tag ->
-          Lexer_js.st_in_xhp_tag current_tag lexbuf
+          Lexer_js.st_in_xhp_tag state current_tag lexbuf
       | Lexer_js.ST_IN_XHP_TEXT current_tag ->
-          Lexer_js.st_in_xhp_text current_tag lexbuf
-      | Lexer_js.ST_IN_BACKQUOTE -> Lexer_js.backquote lexbuf
+          Lexer_js.st_in_xhp_text state current_tag lexbuf
+      | Lexer_js.ST_IN_BACKQUOTE -> Lexer_js.backquote state lexbuf
     in
     if not (TH.is_comment tok) then
-      Lexer_js._last_non_whitespace_like_token := Some tok;
+      state.last_non_whitespace_like_token := Some tok;
     tok
   in
   Parsing_helpers.tokenize_all_and_adjust_pos input_source token
@@ -322,8 +322,9 @@ let program_of_string (caps : < Cap.tmp >) (w : string) : Ast.a_program =
 
 let type_of_string s =
   let lexbuf = Lexing.from_string s in
+  let state = Lexer_js.create () in
   let rec lexer lexbuf =
-    let res = Lexer_js.initial lexbuf in
+    let res = Lexer_js.initial state lexbuf in
     if TH.is_comment res then lexer lexbuf else res
   in
   let ty = Parser_js.type_for_lsif lexer lexbuf in

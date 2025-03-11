@@ -214,8 +214,8 @@ let xxx_once f s =
   | _ when !UCommon.disable_pr2_once ->
       (* nosemgrep: no-pr2 *)
       UCommon.pr2 s
-  | _ when not (Hashtbl.mem UCommon._already_printed s) ->
-      Hashtbl.add UCommon._already_printed s true;
+  | _ when not (Kcas_data.Hashtbl.mem UCommon._already_printed s) ->
+      Kcas_data.Hashtbl.replace UCommon._already_printed s true;
       f ("(ONCE) " ^ s)
   | _else_ -> ()
 
@@ -306,11 +306,6 @@ let spf = Printf.sprintf
 (* ---------------------------------------------------------------------- *)
 
 let _chan = ref UStdlib.stderr
-
-let start_log_file () =
-  let filename = spf "/tmp/debugml%d:%d" (UUnix.getuid ()) (UUnix.getpid ()) in
-  pr2 (spf "now using %s for logging" filename);
-  _chan := UStdlib.open_out_bin filename
 
 let dolog s =
   output_string !_chan (s ^ "\n");
