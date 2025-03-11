@@ -23,7 +23,6 @@ bug-reports: "https://github.com/opengrep/opengrep/issues"
 depends: [
   "ocaml" {>= "5.2.1"}
   "dune" {>= "3.7" & >= "3.7"}
-  "base"
   "menhir" {= "20230608"}
   "base" {>= "v0.15.1"}
   "fpath"
@@ -57,7 +56,6 @@ depends: [
   "re"
   "pcre"
   "ocamlgraph"
-  "parmap"
   "semver"
   "timedesc" {>= "2.0.0"}
   "lsp" {= "1.22.0"}
@@ -91,7 +89,6 @@ depends: [
   "thread-local-storage"
   "domainslib"
   "kcas_data"
-  "batteries"
   "odoc" {with-doc}
 ]
 build: [
