@@ -1,8 +1,8 @@
 # This is meant to be installed with 'opam install --deps-only ./path/to/dev'
 #
 opam-version: "2.0"
-maintainer: "r2c"
-authors: "r2c"
+maintainer: "opengrep"
+authors: "opengrep"
 homepage: "n/a"
 bug-reports: "n/a"
 synopsis: "OCaml dependencies needed in CI"
