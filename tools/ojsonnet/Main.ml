@@ -117,13 +117,13 @@ let term : conf Term.t =
 (*****************************************************************************)
 
 let dump (action : dump_action) (conf : conf) (target : Fpath.t) : unit =
-  Conf_ojsonnet.eval_strategy := conf.strategy;
-  Conf_ojsonnet.use_std := conf.use_std;
-  match action with
-  | DumpAST -> Test_ojsonnet.dump_jsonnet_ast target
-  | DumpCore -> Test_ojsonnet.dump_jsonnet_core target
-  | DumpValue -> Test_ojsonnet.dump_jsonnet_value target
-  | DumpJSON -> Test_ojsonnet.dump_jsonnet_json target
+  Common.save_excursion Conf_ojsonnet.eval_strategy conf.strategy (fun () ->
+    Common.save_excursion Conf_ojsonnet.use_std conf.use_std (fun () ->
+      match action with
+      | DumpAST -> Test_ojsonnet.dump_jsonnet_ast target
+      | DumpCore -> Test_ojsonnet.dump_jsonnet_core target
+      | DumpValue -> Test_ojsonnet.dump_jsonnet_value target
+      | DumpJSON -> Test_ojsonnet.dump_jsonnet_json target))
 
 (* TODO
     ( "-perf_test_jsonnet",
@@ -136,13 +136,13 @@ let dump (action : dump_action) (conf : conf) (target : Fpath.t) : unit =
 (*****************************************************************************)
 
 let interpret conf (file : Fpath.t) : JSON.t =
-  Conf_ojsonnet.eval_strategy := conf.strategy;
-  Conf_ojsonnet.use_std := conf.use_std;
-  let ast = Parse_jsonnet.parse_program file in
-  let core = Desugar_jsonnet.desugar_program file ast in
-  let v = Eval_jsonnet.eval_program core in
-  let json = Eval_jsonnet.manifest_value v in
-  json
+  Common.save_excursion Conf_ojsonnet.eval_strategy conf.strategy (fun () ->
+    Common.save_excursion Conf_ojsonnet.use_std conf.use_std (fun () ->
+      let ast = Parse_jsonnet.parse_program file in
+      let core = Desugar_jsonnet.desugar_program file ast in
+      let v = Eval_jsonnet.eval_program core in
+      let json = Eval_jsonnet.manifest_value v in
+      json))
 
 let run (conf : conf) : unit =
   CLI_common.setup_logging ~force_color:true ~level:conf.common.logging_level;

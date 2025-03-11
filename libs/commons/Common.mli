@@ -103,7 +103,10 @@ val debugger : bool ref
 
 (* Emacs-inspired finalize-like function. *)
 val unwind_protect : (unit -> 'a) -> (Exception.t -> unit) -> 'a
-val save_excursion : 'a ref -> 'a -> (unit -> 'b) -> 'b
+val save_excursion : 'a Domain.DLS.key -> 'a -> (unit -> 'b) -> 'b
+(* For performance in contexts where we don't have races, e.g., when the
+ * ['a ref] is local to a function. *)
+val save_excursion_unsafe : 'a ref -> 'a -> (unit -> 'b) -> 'b
 
 (* Java-inspired combinator (DEPRECATED, use protect()) *)
 val finalize : (unit -> 'a) -> (unit -> unit) -> 'a
@@ -133,6 +136,7 @@ val s_to_i : string -> int
 (* Shortcut for Printf.sprintf *)
 val spf : ('a, unit, string) format -> 'a
 
+(* NOTE: Not thread-safe in general. *)
 (* Perl-like regexp pattern matching. We need the many matchedxxx()
  * because OCaml does not support polytypic functions (same problem
  * with zip1/zip2/etc.).
@@ -241,7 +245,7 @@ val input_text_line : in_channel -> string
 (* Optimizations *)
 (*****************************************************************************)
 
-val memoized : ?use_cache:bool -> ('a, 'b) Hashtbl.t -> 'a -> (unit -> 'b) -> 'b
+val memoized : ?use_cache:bool -> ('a, 'b) Kcas_data.Hashtbl.t -> 'a -> (unit -> 'b) -> 'b
 
 (*****************************************************************************)
 (* Profiling *)

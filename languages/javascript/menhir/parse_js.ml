@@ -177,19 +177,19 @@ let asi_insert charpos last_charpos_error tr
 (*****************************************************************************)
 
 let tokens input_source =
-  Lexer_js.reset ();
+  let state = Lexer_js.create () in
   let token lexbuf =
     let tok =
-      match Lexer_js.current_mode () with
-      | Lexer_js.ST_IN_CODE -> Lexer_js.initial lexbuf
+      match Lexer_js.current_mode state with
+      | Lexer_js.ST_IN_CODE -> Lexer_js.initial state lexbuf
       | Lexer_js.ST_IN_XHP_TAG current_tag ->
-          Lexer_js.st_in_xhp_tag current_tag lexbuf
+          Lexer_js.st_in_xhp_tag state current_tag lexbuf
       | Lexer_js.ST_IN_XHP_TEXT current_tag ->
-          Lexer_js.st_in_xhp_text current_tag lexbuf
-      | Lexer_js.ST_IN_BACKQUOTE -> Lexer_js.backquote lexbuf
+          Lexer_js.st_in_xhp_text state current_tag lexbuf
+      | Lexer_js.ST_IN_BACKQUOTE -> Lexer_js.backquote state lexbuf
     in
     if not (TH.is_comment tok) then
-      Lexer_js._last_non_whitespace_like_token := Some tok;
+      state.last_non_whitespace_like_token := Some tok;
     tok
   in
   Parsing_helpers.tokenize_all_and_adjust_pos input_source token
@@ -212,6 +212,11 @@ let parse2 opt_timeout (filename : Fpath.t) =
   in
 
   let last_charpos_error = ref 0 in
+
+  (* We don't want to fetch inside the function below because it
+   * should not make a difference in our setup. *)
+  let error_recovery = Domain.DLS.get Flag.error_recovery in
+  let show_parsing_error = Domain.DLS.get Flag.show_parsing_error in
 
   let rec parse_module_item_or_eof tr =
     try
@@ -236,7 +241,7 @@ let parse2 opt_timeout (filename : Fpath.t) =
         (* try Automatic Semicolon Insertion *)
         match asi_opportunity charpos last_charpos_error cur tr with
         | None ->
-            if !Flag.show_parsing_error then
+            if show_parsing_error then
               LogLib.err (fun m -> m "parse error \n = %s" (error_msg_tok cur));
             Right cur
         | Some (passed_before, passed_offending, passed_after) ->
@@ -269,7 +274,7 @@ let parse2 opt_timeout (filename : Fpath.t) =
         x :: aux tr
     | Either.Right err_tok ->
         let max_line = UFile.cat filename |> List.length in
-        (if !Flag.show_parsing_error then
+        (if show_parsing_error then
            let filelines = UFile.cat_array filename in
            let cur = tr.Parsing_helpers.current in
            let line_error = TH.line_of_tok cur in
@@ -278,7 +283,7 @@ let parse2 opt_timeout (filename : Fpath.t) =
                  (Parsing_helpers.show_parse_error_line line_error
                     (line_start, min max_line (line_error + 10))
                     filelines)));
-        if !Flag.error_recovery then (
+        if error_recovery then (
           (* todo? try to recover? call 'aux tr'? but then can be really slow*)
           (* TODO: count a bad line twice? use Hashtbl.length tech instead *)
           stat.PS.error_line_count <-
@@ -293,7 +298,7 @@ let parse2 opt_timeout (filename : Fpath.t) =
     with
     | Some res -> res
     | None ->
-        if !Flag.show_parsing_error then
+        if show_parsing_error then
           Log.err (fun m -> m "TIMEOUT on %s" !!filename);
         stat.PS.error_line_count <- stat.PS.total_line_count;
         stat.PS.have_timeout <- true;
@@ -317,8 +322,9 @@ let program_of_string (caps : < Cap.tmp >) (w : string) : Ast.a_program =
 
 let type_of_string s =
   let lexbuf = Lexing.from_string s in
+  let state = Lexer_js.create () in
   let rec lexer lexbuf =
-    let res = Lexer_js.initial lexbuf in
+    let res = Lexer_js.initial state lexbuf in
     if TH.is_comment res then lexer lexbuf else res
   in
   let ty = Parser_js.type_for_lsif lexer lexbuf in

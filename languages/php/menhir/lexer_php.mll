@@ -42,7 +42,7 @@ let error s =
   if !Flag_php.strict_lexer
   then raise (Lexical s)
   else
-    if !Flag.verbose_lexing
+    if Domain.DLS.get Flag.verbose_lexing
     then UCommon.pr2 ("LEXER: " ^ s)
 
 (* pad: hack around ocamllex to emulate the yyless() of flex. The semantic
@@ -81,7 +81,7 @@ let t_variable_or_metavar s info =
    * token for metavariables. That way we also avoid certain
    * conflicts in the grammar.
    *)
-  if AST_generic.is_metavar_name ("$" ^ s) && !Flag.sgrep_mode
+  if AST_generic.is_metavar_name ("$" ^ s) && (Domain.DLS.get Flag.sgrep_mode)
   then T_METAVAR (case_str ("$" ^ s), info)
   else T_VARIABLE(case_str s, info)
 
@@ -101,6 +101,9 @@ let t_variable_or_metavar s info =
  *
  * todo: callable, goto
  *)
+(* NOTE: Why not use kcas here? Because we won't add to this table,
+ * and therefore it should never be resized, so it should be thread-safe
+ * to only use it as a lookup table. *)
 let keyword_table = Hashtbl_.hash_of_list [
 
   "while",   (fun ii -> T_WHILE ii);   "endwhile", (fun ii -> T_ENDWHILE ii);
@@ -265,41 +268,37 @@ type state_mode =
 
 let default_state = INITIAL
 
-let _mode_stack =
-  ref [default_state]
-(* todo: now that I have yyback, maybe I should revisit this code. *)
-let _pending_tokens =
-  ref ([]: Parser_php.token list)
+type state = {
+  mode: state_mode list ref;
+  last_non_whitespace_like_token:Parser_php.token option ref;
+  (* The logic to modify last_non_whitespace_like_token is in the
+   * caller of the lexer, that is in Parse_php.tokens.
+   * Used for XHP.
+   *)
+  pending_tokens: Parser_php.token list ref;
+}
 
-(* The logic to modify _last_non_whitespace_like_token is in the
- * caller of the lexer, that is in Parse_php.tokens.
- * Used for XHP.
- *)
-let _last_non_whitespace_like_token =
-  ref (None: Parser_php.token option)
-let reset () =
-  _mode_stack := [default_state];
-    _pending_tokens := [];
-   _last_non_whitespace_like_token := None;
-  ()
+let create () = {
+  mode = ref [default_state];
+  last_non_whitespace_like_token = ref None;
+  (* todo: now that I have yyback, maybe I should revisit this code. *)
+  pending_tokens = ref [];
+}
 
-let rec current_mode () =
-  match !_mode_stack with
-  | top :: _ -> top
-  | [] ->
-      error("mode_stack is empty, defaulting to INITIAL");
-      reset();
-      current_mode ()
-let push_mode mode = Stack_.push mode _mode_stack
-let pop_mode () = ignore(Stack_.pop _mode_stack)
+let current_mode state =
+    match !(state.mode) with
+    | s :: _ -> s
+    | [] ->
+      error
+        ("mode_stack is empty, defaulting to INITIAL");
+      default_state
 
+let push_mode state mode = Stack_.push mode state.mode
+let pop_mode state = ignore(Stack_.pop state.mode)
+let set_mode state mode = begin pop_mode state; push_mode state mode; end
 (* What is the semantic of BEGIN() in flex ? start from scratch with empty
  * stack ?
  *)
-let set_mode mode =
-  pop_mode();
-  push_mode mode;
-  ()
 
 (* Here is an example of state transition. Given a php file like:
  *
@@ -316,16 +315,16 @@ let set_mode mode =
  * '<y'     -> [IN_XHP_TAG "y";IN_XHP_TEXT "x"; IN_SCRIPTING], via push_mode()
  * '>'      -> [IN_XHP_TEXT "y"; IN_XHP_TEXT "x";IN_SCRIPTING], via set_mode()
  * 'bar'    -> [IN_XHP_TEXT "y"; IN_XHP_TEXT "x"; IN_SCRIPTING]
- * '</y>'   -> [IN_XHP_TEXT "x"; IN_SCRIPTING], via pop_mode()
- * '</x>'   -> [IN_SCRIPTING], via pop_mode()
+ * '</y>'   -> [IN_XHP_TEXT "x"; IN_SCRIPTING], via pop_mode state
+ * '</x>'   -> [IN_SCRIPTING], via pop_mode state
  * ';'      -> [IN_SCRIPTING]
  * ' '      -> [IN_SCRIPTING]
  * '?>      -> [INITIAL], via set_mode()
  *
  *)
 
-let push_token tok =
-  _pending_tokens := tok::!_pending_tokens
+let push_token state tok =
+  state.pending_tokens := tok::!(state.pending_tokens)
 
 
 (* ugly: in code like 'function foo( (function(string):string) $callback){}'
@@ -334,10 +333,10 @@ let push_token tok =
  * be to not have those ugly lexing rules for cast, but this would
  * lead to some grammar ambiguities or require other parsing hacks anyway.
 *)
-let lang_ext_or_cast t lexbuf =
+let lang_ext_or_cast state t lexbuf =
   if !Flag_php.facebook_lang_extensions
   then
-    (match !_last_non_whitespace_like_token with
+    (match !(state.last_non_whitespace_like_token) with
     | Some (T_FUNCTION _) ->
       let s = tok lexbuf in
       (* just keep the open parenthesis *)
@@ -399,7 +398,7 @@ let XHPATTR = XHPTAG
 (*****************************************************************************)
 (* Rule in script *)
 (*****************************************************************************)
-rule st_in_scripting = parse
+rule st_in_scripting state = parse
 
   (* ----------------------------------------------------------------------- *)
   (* spacing/comments *)
@@ -520,12 +519,12 @@ rule st_in_scripting = parse
      * interpolation, so seeing a } we pop_mode!
      *)
     | '}' {
-        pop_mode ();
+        pop_mode state;
         (* RESET_DOC_COMMENT(); ??? *)
         TCBRACE(tokinfo lexbuf)
       }
     | '{' {
-        push_mode ST_IN_SCRIPTING;
+        push_mode state ST_IN_SCRIPTING;
         TOBRACE(tokinfo lexbuf)
       }
     (* TODO: alt: remove this and interpret LABEL differently when
@@ -534,8 +533,8 @@ rule st_in_scripting = parse
      * keywords as identifiers.
      *)
     | (("->" | "?->") as sym) (WHITESPACEOPT as white) (LABEL as label) {
-     (* todo: use yyback() instead of using pending_token with push_token.
-      * buggy: push_mode ST_LOOKING_FOR_PROPERTY;
+     (* todo: use yyback() instead of using pending_token with push_token state.
+      * buggy: push_mode state ST_LOOKING_FOR_PROPERTY;
       *)
         let info = tokinfo lexbuf in
 
@@ -550,9 +549,9 @@ rule st_in_scripting = parse
         let whiteinfo = tokinfo_file_str_pos file white pos_after_sym in
         let lblinfo = tokinfo_file_str_pos file label pos_after_white in
 
-        push_token (T_IDENT (case_str label, lblinfo));
+        push_token state (T_IDENT (case_str label, lblinfo));
        (* todo: could be newline ... *)
-        push_token (TSpaces whiteinfo);
+        push_token state (TSpaces whiteinfo);
 
         T_OBJECT_OPERATOR(syminfo)
       }
@@ -637,7 +636,7 @@ rule st_in_scripting = parse
         let pos_after_sym = parse_info.Tok.pos.bytepos + 2 in
         let lblinfo = tokinfo_file_str_pos file s pos_after_sym in
 
-        push_token (T_VARIABLE(case_str s, lblinfo));
+        push_token state (T_VARIABLE(case_str s, lblinfo));
         TDOLLAR dollarinfo
                   }
   (* sgrep-ext: *)
@@ -679,20 +678,20 @@ rule st_in_scripting = parse
         }
     (* dynamic strings *)
     | ['"'] {
-        push_mode ST_DOUBLE_QUOTES;
+        push_mode state ST_DOUBLE_QUOTES;
         TGUIL(tokinfo lexbuf)
       }
     | ['`'] {
-        push_mode ST_BACKQUOTE;
+        push_mode state ST_BACKQUOTE;
         TBACKQUOTE(tokinfo lexbuf)
       }
     | 'b'? "<<<" TABS_AND_SPACES (LABEL as s) NEWLINE {
-        set_mode (ST_START_HEREDOC s);
+        set_mode state (ST_START_HEREDOC s);
         T_START_HEREDOC (tokinfo lexbuf)
       }
 
     | 'b'? "<<<" TABS_AND_SPACES "'" (LABEL as s) "'" NEWLINE {
-        set_mode (ST_START_NOWDOC s);
+        set_mode state (ST_START_NOWDOC s);
         (* could use another token, but simpler to reuse *)
         T_START_HEREDOC (tokinfo lexbuf)
       }
@@ -713,45 +712,45 @@ rule st_in_scripting = parse
      * string(). So what they have done if this ugly lexing hack.
      *)
     | "(" TABS_AND_SPACES ("int"|"integer") TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_INT_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_INT_CAST(tokinfo lexbuf)) lexbuf }
 
     | "(" TABS_AND_SPACES ("real"|"double"|"float") TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_DOUBLE_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_DOUBLE_CAST(tokinfo lexbuf)) lexbuf }
 
     | "(" TABS_AND_SPACES "string" TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_STRING_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_STRING_CAST(tokinfo lexbuf)) lexbuf }
 
     | "(" TABS_AND_SPACES "binary" TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_STRING_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_STRING_CAST(tokinfo lexbuf)) lexbuf }
 
     | "(" TABS_AND_SPACES "array" TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_ARRAY_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_ARRAY_CAST(tokinfo lexbuf)) lexbuf }
 
     | "(" TABS_AND_SPACES "object" TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_OBJECT_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_OBJECT_CAST(tokinfo lexbuf)) lexbuf }
 
     | "(" TABS_AND_SPACES ("bool"|"boolean") TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_BOOL_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_BOOL_CAST(tokinfo lexbuf)) lexbuf }
 
     (* PHP is case insensitive for many things *)
     | "(" TABS_AND_SPACES "Array" TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_ARRAY_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_ARRAY_CAST(tokinfo lexbuf)) lexbuf }
     | "(" TABS_AND_SPACES "Object" TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_OBJECT_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_OBJECT_CAST(tokinfo lexbuf)) lexbuf }
     | "(" TABS_AND_SPACES ("Bool"|"Boolean") TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_BOOL_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_BOOL_CAST(tokinfo lexbuf)) lexbuf }
 
     | "(" TABS_AND_SPACES ("unset") TABS_AND_SPACES ")"
-        { lang_ext_or_cast (T_UNSET_CAST(tokinfo lexbuf)) lexbuf }
+        { lang_ext_or_cast state (T_UNSET_CAST(tokinfo lexbuf)) lexbuf }
     | "?>"
         {
           (* because of XHP and my token merger:
            * old: | "</script"WHITESPACE*">")NEWLINE?
            *  see tests/xhp/pb_cant_merge2.php
           *)
-          match current_mode () with
+          match current_mode state with
           | ST_IN_SCRIPTING ->
-              set_mode INITIAL;
+              set_mode state INITIAL;
               (*/* implicit ';' at php-end tag */*)
               (* todo? ugly, could instead generate a FakeToken or
                * ExpandedToken, but then some code later may assume
@@ -764,7 +763,7 @@ rule st_in_scripting = parse
               TSEMICOLON(tokinfo lexbuf)
 
           | ST_IN_SCRIPTING2 ->
-              set_mode INITIAL;
+              set_mode state INITIAL;
               T_CLOSE_TAG_OF_ECHO(tokinfo lexbuf)
           | _ ->
               raise Impossible
@@ -780,7 +779,7 @@ rule st_in_scripting = parse
 (*****************************************************************************)
 (* Rule initial (html) *)
 (*****************************************************************************)
-and initial = parse
+and initial state = parse
 
   | "<?php" ([' ''\t']|NEWLINE)
   (* php-facebook-ext: fbstrict extensions *)
@@ -790,7 +789,7 @@ and initial = parse
          * consistent with how I treat newlines elsewhere
          *)
         yyback 1 lexbuf;
-        set_mode ST_IN_SCRIPTING;
+        set_mode state ST_IN_SCRIPTING;
         T_OPEN_TAG(tokinfo lexbuf)
       }
 
@@ -798,7 +797,7 @@ and initial = parse
   | "<?Php"([' ''\t']|NEWLINE)
       {
         (* "BAD USE OF <PHP at initial state, replace by <?php"; *)
-        set_mode ST_IN_SCRIPTING;
+        set_mode state ST_IN_SCRIPTING;
         T_OPEN_TAG(tokinfo lexbuf)
       }
 
@@ -809,7 +808,7 @@ and initial = parse
 
   | "<?=" {
       (* less: if short_tags normally, otherwise T_INLINE_HTML *)
-      set_mode ST_IN_SCRIPTING2;
+      set_mode state ST_IN_SCRIPTING2;
       (* todo? ugly, may be better ot generate a real T_ECHO token
        * with maybe a FakeTok or ExpandeTok.
        *)
@@ -821,7 +820,7 @@ and initial = parse
      {
        (* XXX if short_tags normally otherwise T_INLINE_HTML *)
        (* UCommon.pr2 "BAD USE OF <? at initial state, replace by <?php"; *)
-       set_mode ST_IN_SCRIPTING;
+       set_mode state ST_IN_SCRIPTING;
        T_OPEN_TAG(tokinfo lexbuf);
      }
 
@@ -840,36 +839,36 @@ and initial = parse
 (*****************************************************************************)
 
 (* TODO not used for now *)
-and st_looking_for_property = parse
+and st_looking_for_property state = parse
   | "->" | "?->" {
       T_OBJECT_OPERATOR(tokinfo lexbuf)
     }
   | LABEL {
-      pop_mode();
+      pop_mode state;
       T_IDENT(case_str (tok lexbuf), tokinfo lexbuf)
     }
 (*
   | ANY_CHAR {
       (* XXX yyback(0) ?? *)
-      pop_mode();
+      pop_mode state;
     }
 *)
 
 
 (*****************************************************************************)
-and st_looking_for_varname = parse
+and st_looking_for_varname state = parse
   | LABEL {
-      set_mode ST_IN_SCRIPTING;
+      set_mode state ST_IN_SCRIPTING;
       T_STRING_VARNAME(tok lexbuf, tokinfo lexbuf)
     }
   | _ {
       yyback 1 lexbuf;
-      set_mode ST_IN_SCRIPTING;
-      st_in_scripting lexbuf
+      set_mode state ST_IN_SCRIPTING;
+      st_in_scripting state lexbuf
     }
 
 (*****************************************************************************)
-and st_var_offset = parse
+and st_var_offset state = parse
 
   | LNUM | HEXNUM | BINNUM { (* /* Offset must be treated as a string */ *)
     T_NUM_STRING (tok lexbuf, tokinfo lexbuf)
@@ -879,7 +878,7 @@ and st_var_offset = parse
   | LABEL            { T_IDENT(case_str (tok lexbuf), tokinfo lexbuf)  }
 
   | "]" {
-      pop_mode();
+      pop_mode state;
       TCBRA(tokinfo lexbuf);
     }
    | eof { EOF (tokinfo lexbuf |> Tok.rewrap_str "") }
@@ -892,7 +891,7 @@ and st_var_offset = parse
 (* Rule strings *)
 (*****************************************************************************)
 
-and st_double_quotes = parse
+and st_double_quotes state = parse
 
   | DOUBLE_QUOTES_CHARS+ {
       T_ENCAPSED_AND_WHITESPACE(tok lexbuf, tokinfo lexbuf)
@@ -910,8 +909,8 @@ and st_double_quotes = parse
           let pos_after_label = charpos_info + String.length ("$" ^ s) in
 
           let bra_info = tokinfo_file_str_pos file "[" pos_after_label in
-          push_token (TOBRA bra_info);
-          push_mode ST_VAR_OFFSET;
+          push_token state (TOBRA bra_info);
+          push_mode state ST_VAR_OFFSET;
           T_VARIABLE(case_str s, varinfo)
       }
     (* bugfix: can have strings like "$$foo$" *)
@@ -919,20 +918,20 @@ and st_double_quotes = parse
 
     | "{$" {
         yyback 1 lexbuf;
-        push_mode ST_IN_SCRIPTING;
+        push_mode state ST_IN_SCRIPTING;
         T_CURLY_OPEN(tokinfo lexbuf);
       }
     | "${" {
-        push_mode ST_LOOKING_FOR_VARNAME;
+        push_mode state ST_LOOKING_FOR_VARNAME;
         T_DOLLAR_OPEN_CURLY_BRACES(tokinfo lexbuf);
       }
 
   | ['"'] {
-      (* was originally set_mode ST_IN_SCRIPTING, but with XHP
+      (* was originally set_mode state ST_IN_SCRIPTING, but with XHP
        * the context for a double quote may not be anymore always
        * ST_IN_SCRIPTING
        *)
-      pop_mode ();
+      pop_mode state;
       TGUIL(tokinfo lexbuf)
     }
    | eof { EOF (tokinfo lexbuf |> Tok.rewrap_str "") }
@@ -943,7 +942,7 @@ and st_double_quotes = parse
 
 (* ----------------------------------------------------------------------- *)
 (* mostly copy paste of st_double_quotes; just the end regexp is different *)
-and st_backquote = parse
+and st_backquote state = parse
 
   | BACKQUOTE_CHARS+ {
       T_ENCAPSED_AND_WHITESPACE(tok lexbuf, tokinfo lexbuf)
@@ -959,8 +958,8 @@ and st_backquote = parse
           let pos_after_label = charpos_info + String.length ("$" ^ s) in
 
           let bra_info = tokinfo_file_str_pos file "[" pos_after_label in
-          push_token (TOBRA bra_info);
-          push_mode ST_VAR_OFFSET;
+          push_token state (TOBRA bra_info);
+          push_mode state ST_VAR_OFFSET;
           T_VARIABLE(case_str s, varinfo)
       }
     (* bugfix: can have strings like "$$foo$" *)
@@ -968,16 +967,16 @@ and st_backquote = parse
 
     | "{$" {
         yyback 1 lexbuf;
-        push_mode ST_IN_SCRIPTING;
+        push_mode state ST_IN_SCRIPTING;
         T_CURLY_OPEN(tokinfo lexbuf);
       }
     | "${" {
-        push_mode ST_LOOKING_FOR_VARNAME;
+        push_mode state ST_LOOKING_FOR_VARNAME;
         T_DOLLAR_OPEN_CURLY_BRACES(tokinfo lexbuf);
       }
 
   | ['`'] {
-      set_mode ST_IN_SCRIPTING;
+      set_mode state ST_IN_SCRIPTING;
       TBACKQUOTE(tokinfo lexbuf)
     }
 
@@ -994,7 +993,7 @@ and st_backquote = parse
  * todo? the rules below are not what was in the original Zend lexer,
  * but the original lexer was doing very complicated stuff ...
  *)
-and st_start_heredoc stopdoc = parse
+and st_start_heredoc state stopdoc = parse
 
   | (LABEL as s) (";"? as semi) (['\n' '\r'] as space) {
       let info = tokinfo lexbuf in
@@ -1013,10 +1012,10 @@ and st_start_heredoc stopdoc = parse
 
       if s = stopdoc
       then begin
-        set_mode ST_IN_SCRIPTING;
-        push_token (TNewline space_info);
+        set_mode state ST_IN_SCRIPTING;
+        push_token state (TNewline space_info);
         if semi = ";"
-        then push_token (TSEMICOLON colon_info);
+        then push_token state (TSEMICOLON colon_info);
 
         T_END_HEREDOC(lbl_info)
       end else
@@ -1038,8 +1037,8 @@ and st_start_heredoc stopdoc = parse
           let pos_after_label = charpos_info + String.length ("$" ^ s) in
 
           let bra_info = tokinfo_file_str_pos file "[" pos_after_label in
-          push_token (TOBRA bra_info);
-          push_mode ST_VAR_OFFSET;
+          push_token state (TOBRA bra_info);
+          push_mode state ST_VAR_OFFSET;
           T_VARIABLE(case_str s, varinfo)
       }
     (* bugfix: can have strings like "$$foo$", or {{$foo}} *)
@@ -1050,11 +1049,11 @@ and st_start_heredoc stopdoc = parse
 
     | "{$" {
         yyback 1 lexbuf;
-        push_mode ST_IN_SCRIPTING;
+        push_mode state ST_IN_SCRIPTING;
         T_CURLY_OPEN(tokinfo lexbuf);
       }
     | "${" {
-        push_mode ST_LOOKING_FOR_VARNAME;
+        push_mode state ST_LOOKING_FOR_VARNAME;
         T_DOLLAR_OPEN_CURLY_BRACES(tokinfo lexbuf);
       }
 
@@ -1068,7 +1067,7 @@ and st_start_heredoc stopdoc = parse
 (* todo? this is not what was in the original lexer, but the original lexer
  * does complicated stuff ...
  *)
-and st_start_nowdoc stopdoc = parse
+and st_start_nowdoc state stopdoc = parse
 
   | (LABEL as s) (";"? as semi) (['\n' '\r'] as space) {
       let info = tokinfo lexbuf in
@@ -1087,10 +1086,10 @@ and st_start_nowdoc stopdoc = parse
 
       if s = stopdoc
       then begin
-        set_mode ST_IN_SCRIPTING;
-        push_token (TNewline space_info);
+        set_mode state ST_IN_SCRIPTING;
+        push_token state (TNewline space_info);
         if semi = ";"
-        then push_token (TSEMICOLON colon_info);
+        then push_token state (TSEMICOLON colon_info);
         (* reuse same token than for heredocs *)
         T_END_HEREDOC(lbl_info)
       end else

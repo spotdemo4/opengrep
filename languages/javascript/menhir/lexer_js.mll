@@ -174,32 +174,31 @@ type state_mode =
 
 let default_state = ST_IN_CODE
 
-let _mode_stack =
-  ref [default_state]
+type state = {
+  mode: state_mode list ref;
+  last_non_whitespace_like_token:Parser_js.token option ref;
+  (* The logic to modify _last_non_whitespace_like_token is in the
+   * caller of the lexer, that is in Parse_js.tokens.
+   * Used for ambiguity between / as a divisor and start of regexp.
+   *)
+}
 
-(* The logic to modify _last_non_whitespace_like_token is in the
- * caller of the lexer, that is in Parse_js.tokens.
- * Used for ambiguity between / as a divisor and start of regexp.
- *)
-let _last_non_whitespace_like_token =
-  ref (None: Parser_js.token option)
+let create () = {
+  mode = ref [default_state];
+  last_non_whitespace_like_token = ref None;
+}
 
-let reset () =
-  _mode_stack := [default_state];
-   _last_non_whitespace_like_token := None;
-  ()
+let current_mode state =
+    match !(state.mode) with
+    | s :: _ -> s
+    | [] ->
+      Log.warn
+        (fun m-> m "mode_stack is empty, defaulting to INITIAL");
+      default_state
 
-let rec current_mode () =
-  match !_mode_stack with
-  | top :: _ -> top
-  | [] ->
-      Log.warn (fun m -> m "mode_stack is empty, defaulting to INITIAL");
-      reset();
-      current_mode ()
-
-let push_mode mode = Stack_.push mode _mode_stack
-let pop_mode () = ignore(Stack_.pop _mode_stack)
-let set_mode mode = begin pop_mode(); push_mode mode; end
+let push_mode state mode = Stack_.push mode state.mode
+let pop_mode state = ignore(Stack_.pop state.mode)
+let set_mode state mode = begin pop_mode state; push_mode state mode; end
 
 (* Here is an example of state transition. Given a js file like:
  *
@@ -214,8 +213,8 @@ let set_mode mode = begin pop_mode(); push_mode mode; end
  * '<y'     -> [IN_XHP_TAG "y";IN_XHP_TEXT "x"; IN_CODE], via push_mode()
  * '>'      -> [IN_XHP_TEXT "y"; IN_XHP_TEXT "x";IN_CODE], via set_mode()
  * 'bar'    -> [IN_XHP_TEXT "y"; IN_XHP_TEXT "x"; IN_CODE]
- * '</y>'   -> [IN_XHP_TEXT "x"; IN_CODE], via pop_mode()
- * '</x>'   -> [IN_CODE], via pop_mode()
+ * '</y>'   -> [IN_XHP_TEXT "x"; IN_CODE], via pop_mode state
+ * '</x>'   -> [IN_CODE], via pop_mode state
  * ';'      -> [IN_CODE]
  *
  *)
@@ -242,7 +241,7 @@ let InputCharacter = [^ '\r' '\n']
 (* Rule initial *)
 (*****************************************************************************)
 
-rule initial = parse
+rule initial state = parse
 
   (* ----------------------------------------------------------------------- *)
   (* spacing/comments *)
@@ -285,11 +284,11 @@ rule initial = parse
   (* ----------------------------------------------------------------------- *)
 
   | "{" {
-    push_mode ST_IN_CODE;
+    push_mode state ST_IN_CODE;
     T_LCURLY (tokinfo lexbuf);
   }
   | "}" {
-    pop_mode ();
+    pop_mode state;
     T_RCURLY (tokinfo lexbuf);
   }
 
@@ -438,7 +437,7 @@ rule initial = parse
   (* ----------------------------------------------------------------------- *)
 
   | "`" {
-      push_mode ST_IN_BACKQUOTE;
+      push_mode state ST_IN_BACKQUOTE;
       T_BACKQUOTE(tokinfo lexbuf)
   }
 
@@ -460,7 +459,7 @@ rule initial = parse
       let s = tok lexbuf in
       let info = tokinfo lexbuf in
 
-      match !_last_non_whitespace_like_token with
+      match !(state.last_non_whitespace_like_token) with
       | Some (
             T_INT _ | T_FLOAT _ | T_STRING _ | T_REGEX _
           | T_FALSE _ | T_TRUE _ | T_NULL _
@@ -519,7 +518,7 @@ rule initial = parse
    * in which the quote does not need to be ended.
    *)
   | "<" (XHPTAG as tag) {
-    match !_last_non_whitespace_like_token with
+    match !(state.last_non_whitespace_like_token) with
     | Some (
         T_LPAREN _
       | T_SEMICOLON _ (* TODO: somes ambiguities with generics then! *)
@@ -532,11 +531,11 @@ rule initial = parse
       | T_LBRACKET _
       | T_AND _ | T_OR _ | T_PLUS _
     ) when !Flag_parsing_js.jsx ->
-      push_mode (ST_IN_XHP_TAG tag);
+      push_mode state (ST_IN_XHP_TAG tag);
       T_XHP_OPEN_TAG(tag, tokinfo lexbuf)
     (* sgrep-ext: *)
-    | None when !Flag.sgrep_mode ->
-      push_mode (ST_IN_XHP_TAG tag);
+    | None when (Domain.DLS.get Flag.sgrep_mode) ->
+      push_mode state (ST_IN_XHP_TAG tag);
       T_XHP_OPEN_TAG(tag, tokinfo lexbuf)
     | _ ->
       Parsing_helpers.yyback (String.length tag) lexbuf;
@@ -548,7 +547,7 @@ rule initial = parse
     * mostly copy paste from above
     *)
    | "<>" {
-    match !_last_non_whitespace_like_token with
+    match !(state.last_non_whitespace_like_token) with
     | Some (
         T_LPAREN _
       | T_SEMICOLON _ (* TODO: somes ambiguities with generics then! *)
@@ -564,14 +563,14 @@ rule initial = parse
       ->
       let tag = "" in
       (* we go directly in ST_IN_XHP_TEXT *)
-      push_mode (ST_IN_XHP_TEXT tag);
+      push_mode state (ST_IN_XHP_TEXT tag);
       T_XHP_SHORT_FRAGMENT(tokinfo lexbuf)
 
     (* sgrep-ext: *)
-    | None when !Flag.sgrep_mode ->
+    | None when (Domain.DLS.get Flag.sgrep_mode) ->
       let tag = "" in
       (* we go directly in ST_IN_XHP_TEXT *)
-      push_mode (ST_IN_XHP_TEXT tag);
+      push_mode state (ST_IN_XHP_TEXT tag);
       T_XHP_SHORT_FRAGMENT(tokinfo lexbuf)
 
     | _ ->
@@ -632,13 +631,13 @@ and string_quote q buf = parse
 (* Rule backquote *)
 (*****************************************************************************)
 
-and backquote = parse
+and backquote state = parse
   | "`" {
-    pop_mode();
+    pop_mode state;
     T_BACKQUOTE(tokinfo lexbuf)
   }
   | "${" {
-    push_mode ST_IN_CODE;
+    push_mode state ST_IN_CODE;
     T_DOLLARCURLY(tokinfo lexbuf)
   }
   | [^'`' '$' '\\']+ {
@@ -709,7 +708,7 @@ and st_comment buf = parse
 (*****************************************************************************)
 (* XHP lexing states and rules *)
 
-and st_in_xhp_tag current_tag = parse
+and st_in_xhp_tag state current_tag = parse
 
   (* The original XHP parser have some special handlings of
    * whitespace and enforce to use certain whitespace at
@@ -754,13 +753,13 @@ and st_in_xhp_tag current_tag = parse
     }
 
   | "{" {
-      push_mode ST_IN_CODE;
+      push_mode state ST_IN_CODE;
       T_LCURLY(tokinfo lexbuf)
     }
 
   (* a singleton tag *)
   | "/>" {
-      pop_mode ();
+      pop_mode state;
       T_XHP_SLASH_GT (tokinfo lexbuf)
     }
 
@@ -768,7 +767,7 @@ and st_in_xhp_tag current_tag = parse
    * the opening tag. Transit to IN_XHP_TEXT.
    *)
   | ">" {
-      set_mode (ST_IN_XHP_TEXT current_tag);
+      set_mode state (ST_IN_XHP_TEXT current_tag);
       T_XHP_GT (tokinfo lexbuf)
     }
 
@@ -779,12 +778,12 @@ and st_in_xhp_tag current_tag = parse
     }
 
 (* ----------------------------------------------------------------------- *)
-and st_in_xhp_text current_tag = parse
+and st_in_xhp_text state current_tag = parse
 
   (* a nested xhp construct *)
   | "<" (XHPTAG as tag) {
 
-      push_mode (ST_IN_XHP_TAG tag);
+      push_mode state (ST_IN_XHP_TAG tag);
       T_XHP_OPEN_TAG(tag, tokinfo lexbuf)
     }
 
@@ -792,14 +791,14 @@ and st_in_xhp_text current_tag = parse
       if (tag <> current_tag)
       then error (spf "XHP: wrong closing tag for, %s != %s" tag current_tag)
             lexbuf;
-      pop_mode ();
+      pop_mode state;
       T_XHP_CLOSE_TAG(Some tag, tokinfo lexbuf)
 
     }
   (* shortcut for closing tag ? *)
   | "<" "/" ">" {
       (* no check :( *)
-      pop_mode ();
+      pop_mode state;
       T_XHP_CLOSE_TAG(None, tokinfo lexbuf)
     }
   | "<!--" {
@@ -811,7 +810,7 @@ and st_in_xhp_text current_tag = parse
 
   (* PHP interpolation. How the user can produce a { ? &;something ? *)
   | "{" {
-      push_mode ST_IN_CODE;
+      push_mode state ST_IN_CODE;
       T_LCURLY(tokinfo lexbuf)
     }
 

@@ -3,8 +3,8 @@
  (wrapped false)
  (libraries
    TCB
-   parmap
    commons
+   domainslib
  )
  (preprocess
    (pps

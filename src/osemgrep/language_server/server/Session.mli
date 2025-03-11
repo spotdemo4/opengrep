@@ -1,8 +1,8 @@
 open Lsp
 open Types
 
-val scan_config_parser_ref : (string -> Semgrep_output_v1_t.scan_config) ref
-(** [scan_config_parser_ref] is a reference to a function that parses a scan
+val scan_config_parser : (string -> Semgrep_output_v1_t.scan_config)
+(** [scan_config_parser] is a global function that parses a scan
     config from a string *)
 
 (* =~ Core_scan.caps + random + network + tmp *)

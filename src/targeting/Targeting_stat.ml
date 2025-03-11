@@ -69,7 +69,9 @@ let stat_file (file : Fpath.t) =
   let textual = File_type.is_textual_file file in
   let minified =
     if textual then
-      Common.save_excursion Flag_semgrep.skip_minified_files true (fun () ->
+      (* XXX: This is not thread-safe but the variable is not used anywhere
+       * so for now we leave as is. *)
+      Common.save_excursion_unsafe Flag_semgrep.skip_minified_files true (fun () ->
           Result.is_error (Skip_target.is_minified file))
     else false
   in

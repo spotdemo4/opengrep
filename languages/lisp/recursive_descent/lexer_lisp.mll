@@ -123,7 +123,7 @@ rule token = parse
   (* ----------------------------------------------------------------------- *)
   | eof { EOF (tokinfo lexbuf |> Tok.rewrap_str "") }
   | _ {
-        if !Flag.verbose_lexing
+        if Domain.DLS.get Flag.verbose_lexing
         then UCommon.pr2_once ("LEXER:unrecognised symbol, in token rule:"^tok lexbuf);
         TUnknown (tokinfo lexbuf)
     }

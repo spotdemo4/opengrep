@@ -117,9 +117,9 @@ let send_metrics (caps : < Cap.network ; .. >) : unit =
 let known_subcommands =
   [
     "ci";
-    "install-semgrep-pro";
-    "login";
-    "logout";
+    (* "install-semgrep-pro";
+       "login";
+       "logout"; *)
     "lsp";
     "publish";
     "scan";
@@ -319,6 +319,7 @@ let main (caps : caps) (argv : string array) : Exit_code.t =
   Data_init.init ();
   Http_helpers_.set_client_ref (module Cohttp_lwt_unix.Client);
 
+  (* TODO: Remove. *)
   metrics_init (caps :> < Cap.random >);
 
   (* TOPORT: maybe_set_git_safe_directories() *)

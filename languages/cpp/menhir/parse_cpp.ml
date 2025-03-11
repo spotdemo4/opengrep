@@ -281,6 +281,11 @@ let parse_with_lang ?(lang = Flag_parsing_cpp.Cplusplus) file :
   let tr = Parsing_helpers.mk_tokens_state toks in
   let lexbuf_fake = Lexing.from_function (fun _buf _n -> raise Impossible) in
 
+  (* Why here? It's faster to do this once, and we don't need to change
+   * that value after parsing starts. *)
+  let error_recovery = Domain.DLS.get Flag.error_recovery in
+  let show_parsing_error = Domain.DLS.get Flag.show_parsing_error in
+
   let rec loop () =
     let info = TH.info_of_tok tr.Parsing_helpers.current in
     (* todo?: I am not sure that it represents current_line, cos maybe
@@ -313,12 +318,12 @@ let parse_with_lang ?(lang = Flag_parsing_cpp.Cplusplus) file :
       with
       | exn ->
           let e = Exception.catch exn in
-          if not !Flag.error_recovery then
+          if not error_recovery then
             raise
               (Parsing_error.Syntax_error
                  (TH.info_of_tok tr.Parsing_helpers.current));
 
-          (if !Flag.show_parsing_error then
+          (if show_parsing_error then
              match exn with
              (* ocamlyacc *)
              | Parsing.Parse_error

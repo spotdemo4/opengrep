@@ -182,6 +182,7 @@ let pr_xxxxxxxxxxxxxxxxx () =
 let pr2_xxxxxxxxxxxxxxxxx () =
   pr2 "-----------------------------------------------------------------------"
 
+(* NOTE: Seems dangerous in OCaml 5, but does not seem used anywhere. *)
 let reset_pr_indent () = _tab_level_print := 0
 
 (* old:
@@ -213,8 +214,8 @@ let xxx_once f s =
   | _ when !UCommon.disable_pr2_once ->
       (* nosemgrep: no-pr2 *)
       UCommon.pr2 s
-  | _ when not (Hashtbl.mem UCommon._already_printed s) ->
-      Hashtbl.add UCommon._already_printed s true;
+  | _ when not (Kcas_data.Hashtbl.mem UCommon._already_printed s) ->
+      Kcas_data.Hashtbl.replace UCommon._already_printed s true;
       f ("(ONCE) " ^ s)
   | _else_ -> ()
 
@@ -223,10 +224,10 @@ let pr2_once s = xxx_once pr2 s
 (* ---------------------------------------------------------------------- *)
 let mk_pr2_wrappers aref =
   let fpr2 s =
-    if !aref then pr2 s else (* just to the log file *)
+    if (Domain.DLS.get aref) then pr2 s else (* just to the log file *)
                           out_chan_pr2 s
   in
-  let fpr2_once s = if !aref then pr2_once s else xxx_once out_chan_pr2 s in
+  let fpr2_once s = if (Domain.DLS.get aref) then pr2_once s else xxx_once out_chan_pr2 s in
   (fpr2, fpr2_once)
 
 (* ---------------------------------------------------------------------- *)
@@ -305,11 +306,6 @@ let spf = Printf.sprintf
 (* ---------------------------------------------------------------------- *)
 
 let _chan = ref UStdlib.stderr
-
-let start_log_file () =
-  let filename = spf "/tmp/debugml%d:%d" (UUnix.getuid ()) (UUnix.getpid ()) in
-  pr2 (spf "now using %s for logging" filename);
-  _chan := UStdlib.open_out_bin filename
 
 let dolog s =
   output_string !_chan (s ^ "\n");
@@ -828,6 +824,8 @@ let (run_hooks_action : 'a -> ('a -> unit) list ref -> unit) =
 
 type 'a mylazy = unit -> 'a
 
+(* TODO: Check non thread-safe use of references below. *)
+
 (* a la emacs.
  * bugfix: add finalize, otherwise exns can mess up the reference
  *)
@@ -842,14 +840,7 @@ let save_excursion_and_disable reference f =
 let save_excursion_and_enable reference f =
   save_excursion reference true (fun () -> f ())
 
-let memoized ?(use_cache = true) h k f =
-  if not use_cache then f ()
-  else
-    try Hashtbl.find h k with
-    | Not_found ->
-        let v = f () in
-        Hashtbl.add h k v;
-        v
+let memoized = Common.memoized
 
 let cache_in_ref myref f =
   match !myref with
@@ -1377,12 +1368,14 @@ type bool3 = True3 | False3 | TrueFalsePb3 of string
 
 (* let gsubst = global_replace *)
 
+(* These hashtables are used concurrently. *)
 let ( ==~ ) s re = Str.string_match re s 0
-let _memo_compiled_regexp = Hashtbl.create 101
+let _memo_compiled_regexp = Kcas_data.Hashtbl.create () (* 101 *)
 
 let candidate_match_func s re =
   (* old: Str.string_match (Str.regexp re) s 0 *)
   let compile_re =
+    (* TODO: Use PCRE2? *)
     memoized _memo_compiled_regexp re (fun () -> Str.regexp re)
   in
   Str.string_match compile_re s 0
@@ -1532,13 +1525,14 @@ let compile_regexp_union xs =
 
 (* strings take space in memory. Better when can share the space used by
    similar strings *)
-let _shareds = Hashtbl.create 100
+(* TODO: Remove this, it seems unused. *)
+let _shareds = Kcas_data.Hashtbl.create () (* 100 *)
 
 let (shared_string : string -> string) =
  fun s ->
-  try Hashtbl.find _shareds s with
+  try Kcas_data.Hashtbl.find _shareds s with
   | Not_found ->
-      Hashtbl.add _shareds s s;
+      Kcas_data.Hashtbl.add _shareds s s;
       s
 
 let chop = function
@@ -2462,8 +2456,8 @@ let nblines_file file = cat file |> List.length
 (* ---------------------------------------------------------------------- *)
 (* _eff variant *)
 (* ---------------------------------------------------------------------- *)
-let _hmemo_unix_lstat_eff = Hashtbl.create 101
-let _hmemo_unix_stat_eff = Hashtbl.create 101
+let _hmemo_unix_lstat_eff = Kcas_data.Hashtbl.create () (* 101 *)
+let _hmemo_unix_stat_eff = Kcas_data.Hashtbl.create () (* 101 *)
 
 let unix_lstat_eff file =
   if is_absolute file then
@@ -3898,6 +3892,7 @@ let most_recurring_element xs =
 (* Hash sets *)
 (*****************************************************************************)
 
+(* TODO: Check usage. *)
 type 'a hashset = ('a, bool) Hashtbl.t
 (* with sexp *)
 

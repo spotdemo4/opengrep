@@ -120,7 +120,8 @@ let fail_on_error (parsing_res : ('a, 'extras) Tree_sitter_run.Parsing_result.t)
 
 let dump_pfff_ast lang file =
   let ast =
-    Common.save_excursion Flag_semgrep.pfff_only true (fun () ->
+    (* Not sure this is the right choice but this is a CLI flag so... *)
+    Common.save_excursion_unsafe Flag_semgrep.pfff_only true (fun () ->
         let res = Parse_target.just_parse_with_lang lang file in
         res.ast)
   in
@@ -580,11 +581,11 @@ let diff_pfff_tree_sitter xs =
   xs
   |> List.iter (fun file ->
          let ast1 =
-           Common.save_excursion Flag_semgrep.pfff_only true (fun () ->
+           Common.save_excursion_unsafe Flag_semgrep.pfff_only true (fun () ->
                Parse_target.parse_program file)
          in
          let ast2 =
-           Common.save_excursion Flag_semgrep.tree_sitter_only true (fun () ->
+           Common.save_excursion_unsafe Flag_semgrep.tree_sitter_only true (fun () ->
                Parse_target.parse_program file)
          in
          let s1 = AST_generic.show_program ast1 in

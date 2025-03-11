@@ -104,7 +104,7 @@ val pr2_no_nl : string -> unit
 val pr2_xxxxxxxxxxxxxxxxx : unit -> unit
 
 (* use Dumper.dump *)
-val mk_pr2_wrappers : bool ref -> (string -> unit) * (string -> unit)
+val mk_pr2_wrappers : bool Domain.DLS.key -> (string -> unit) * (string -> unit)
 val redirect_stdout_opt : filename option -> (unit -> 'a) -> 'a
 val redirect_stdout_stderr : filename -> (unit -> unit) -> unit
 val redirect_stdin : filename -> (unit -> unit) -> unit
@@ -115,7 +115,7 @@ val with_pr2_to_string : Cap.FS.tmp -> (unit -> unit) -> string list
 val _chan : out_channel ref
 
 (* generate & use a /tmp/debugml-xxx file *)
-val start_log_file : unit -> unit
+(* val start_log_file : unit -> unit *)
 
 (* see flag: val verbose_level : int ref *)
 val log : string -> unit
@@ -525,7 +525,7 @@ type bool3 = True3 | False3 | TrueFalsePb3 of string
 (* strings take space in memory. Better when can share the space used by
  * similar strings.
  *)
-val _shareds : (string, string) Hashtbl.t
+val _shareds : (string, string) Kcas_data.Hashtbl.t
 val shared_string : string -> string
 val chop : string -> string
 val chop_dirsymbol : string -> string
@@ -558,7 +558,7 @@ val strip : char -> string -> string
 
 val regexp_alpha : Str.regexp
 val regexp_word : Str.regexp
-val _memo_compiled_regexp : (string, Str.regexp) Hashtbl.t
+val _memo_compiled_regexp : (string, Str.regexp) Kcas_data.Hashtbl.t
 val ( ==~ ) : string -> Str.regexp -> bool
 val regexp_match : string -> string -> string
 val matched : int -> string -> string

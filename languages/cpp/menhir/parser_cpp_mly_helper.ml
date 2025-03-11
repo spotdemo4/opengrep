@@ -11,7 +11,7 @@ module Log = Log_parser_cpp.Log
 
 (* TODO: switch to use logger *)
 let warning s v =
-  if !Flag.verbose_parsing then Common2.warning ("PARSING: " ^ s) v else v
+  if Domain.DLS.get Flag.verbose_parsing then Common2.warning ("PARSING: " ^ s) v else v
 
 let error s tok = raise (Parsing_error.Other_error (s, tok))
 let fake s = Tok.fake_tok s

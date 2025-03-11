@@ -499,7 +499,7 @@ rule token = parse
   | (letter | '$') (letter | digit | '$')*
       {
         let s = tok lexbuf in
-        if not !Flag_parsing.sgrep_mode
+        if not (Domain.DLS.get Flag_parsing.sgrep_mode)
         then error ("identifier with dollar: "  ^ s) lexbuf;
         TIdent (s, tokinfo lexbuf)
       }

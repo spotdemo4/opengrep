@@ -514,7 +514,6 @@ For more information see https://opengrep.dev.
     ;(pcre2 (>= "7.5.3" ))
     ; misc
     ocamlgraph
-    parmap
     semver
     (timedesc (>= 2.0.0)) ; used via git-wrapper
     (lsp (= 1.22.0))
@@ -557,6 +556,11 @@ For more information see https://opengrep.dev.
     ; packages that would avoid this effect.
     git-unix
     (memprof-limits (= "dev")) ; NOTE: Just to invalidate CI cache for now.
+    thread-local-storage ; NOTE: We should not mess with memprof-limits, but in
+                         ; fact there is a TLS module in there also; however, it's
+                         ; not exposed in the public interface.
+    domainslib
+    kcas_data ; lock-free data structures, also makes life easier for refactoring.
   )
 )
 

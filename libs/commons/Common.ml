@@ -146,7 +146,19 @@ let finalize f cleanup =
     res)
   else protect f ~finally:cleanup
 
+(* This is everywhere, and it's not thread-safe when the ref is non-local.
+ * It's best to force this to use DLS to be safe. We already don't interleave tasks
+ * on each domain at any time. But sometimes it's used for local variables and we
+ * should not pay the cost in these cases (see Visit_rule), so we need 2 versions
+ * of this function, and we must decide on each call site which one to use. *)
 let save_excursion reference newv f =
+  let module DLS = Domain.DLS in
+  let old = DLS.get reference in
+  DLS.set reference newv;
+  finalize f (fun _ -> DLS.set reference old)
+
+(* The original non-thread-safe version. *)
+let save_excursion_unsafe reference newv f =
   let old = !reference in
   reference := newv;
   finalize f (fun _ -> reference := old)
@@ -154,10 +166,18 @@ let save_excursion reference newv f =
 let memoized ?(use_cache = true) h k f =
   if not use_cache then f ()
   else
-    try Hashtbl.find h k with
-    | Not_found ->
+    (* NOTE: In a parallel scenario, we can of course run [f ()] more than once,
+     * so it's better to make sure that any [f] passed has only tolerable side
+     * effects (like reading a file we know should be there) and always returns
+     * the same result or raises the same exception. We could propably use a
+     * [Kcas] transaction if we wished to ensure that replacement of existing
+     * values does not happen, but I don't see the benefit for our purposes. *)
+    match Kcas_data.Hashtbl.find_opt h k with
+    | Some v -> v
+    | None ->
         let v = f () in
-        Hashtbl.add h k v;
+        (* XXX: Thread Sanitizer still reports innocent (?) races with [Kcas]. *)
+        Kcas_data.Hashtbl.replace h k v;
         v
 
 exception Todo
@@ -253,7 +273,7 @@ let ( let* ) = Option.bind
     | None -> Lazy.force default
 *)
 
-(* not sure why but can't use let (?:) a b = ... then at use time ocaml yells*)
+(* not sure why but can't use let (?:) a b = ... then at use time ocaml yells *)
 let ( ||| ) a b =
   match a with
   | Some x -> x
@@ -273,6 +293,8 @@ let ( let/ ) = Result.bind
 (* Regexp, can also use PCRE *)
 (*****************************************************************************)
 
+(* NOTE: This is used from visitors concurrently I think, is [Str.matched_group]
+ * thread-safe? No, but it is domain-safe and we use 1 thread per domain. *)
 let (matched : int -> string -> string) = fun i s -> Str.matched_group i s
 let matched1 s = matched 1 s
 let matched2 s = (matched 1 s, matched 2 s)
@@ -294,13 +316,23 @@ let matched7 s =
     matched 6 s,
     matched 7 s )
 
-let _memo_compiled_regexp = Hashtbl.create 101
+let _memo_compiled_regexp = Kcas_data.Hashtbl.create () (* 101 *)
 
 let candidate_match_func s re =
   (* old: Str.string_match (Str.regexp re) s 0 *)
   let compile_re =
-    memoized _memo_compiled_regexp re (fun () -> Str.regexp re)
+    (* NOTE: The internal state of matches is in DLS, but we are sharing
+     * here between domains also. Maybe make key domain local? [re ^ domain-id]. *)
+    memoized _memo_compiled_regexp
+      re
+      (* (re ^ "-" ^ string_of_int ((Domain.self ()) :> int)) *)
+      (fun () -> Str.regexp re)
   in
+  (* Is that ok in a parallel scenario? If we use more than one Thread per domain,
+   * or if we use effects (for example nested parallelism using domainslib) then
+   * this can corrupt the [last_search_result_key] of another task, leading to
+   * unpleasant surprises... But now we use a simple parallel-map style function
+   * that invokes domainslib, so it's ok. *)
   Str.string_match compile_re s 0
 
 let match_func s re = candidate_match_func s re

@@ -10,12 +10,12 @@ let test_tokens_lisp (file : Fpath.t) =
   | File_type.PL (File_type.Lisp _) -> ()
   | _ -> UCommon.pr2 "warning: seems not a lisp file");
 
-  Flag.verbose_lexing := true;
-  Flag.verbose_parsing := true;
+  Common.save_excursion Flag.verbose_lexing true (fun () -> 
+    Common.save_excursion Flag.verbose_parsing true (fun () -> 
 
-  let toks = Parse_lisp.tokens (Parsing_helpers.File file) in
-  toks |> List.iter (fun x -> UCommon.pr2_gen x);
-  ()
+    let toks = Parse_lisp.tokens (Parsing_helpers.File file) in
+    toks |> List.iter (fun x -> UCommon.pr2_gen x);
+  ()))
 
 let test_parse_lisp xs =
   let fullxs = Lib_parsing_lisp.find_source_files_of_dir_or_files xs in

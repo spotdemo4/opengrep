@@ -43,7 +43,7 @@ let visit_xpatterns (func : Xpattern.t -> inside:bool -> unit)
     | P p -> func p ~inside:!bref
     | Anywhere (_, formula)
     | Inside (_, formula) ->
-        Common.save_excursion bref true (fun () -> aux func formula)
+        Common.save_excursion_unsafe bref true (fun () -> aux func formula)
     | Not (_, x) -> aux func x
     | Or (_, xs)
     | And (_, xs) ->

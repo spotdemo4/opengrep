@@ -32,7 +32,7 @@ module OutJ = Semgrep_output_v1_j
 (* Refs *)
 (*****************************************************************************)
 
-let scan_config_parser_ref = ref OutJ.scan_config_of_string
+let scan_config_parser = OutJ.scan_config_of_string
 
 (*****************************************************************************)
 (* Types *)
@@ -209,8 +209,8 @@ let scan_config_of_token caps = function
       match config_string with
       | Ok config_string ->
           (* TODO: Check config string hash, and update rules iff its different, and cache rules in file *)
-          (* See [scan_config_parser_ref] declaration for why we do this *)
-          let scan_config = !scan_config_parser_ref config_string in
+          (* See [scan_config_parser] declaration for why we do this *)
+          let scan_config = scan_config_parser config_string in
           Lwt.return_some scan_config
       | Error e ->
           Logs.warn (fun m -> m "Failed to fetch scan config: %s" e);

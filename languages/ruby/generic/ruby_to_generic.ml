@@ -564,7 +564,7 @@ and expr_as_stmt = function
          * unless it's a metavariable
       *)
       | G.N (G.Id ((s, _), _)) ->
-          if AST_generic.is_metavar_name s || !Flag_parsing.sgrep_mode then
+          if AST_generic.is_metavar_name s || (Domain.DLS.get Flag_parsing.sgrep_mode) then
             G.exprstmt e
           else
             let call = G.Call (e, fb []) |> G.e in

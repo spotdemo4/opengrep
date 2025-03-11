@@ -72,15 +72,16 @@ let pro_hooks_refs =
  * causing fewer surprises, thus it is preferred over 'reset_pro_hooks' which
  * has the opposite properties.
  *)
-let save_pro_hooks_and_reset f0 =
-  let f =
-    pro_hooks_refs
-    |> List.fold_left
-         (fun f (Pro_hook_ref pro_hook) () ->
-           Common.save_excursion pro_hook None f)
-         f0
-  in
-  f ()
+(* NOTE: Commented out because it's not used and it's not thread-safe. *)
+(* let save_pro_hooks_and_reset f0 =
+     let f =
+       pro_hooks_refs
+       |> List.fold_left
+            (fun f (Pro_hook_ref pro_hook) () ->
+              Common.save_excursion pro_hook None f)
+            f0
+     in
+     f () *)
 
 let reset_pro_hooks () =
   pro_hooks_refs |> List.iter (fun (Pro_hook_ref pro_hook) -> pro_hook := None)

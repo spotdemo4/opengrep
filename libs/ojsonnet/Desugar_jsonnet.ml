@@ -512,7 +512,7 @@ let desugar_program ?(import_callback = default_callback) (file : Fpath.t)
     }
   in
   let e =
-    if !Conf_ojsonnet.use_std then
+    if Domain.DLS.get Conf_ojsonnet.use_std then
       let std = Std_jsonnet.get_std_jsonnet () in
       (* 'local std = e_std; e' *)
       Local (fk, [ B (("std", fk), fk, std) ], fk, e)

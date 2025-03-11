@@ -8,4 +8,4 @@ val hook_facts_satisfy_e :
   ref
 
 val hook_path_sensitive : bool ref
-val with_pro_hooks : (unit -> 'a) -> 'a
+(* val with_pro_hooks : (unit -> 'a) -> 'a *)

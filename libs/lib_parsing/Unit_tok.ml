@@ -6,7 +6,9 @@ let t = Testo.create
 
 let token_testable : Tok.t Alcotest.testable =
   let pp fmt tok : unit =
-    Common.save_excursion Tok.pp_full_token_info true (fun () -> Tok.pp fmt tok)
+    (* XXX: Is that ok to not be thread-safe? It's only set in this test,
+     * and tests are run with no parallelism. *)
+    Common.save_excursion_unsafe Tok.pp_full_token_info true (fun () -> Tok.pp fmt tok)
   in
   Alcotest.testable pp Tok.equal
 

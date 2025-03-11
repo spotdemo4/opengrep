@@ -53,6 +53,7 @@ let is_identifier horigin (info : Tok.t) =
 
 let fix_tokens_asi xs =
   let env = () in
+  let sgrep_mode = Domain.DLS.get Flag_parsing.sgrep_mode in
   let rec aux env xs =
     match xs with
     | [] -> []
@@ -64,7 +65,7 @@ let fix_tokens_asi xs =
        | LDDD _ ) as x)
       :: ((TCommentNewline ii | EOF ii) as y)
       :: xs -> (
-        match (x, y, !Flag_parsing.sgrep_mode) with
+        match (x, y, sgrep_mode) with
         (* do NOT ASI *)
 
         (* sgrep-ext: only in sgrep-mode *)
@@ -112,20 +113,21 @@ let fix_tokens_lbody toks =
     let retag_lcolon_semgrep = Hashtbl.create 1 in
     let retag_lparen_semgrep = Hashtbl.create 1 in
 
-    (match trees with
+    (let sgrep_mode = Domain.DLS.get Flag_parsing.sgrep_mode in
+     match trees with
     (* TODO: check that actually a composite literal in it? *)
-    | F.Braces (t1, _body, _) :: _ when !Flag_parsing.sgrep_mode ->
+    | F.Braces (t1, _body, _) :: _ when sgrep_mode ->
         Hashtbl.add retag_lbrace_semgrep t1 true
     (* no way it's a label *)
     | F.Tok (_s, info) :: F.Tok (":", t2) :: _
-      when !Flag_parsing.sgrep_mode && is_identifier horigin info ->
+      when sgrep_mode && is_identifier horigin info ->
         Hashtbl.add retag_lcolon_semgrep t2 true
     (* TODO: could check that xs looks like a parameter list
      * TODO what comes after Parens could be a symbol part of a type
      * instead of just a single type like 'int'?
      *)
     | F.Tok (_s, info) :: F.Parens (l, _xs, _r) :: F.Tok (_s2, info2) :: _
-      when !Flag_parsing.sgrep_mode && is_identifier horigin info
+      when sgrep_mode && is_identifier horigin info
            && is_identifier horigin info2 ->
         Hashtbl.add retag_lparen_semgrep l true
     | _ -> ());
@@ -214,7 +216,7 @@ let fix_tokens_lbody toks =
          | x -> x)
   with
   | Lib_ast_fuzzy.Unclosed (msg, info) ->
-      if !Flag.error_recovery then toks
+      if Domain.DLS.get Flag.error_recovery then toks
       else raise (Parsing_error.Lexical_error (msg, info))
 
 (*****************************************************************************)

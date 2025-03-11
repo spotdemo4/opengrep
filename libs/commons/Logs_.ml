@@ -14,6 +14,8 @@
  *)
 open Common
 
+module TLS = Thread_local_storage
+
 (*****************************************************************************)
 (* Prelude *)
 (*****************************************************************************)
@@ -147,6 +149,7 @@ let create_formatter opt_file =
              Semgrep. *)
           UStdlib.open_out (Fpath.to_string out_file)
         in
+        (* XXX: Do we need [UFormat.synchronized_formatter_of_out_channel] ? *)
         (oc, UFormat.formatter_of_out_channel oc)
   in
   (isatty chan, fmt)
@@ -254,6 +257,106 @@ let read_level_from_env (vars : string list) : Logs.level option option =
 (* Entry points *)
 (*****************************************************************************)
 
+(* Enable threaded logging. *)
+module RMutex = struct
+  (* This is a light copy/paste of the re-entrant mutex from BatteriesThread.RMutex.
+     We do this to avoid importing the massive batteries library. Ours has
+     minor changes to use precise compare instead of polymorphic compare. *)
+  (*
+  * RMutex - Reentrant mutexes
+  * Copyright (C) 2008 David Teller, LIFO, Universite d'Orleans
+  *               2011 Edgar Friendly <thelema314@gmail.com>
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version,
+  * with the special exception on linking described in file LICENSE.
+  *
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  *
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  *)
+
+  type owner =
+    {
+      thread : int;       (**Identity of the latest owner (possibly the current owner)*)
+      mutable depth : int (**Number of times the current owner owns the lock.*)
+    }
+  type t =
+    {
+      primitive : Mutex.t; (**A low-level mutex, used to protect access to [ownership]*)
+      wait      : Condition.t; (** a condition to wait on when the lock is locked *)
+      mutable ownership : owner option;
+    }
+
+  let owner_equal a b =
+    Int.equal a.thread b.thread && Int.equal a.depth b.depth
+
+  let create () =
+    {
+      primitive = Mutex.create ();
+      wait      = Condition.create ();
+      ownership = None
+    }
+
+  (**
+     Attempt to acquire the mutex, waiting indefinitely
+  *)
+  let lock m =
+    let id = Thread.id (Thread.self ()) in
+    Mutex.lock m.primitive; (******Critical section begins*)
+    (
+      match m.ownership with
+      | None -> (*Lock belongs to nobody, I can take it. *)
+        m.ownership <- Some {thread = id; depth = 1}
+      | Some s when Int.equal s.thread id -> (*Lock already belongs to me, I can keep it. *)
+        s.depth <- s.depth + 1
+      | _ -> (*Lock belongs to someone else. *)
+        while not (Option.equal owner_equal m.ownership None) do
+          Condition.wait m.wait m.primitive
+        done;
+        m.ownership <- Some {thread = id; depth = 1}
+    );
+    Mutex.unlock m.primitive (******Critical section ends*)
+
+  (** Unlock the mutex; this function checks that the thread calling
+      unlock is the owner and raises an assertion failure if this is not
+      the case. It will also raise an assertion failure if the mutex is
+      not locked. *)
+  let unlock m =
+    let id = Thread.id (Thread.self ()) in
+    Mutex.lock m.primitive; (******Critical section begins*)
+    (match m.ownership with
+     | Some s ->
+       assert (Int.equal s.thread id); (*If I'm not the owner, we have a consistency issue.*)
+       if s.depth > 1 then
+         s.depth <- s.depth - 1 (*release one depth but we're still the owner*)
+       else
+         begin
+           m.ownership <- None;  (*release once and for all*)
+           Condition.signal m.wait   (*wake up waiting threads *)
+         end
+     | _ -> assert false
+    );
+    Mutex.unlock m.primitive (******Critical section ends  *)
+end
+
+let reentrant_mutex = RMutex.create ()
+let _ =
+  let lock () = RMutex.lock reentrant_mutex
+  and unlock () = RMutex.unlock reentrant_mutex in
+Logs.set_reporter_mutex ~lock ~unlock
+
+(* We use a re-entrant mutex above because otherwise tests using [make core-test]
+ * deadlock. *)
+(* let _ = Logs_threaded.enable () *)
+
 (* Enable basic logging so that you can use Logging calls even before a
  * precise call to setup_logging.
  *)
@@ -334,20 +437,21 @@ let debug_trace_src = Logs.Src.create "debug_trace"
    minimal. This could cause backtraces to not show up if someone
    catches and handles them between the first and the last
    with_debug_trace call. *)
-let is_in_debug_trace_context = ref false
+let is_in_debug_trace_context = TLS.create ()
 
 let with_debug_trace ?(src = debug_trace_src) ~__FUNCTION__
     ?(pp_input : (unit -> string) option) (f : unit -> 'a) : 'a =
   let name = __FUNCTION__ in
-  let currently_in_debug_trace = !is_in_debug_trace_context in
+  let currently_in_debug_trace =
+    (TLS.get_default ~default:(fun () -> false) is_in_debug_trace_context) in
   (match pp_input with
   | None -> Logs.debug ~src (fun m -> m "starting %s" name)
   | Some pp_input ->
       Logs.debug ~src (fun m ->
           m "starting %s with input:\n%s" name (pp_input ())));
   try
-    is_in_debug_trace_context := true;
-    let finally () = is_in_debug_trace_context := currently_in_debug_trace in
+    TLS.set is_in_debug_trace_context true;
+    let finally () = TLS.set is_in_debug_trace_context currently_in_debug_trace in
     let res = Common.protect ~finally f in
     Logs.debug ~src (fun m -> m "finished %s" name);
     res

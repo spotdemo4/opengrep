@@ -40,33 +40,34 @@ let error_msg_tok tok = Parsing_helpers.error_message_info (TH.info_of_tok tok)
 (* Lexing only *)
 (*****************************************************************************)
 let tokens ?(init_state = Lexer_php.INITIAL) input_source =
-  Lexer_php.reset ();
-  Lexer_php._mode_stack := [ init_state ];
 
+  let state = Lexer_php.create () in
+  state.mode := [init_state];
+  
   let token lexbuf =
     let tok =
       (* for yyless emulation *)
-      match !Lexer_php._pending_tokens with
+      match !(state.pending_tokens) with
       | x :: xs ->
-          Lexer_php._pending_tokens := xs;
+          state.pending_tokens := xs;
           x
       | [] -> (
-          match Lexer_php.current_mode () with
-          | Lexer_php.INITIAL -> Lexer_php.initial lexbuf
-          | Lexer_php.ST_IN_SCRIPTING -> Lexer_php.st_in_scripting lexbuf
-          | Lexer_php.ST_IN_SCRIPTING2 -> Lexer_php.st_in_scripting lexbuf
-          | Lexer_php.ST_DOUBLE_QUOTES -> Lexer_php.st_double_quotes lexbuf
-          | Lexer_php.ST_BACKQUOTE -> Lexer_php.st_backquote lexbuf
+          match Lexer_php.current_mode state with
+          | Lexer_php.INITIAL -> Lexer_php.initial state lexbuf
+          | Lexer_php.ST_IN_SCRIPTING -> Lexer_php.st_in_scripting state lexbuf
+          | Lexer_php.ST_IN_SCRIPTING2 -> Lexer_php.st_in_scripting state lexbuf
+          | Lexer_php.ST_DOUBLE_QUOTES -> Lexer_php.st_double_quotes state lexbuf
+          | Lexer_php.ST_BACKQUOTE -> Lexer_php.st_backquote state lexbuf
           | Lexer_php.ST_LOOKING_FOR_PROPERTY ->
-              Lexer_php.st_looking_for_property lexbuf
+              Lexer_php.st_looking_for_property state lexbuf
           | Lexer_php.ST_LOOKING_FOR_VARNAME ->
-              Lexer_php.st_looking_for_varname lexbuf
-          | Lexer_php.ST_VAR_OFFSET -> Lexer_php.st_var_offset lexbuf
-          | Lexer_php.ST_START_HEREDOC s -> Lexer_php.st_start_heredoc s lexbuf
-          | Lexer_php.ST_START_NOWDOC s -> Lexer_php.st_start_nowdoc s lexbuf)
+              Lexer_php.st_looking_for_varname state lexbuf
+          | Lexer_php.ST_VAR_OFFSET -> Lexer_php.st_var_offset state lexbuf
+          | Lexer_php.ST_START_HEREDOC s -> Lexer_php.st_start_heredoc state s lexbuf
+          | Lexer_php.ST_START_NOWDOC s -> Lexer_php.st_start_nowdoc state s lexbuf)
     in
     if not (TH.is_comment tok) then
-      Lexer_php._last_non_whitespace_like_token := Some tok;
+      state.last_non_whitespace_like_token := Some tok;
     tok
   in
   Parsing_helpers.tokenize_all_and_adjust_pos input_source token
@@ -127,10 +128,10 @@ let parse filename =
   match elems with
   | Either.Left xs -> { Parsing_result.ast = xs; tokens = toks; stat }
   | Either.Right (info_of_bads, line_error, cur) ->
-      if not !Flag.error_recovery then
+      if not (Domain.DLS.get Flag.error_recovery) then
         raise (Parsing_error.Syntax_error (TH.info_of_tok cur));
 
-      if !Flag.show_parsing_error then (
+      if Domain.DLS.get Flag.show_parsing_error then (
         Log.err (fun m -> m "parse error\n = %s" (error_msg_tok cur));
         let checkpoint2 = UFile.cat filename |> List.length in
         Log.err (fun m ->
