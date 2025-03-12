@@ -178,27 +178,25 @@ let extract_macros file =
       Pp_token.extract_macros toks)
 [@@profiling]
 
-(* less: pass it as a parameter to parse_program instead ?
- * old: was a ref, but a hashtbl.t is actually already a kind of ref
- *)
-let (_defs : (string, Pp_token.define_body) Hashtbl.t) = Hashtbl.create 101
-
 (* We used to have also a init_defs_builtins() so that we could use a
  * standard.h containing macros that were always useful, and a macros.h
  * that the user could customize for his own project.
  * But this was adding complexity so now we just have _defs and people
  * can call add_defs to add local macro definitions.
  *)
-let add_defs file =
-  if not (Sys.file_exists !!file) then
-    failwith (spf "Could not find %s, have you set PFFF_HOME correctly?" !!file);
-  Log.info (fun m -> m "Using %s macro file" !!file);
-  let xs = extract_macros file in
-  xs |> List.iter (fun (k, v) -> Hashtbl.add _defs k v)
 
-let init_defs file =
-  Hashtbl.clear _defs;
-  add_defs file
+let create_defs (lang: Flag_cpp.language) =
+  match lang with
+  | Flag_cpp.C when Sys.file_exists !!(!Flag_parsing_cpp.macros_h) ->
+    let file = !Flag_parsing_cpp.macros_h in
+    let (defs : (string, Pp_token.define_body) Hashtbl.t) = Hashtbl.create 101 in
+    (* if not (Sys.file_exists !!file) then
+         failwith (spf "Could not find %s, have you set PFFF_HOME correctly?" !!file); *)
+    Log.info (fun m -> m "Using %s macro file" !!file);
+    let xs = extract_macros file in
+    xs |> List.iter (fun (k, v) -> Hashtbl.add defs k v);
+    defs
+  | _ -> Hashtbl.create 101
 
 (*****************************************************************************)
 (* Error recovery *)
@@ -256,6 +254,7 @@ let passed_a_define tr =
  * the lexer, and then the error of the parser. It is not anymore
  * interwinded.
  *
+ * FIXME?  
  * !!!This function use refs, and is not reentrant !!! so take care.
  * It uses the _defs global defined above!!!!
  *)
@@ -269,8 +268,10 @@ let parse_with_lang ?(lang = Flag_parsing_cpp.Cplusplus) file :
   (* -------------------------------------------------- *)
   let toks_orig = tokens (Parsing_helpers.file !!file) in
 
+  let defs = create_defs lang in
+
   let toks =
-    try Parsing_hacks.fix_tokens ~macro_defs:_defs lang toks_orig with
+    try Parsing_hacks.fix_tokens ~macro_defs:defs lang toks_orig with
     | Token_views_cpp.UnclosedSymbol s ->
         Log.warn (fun m -> m "unclosed symbol %s" s);
         if !Flag_cpp.debug_cplusplus then
@@ -459,8 +460,10 @@ let any_of_string lang s =
   Common.save_excursion Flag_parsing.sgrep_mode true (fun () ->
       let toks_orig = tokens (Parsing_helpers.Str s) in
 
+      let defs = create_defs lang in 
+
       let toks =
-        try Parsing_hacks.fix_tokens ~macro_defs:_defs lang toks_orig with
+        try Parsing_hacks.fix_tokens ~macro_defs:defs lang toks_orig with
         | Token_views_cpp.UnclosedSymbol s ->
             Log.warn (fun m -> m "unclosed symbol %s" s);
             if !Flag_cpp.debug_cplusplus then
