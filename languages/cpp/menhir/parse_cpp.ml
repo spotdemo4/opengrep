@@ -269,9 +269,11 @@ let passed_a_define tr =
  * the lexer, and then the error of the parser. It is not anymore
  * interwinded.
  *
- * FIXME?  
- * !!!This function use refs, and is not reentrant !!! so take care.
- * It uses the _defs global defined above!!!!
+ * This function is reentrant as long as it's not interleaved within a single
+ * domain, ie, as long as things continue to work as they do now.
+ * The use of [Common.save_excursion] is safe in that scenario, because it
+ * works with domain-local state.
+ * The [defs] are created in a thread-safe way.
  *)
 let parse_with_lang ?(lang = Flag_parsing_cpp.Cplusplus) file :
     (Ast.program, T.token) Parsing_result.t =
