@@ -1,8 +1,8 @@
 (* Deprecated: use the Ppath module instead! *)
-val filename_without_leading_path :
-  string -> string (* filename *) -> string (* filename *)
 
-val readable : root:string -> string (* filename *) -> string (* filename *)
+val readable : root:Fpath.t -> Fpath.t -> Fpath.t
+(** [readable ~root p] finds a "readable" path to [p] relative to
+    the [root] (this is generally the root of a project). * *)
 
 (* stuff that was in common2.mli *)
 

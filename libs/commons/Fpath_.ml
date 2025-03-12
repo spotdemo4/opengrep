@@ -46,7 +46,7 @@ module Operators = struct
   let ( !! ) = ( !! )
 end
 
-let readable ~root path = Filename_.readable ~root:!!root !!path |> Fpath.v
+let readable = Filename_.readable
 let current_dir = Fpath.v "."
 
 (* TODO: get rid of! *)
