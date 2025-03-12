@@ -42,8 +42,6 @@ let lang_to_python_parsing_mode = function
 (*****************************************************************************)
 
 let just_parse_with_lang lang file : Parsing_result2.t =
-  if lang =*= Lang.C && Sys.file_exists !!(!Flag_parsing_cpp.macros_h) then
-    Parse_cpp.init_defs !Flag_parsing_cpp.macros_h;
 
   match lang with
   (* Neither Menhir nor tree-sitter *)
