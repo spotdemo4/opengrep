@@ -185,17 +185,32 @@ let extract_macros file =
  * can call add_defs to add local macro definitions.
  *)
 
+(* Why cache this?
+ * Because the file comes from a flag, it's common to the full scan,
+ * and there is no reason to repeat the work of reading and processing it.
+ * Moreover, because it does not change during a scan, it's ok to do the
+ * work > 1 times in case of a race.
+ * Invariant: the hashtable is only read after being completely populated
+ * in the function below. *)
+let defs_cached = Atomic.make None
+
 let create_defs (lang: Flag_cpp.language) =
   match lang with
-  | Flag_cpp.C when Sys.file_exists !!(!Flag_parsing_cpp.macros_h) ->
-    let file = !Flag_parsing_cpp.macros_h in
-    let (defs : (string, Pp_token.define_body) Hashtbl.t) = Hashtbl.create 101 in
-    (* if not (Sys.file_exists !!file) then
-         failwith (spf "Could not find %s, have you set PFFF_HOME correctly?" !!file); *)
-    Log.info (fun m -> m "Using %s macro file" !!file);
-    let xs = extract_macros file in
-    xs |> List.iter (fun (k, v) -> Hashtbl.add defs k v);
-    defs
+  | Flag_cpp.C ->
+    begin match Atomic.get defs_cached with
+    | Some defs -> defs
+    | None when Sys.file_exists !!(!Flag_parsing_cpp.macros_h) ->
+      let file = !Flag_parsing_cpp.macros_h in
+      let (defs : (string, Pp_token.define_body) Hashtbl.t) = Hashtbl.create 101 in
+      (* if not (Sys.file_exists !!file) then
+           failwith (spf "Could not find %s, have you set PFFF_HOME correctly?" !!file); *)
+      Log.info (fun m -> m "Using %s macro file" !!file);
+      let xs = extract_macros file in
+      xs |> List.iter (fun (k, v) -> Hashtbl.add defs k v);
+      Atomic.set defs_cached (Some defs);
+      defs
+    | _ -> Hashtbl.create 101
+    end
   | _ -> Hashtbl.create 101
 
 (*****************************************************************************)
