@@ -206,7 +206,7 @@ let create_defs (lang: Flag_cpp.language) =
            failwith (spf "Could not find %s, have you set PFFF_HOME correctly?" !!file); *)
       Log.info (fun m -> m "Using %s macro file" !!file);
       let xs = extract_macros file in
-      xs |> List.iter (fun (k, v) -> Hashtbl.add defs k v);
+      xs |> List.iter (fun (k, v) -> Hashtbl.replace defs k v);
       Atomic.set defs_cached (Some defs);
       defs
     | _ -> Hashtbl.create 101
