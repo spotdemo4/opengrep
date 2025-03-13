@@ -528,7 +528,6 @@ For more information see https://opengrep.dev.
     (uuidm (>= 0.9.9))
     (cohttp (= 6.0.0)) ; 6.0.0 for better error handling
     cohttp-lwt-unix
-    cohttp-lwt-jsoo
     tls-lwt ; needed for TLS support in the cohttp HTTP client (only TLS 1.3 seems to work)
     emile
     (digestif (>= 1.0.0))
@@ -537,11 +536,6 @@ For more information see https://opengrep.dev.
     lwt
     lwt_ppx
     (conf-libev (<> :os win32)) ; for lwt, to get better FD perf
-    ; jsoo
-    (js_of_ocaml (= 5.9.1))
-    (js_of_ocaml-compiler (= 5.9.1))
-    (js_of_ocaml-ppx (= 5.9.1))
-    (js_of_ocaml-lwt (= 5.9.1))
     integers_stubs_js
     ;TODO: this is for secrets and should be in ../dune-project but doing so
     ; slows down a lot our CI because it pulls dependencies that seem
