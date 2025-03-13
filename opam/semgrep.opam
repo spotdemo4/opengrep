@@ -71,7 +71,6 @@ depends: [
   "uuidm" {>= "0.9.9"}
   "cohttp" {= "6.0.0"}
   "cohttp-lwt-unix"
-  "cohttp-lwt-jsoo"
   "tls-lwt"
   "emile"
   "digestif" {>= "1.0.0"}

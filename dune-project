@@ -528,7 +528,6 @@ For more information see https://opengrep.dev.
     (uuidm (>= 0.9.9))
     (cohttp (= 6.0.0)) ; 6.0.0 for better error handling
     cohttp-lwt-unix
-    cohttp-lwt-jsoo
     tls-lwt ; needed for TLS support in the cohttp HTTP client (only TLS 1.3 seems to work)
     emile
     (digestif (>= 1.0.0))
