@@ -443,7 +443,7 @@ let setup_otel trace_endpoint =
   active_endpoint := Some trace_endpoint;
   (* Set the Otel Collector *)
   Otel.Collector.set_backend otel_backend;
-  if Trace.enabled () then
+  if Trace_core.enabled () then
     (* This would only happen if this function is called multiple times which is
        fine, or if someone /else/ has some Trace_core backend setup, but not
        sure when else we'd use it *)
