@@ -792,7 +792,6 @@ let sca_rules_filtering (target : Target.regular) (rules : Rule.t list) :
 let mk_target_handler (caps : < Cap.time_limit >) (config : Core_scan_config.t)
     (valid_rules : Rule.t list)
     (prefilter_cache_opt : Match_env.prefilter_config) : target_handler =
-  (* Note that this function runs in another process *)
   function
   | Lockfile ({ path; kind } as lockfile) ->
       (* TODO: (sca) we always pass None as the manifest target here, but this
