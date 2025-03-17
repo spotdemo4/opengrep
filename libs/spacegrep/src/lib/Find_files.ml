@@ -22,7 +22,7 @@ let memoize f =
       | Some run -> run
       | None ->
           let run = lazy (f x) in
-          Hashtbl.add tbl x run;
+          Hashtbl.replace tbl x run;
           run
     in
     Lazy.force run
