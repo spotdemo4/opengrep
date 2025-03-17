@@ -80,11 +80,11 @@ let is_relevant_rule_for_xtarget r xconf xtarget =
         | None -> true
         | Some (prefilter_formula, func) ->
           (* NOTE: If [lazy_content] is shared in > 1 thread, then this is not
-           * thread-safe. However, each [Xtarget.t] is only acessed in 1 worker
+           * thread-safe. However, each [Xtarget.t] is only accessed in 1 worker
            * task, so there should be no race. *)
           let content = Lazy.force lazy_content in
-          let s = Semgrep_prefilter_j.string_of_formula prefilter_formula in
           Log.info (fun m ->
+              let s = Semgrep_prefilter_j.string_of_formula prefilter_formula in
               m "looking for %s in %s" s !!internal_path_to_content);
           func content)
   in
