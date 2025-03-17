@@ -1117,6 +1117,9 @@ let parse_generic_ast ?(error_recovery = false) ?rewrite_rule_ids
              | Ok rule -> Ok (Either.Left rule)
              | Error { kind = InvalidRule ((kind, ruleid, _) as err); _ }
                when error_recovery || Rule_error.is_skippable_error kind ->
+                 (* We could move this into the closure below, but it would
+                  * slow down the default operation were warnings are emitted,
+                  * since it would be protected by a mutex. *)
                  let s = Rule_error.string_of_invalid_rule_kind kind in
                  Log.warn (fun m ->
                      m "skipping rule %s, error = %s" (Rule_ID.to_string ruleid)

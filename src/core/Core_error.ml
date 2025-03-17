@@ -223,6 +223,10 @@ let known_exn_to_error ?(file : Fpath.t option) (e : Exception.t) : t option =
   | AST_generic.Error (s, tok) ->
       Some (mk_error_tok ?file tok s Out.AstBuilderError)
   | Time_limit.Timeout timeout_info ->
+      (* Maybe move [Printexc.get_backtrace ()] into the fun below?
+       * As mentioned in similar situations elsewhere, this won't really
+       * have an effect in normal operation since warnings are emitted
+       * anyway, so why force this to happen inside a critical section? *)
       let s = Printexc.get_backtrace () in
       Log.warn (fun m -> m "WEIRD Timeout converted to exn, backtrace = %s" s);
       (* This exception should always be reraised. *)

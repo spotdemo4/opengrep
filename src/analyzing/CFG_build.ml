@@ -106,6 +106,9 @@ let resolve_gotos state =
   |> List.iter (fun (srci, label_key) ->
          match Hashtbl.find_opt state.labels label_key with
          | None ->
+             (* We won't move that stuff inside the function below, because
+              * warning is on by default, and logging is protected by a mutex,
+              * which would slow down default operation as a result. *)
              let loc_str =
                match state.opt_tok with
                | None -> ""
