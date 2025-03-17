@@ -312,9 +312,10 @@ class ['self] stats_of_prog_visitor =
       super#visit_expr (env, ctx) x
   end
 
+let stats_of_prog_visitor_instance = new stats_of_prog_visitor
 let stats_of_prog prog : stats =
   let stats = new_stats () in
-  let visitor = new stats_of_prog_visitor 
+  let visitor = stats_of_prog_visitor_instance 
   in
   visitor#visit_program (stats, Iter_with_context.initial_context) prog;
   stats
