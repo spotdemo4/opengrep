@@ -276,8 +276,9 @@ class ['self] get_facts_visitor =
       super#visit_expr (facts, is_first) expr
   end
 
+let get_facts_visitor_instance = new get_facts_visitor
 let get_facts_of_stmt stmt =
-  let fact_v = new get_facts_visitor in
+  let fact_v = get_facts_visitor_instance in
   let facts = ref [] in
   let is_first = ref true in
   fact_v#visit_stmt (facts, is_first) stmt;

@@ -191,7 +191,7 @@ let submatch pm1 pm2 =
   (* THINK: && "pm1.bindings = pm2.bindings" ? *)
   && Range.( $<$ ) (range pm1) (range pm2)
 
-(* Remove matches that are srictly inside another match. *)
+(* Remove matches that are strictly inside another match. *)
 let no_submatches pms =
   (* Initial hash table size based on memory profiling with memtrace. Increase
    * only with caution. *)

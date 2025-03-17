@@ -118,6 +118,10 @@ let full_split ?iflags ?flags ~rex ?pos ?max ?callout subj =
   | Pcre2.Error err -> Error err
 
 let log_error rex subj err =
+ (* NOTE: We could move the [string_fragment] calculation into log function below,
+  * but in normal operation we print the warnings anyway, unless if `--quiet` is
+  * passed. And if we did move it in the log closure, it would be protected by a
+  * mutex which would make normal operation slower. *)
   let string_fragment =
     let len = String.length subj in
     if len < 200 then subj

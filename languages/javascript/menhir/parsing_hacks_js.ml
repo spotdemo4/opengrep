@@ -92,9 +92,10 @@ let rparens_of_if toks =
  * everything in the Tok category?
  *)
 let is_identifier horigin (info : Tok.t) =
-  match Hashtbl.find_opt horigin info with
-  | Some (T.T_ID _) -> true
+  match Hashtbl.find horigin info with
+  | T.T_ID _ -> true
   | _ -> false
+  | exception Not_found -> false
 
 (*****************************************************************************)
 (* Entry point *)

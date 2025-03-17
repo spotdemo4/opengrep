@@ -190,10 +190,9 @@ class ['self] extract_mvars_in_id_position_visitor =
         | _ -> super#visit_expr env x
     end
 
+let extract_mvars_in_id_position_visitor_instance = new extract_mvars_in_id_position_visitor
 let extract_mvars_in_id_position ?lang:_ any =
-  (* let mvars = ref MvarSet.empty in *)
-  let visitor = new extract_mvars_in_id_position_visitor
+  let visitor = extract_mvars_in_id_position_visitor_instance
   in
   visitor#visit_any () any;
   visitor#get_mvars
-  (* !mvars *)

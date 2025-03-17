@@ -11,6 +11,9 @@ type visit_tracker = {
   mark_visited : string -> unit;
 }
 
+(* TODO: Make thread safe if needed; but for now this is not the case.
+ * The hash table is shared by all invocations of the function so it's
+ * an issue if it's called concurrently. *)
 let memoize f =
   let tbl = Hashtbl.create 100 in
   fun x ->
@@ -19,7 +22,7 @@ let memoize f =
       | Some run -> run
       | None ->
           let run = lazy (f x) in
-          Hashtbl.add tbl x run;
+          Hashtbl.replace tbl x run;
           run
     in
     Lazy.force run
@@ -36,6 +39,9 @@ let stat = memoize Unix.stat
    by symbolic links.
 *)
 let create_visit_tracker () =
+  (* TODO: Make thread safe if needed; but for now this is not the case.
+   * The hash table is shared by all invocations of the function so it's
+   * an issue if it's called concurrently. *)
   let tbl = Hashtbl.create 100 in
   let get_id path =
     try Some (stat path).st_ino with

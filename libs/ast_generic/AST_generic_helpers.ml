@@ -489,8 +489,9 @@ class ['self] extract_info_visitor =
       | _ -> super#visit_expr globals x
   end
 
+let extract_info_visitor_instance = new extract_info_visitor
 let ii_of_any any =
-  let v = new extract_info_visitor in
+  let v = extract_info_visitor_instance in
   let globals = ref [] in
   v#visit_any globals any;
   List.rev !globals
@@ -687,8 +688,9 @@ class ['self] any_range_visitor =
     method! visit_Alias ranges id _e = self#visit_ident ranges id
   end
 
+let any_range_visitor_instance = new any_range_visitor
 let nearest_any_of_pos prog position =
-  let v = new any_range_visitor in
+  let v = any_range_visitor_instance in
   let info = { range = ref None; any = ref None; position } in
   v#visit_program info prog;
   !(info.any)
