@@ -207,9 +207,9 @@ let make_node f anchor args env =
 
 let make_alias anchor pos env =
   let t = mk_tok pos anchor env in
-  match Hashtbl.find_opt env.anchors anchor with
-  | Some (expr, _p) -> (G.e (G.Alias ((anchor, t), expr)), pos)
-  | None -> raise (UnrecognizedAlias t)
+  match Hashtbl.find env.anchors anchor with
+  | (expr, _p) -> (G.e (G.Alias ((anchor, t), expr)), pos)
+  | exception Not_found -> raise (UnrecognizedAlias t)
 
 (*
    A tag is a sort of type annotation e.g. '!number 42' tags the value

@@ -171,9 +171,9 @@ let add_constant_env ident (sid, svalue) (env : Eval.env) =
 
 let is_assigned_just_once stats var =
   let id_str, sid = var in
-  match Hashtbl.find_opt stats var with
-  | Some stats -> !(stats.lvalue) = 1
-  | None ->
+  match Hashtbl.find stats var with
+  | stats -> !(stats.lvalue) = 1
+  | exception Not_found ->
       Log.debug (fun m ->
           m ~tags "No stats for (%s,%s)" id_str (G.SId.show sid));
       false
@@ -184,15 +184,16 @@ let incr_num_constructors stats cid =
     try Hashtbl.find stats.class_stats cstr with
     | Not_found ->
         let stats_cid = { num_constructors = 0 } in
+        (* XXX: Could we change this to [replace]? *)
         Hashtbl.add stats.class_stats cstr stats_cid;
         stats_cid
   in
   stats_cid.num_constructors <- stats_cid.num_constructors + 1
 
 let has_just_one_constructor stats cstr =
-  match Hashtbl.find_opt stats cstr with
-  | Some stats -> stats.num_constructors = 1
-  | None ->
+  match Hashtbl.find stats cstr with
+  | stats -> Int.equal stats.num_constructors 1
+  | exception Not_found ->
       Log.debug (fun m -> m ~tags "No stats for %s" cstr);
       false
 
@@ -574,9 +575,9 @@ class ['self] propagate_basic_visitor lang stats =
             rexp ) ->
           let opt_svalue = Eval.eval env rexp in
           let is_private_class_field =
-            match Hashtbl.find_opt env.attributes (fst id, sid) with
-            | None -> false
-            | Some attrs ->
+            match Hashtbl.find env.attributes (fst id, sid) with
+            | exception Not_found -> false
+            | attrs ->
                 List.exists is_private attrs && is_class_field env kind
           in
           let in_unique_constructor =

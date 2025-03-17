@@ -40,9 +40,10 @@ module Log = Log_parser_java.Log
  * coupling: copy-paste of Parsing_hacks_go.is_identifier
  *)
 let is_identifier horigin (info : Tok.t) =
-  match Hashtbl.find_opt horigin info with
-  | Some (IDENTIFIER _) -> true
+  match Hashtbl.find horigin info with
+  | IDENTIFIER _ -> true
   | _ -> false
+  | exception Not_found -> false
 
 (*****************************************************************************)
 (* Generic inference *)

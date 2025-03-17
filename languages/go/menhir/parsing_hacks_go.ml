@@ -43,9 +43,10 @@ type env_lbody = InIfHeader | Normal
  * everything in the Tok category?
  *)
 let is_identifier horigin (info : Tok.t) =
-  match Hashtbl.find_opt horigin info with
-  | Some (T.LNAME _) -> true
+  match Hashtbl.find horigin info with
+  | T.LNAME _ -> true
   | _ -> false
+  | exception Not_found -> false
 
 (*****************************************************************************)
 (* ASI *)
