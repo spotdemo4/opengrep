@@ -357,16 +357,17 @@ let do_visit_with_ref visitor any =
   visitor#visit_any res any;
   List.rev !res
 
-let lambdas_in_expr e =
-  let visitor =
-    object (_self : 'self)
-      inherit [_] AST_generic.iter_no_id_info
+class ['self] lambdas_in_expr_visitor =
+  object (_self : 'self)
+    inherit [_] AST_generic.iter_no_id_info
 
-      (* TODO Should we recurse into the Lambda? *)
-      method! visit_Lambda aref def = Stack_.push def aref
-    end
-  in
-  do_visit_with_ref visitor (E e)
+    (* TODO Should we recurse into the Lambda? *)
+    method! visit_Lambda aref def = Stack_.push def aref
+  end
+
+let lambdas_in_expr_visitor_instance = new lambdas_in_expr_visitor
+let lambdas_in_expr e =
+  do_visit_with_ref lambdas_in_expr_visitor_instance (E e)
 [@@profiling]
 
 (* opti: using memoization speed things up a bit too

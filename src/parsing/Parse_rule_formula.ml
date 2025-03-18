@@ -256,23 +256,27 @@ and metavariable_comparison = {
 (* This now changes all such metavariables. We expect in most cases there should
    just be one, anyways.
 *)
-let rewrite_metavar_comparison_strip cond =
-  let visitor =
-    object (_self : 'self)
-      inherit [_] AST_generic.map_legacy as super
 
-      method! visit_expr env e =
-        (* apply on children *)
-        let e = super#visit_expr env e in
-        match e.G.e with
-        | G.N (G.Id ((s, tok), _idinfo)) when Mvar.is_metavar_name s ->
-            let py_int = G.Id (("int", tok), G.empty_id_info ()) in
-            G.Call (G.N py_int |> G.e, Tok.unsafe_fake_bracket [ G.Arg e ])
-            |> G.e
-        | _ -> e
-    end
-  in
-  visitor#visit_expr () cond
+class ['self] rewrite_metavar_comparison_strip_visitor =
+  object (_self : 'self)
+    inherit [_] AST_generic.map_legacy as super
+
+    method! visit_expr env e =
+      (* apply on children *)
+      let e = super#visit_expr env e in
+      match e.G.e with
+      | G.N (G.Id ((s, tok), _idinfo)) when Mvar.is_metavar_name s ->
+          let py_int = G.Id (("int", tok), G.empty_id_info ()) in
+          G.Call (G.N py_int |> G.e, Tok.unsafe_fake_bracket [ G.Arg e ])
+          |> G.e
+      | _ -> e
+  end
+
+let rewrite_metavar_comparison_strip_visitor_instance =
+  new rewrite_metavar_comparison_strip_visitor
+
+let rewrite_metavar_comparison_strip cond =
+  rewrite_metavar_comparison_strip_visitor_instance#visit_expr () cond
 
 let find_formula_old env (rule_dict : dict) :
     (key * G.expr, Rule_error.t) result =
