@@ -16,6 +16,8 @@ type ranges = function_info list [@@deriving show]
 (* Entry point *)
 (*****************************************************************************)
 
+(* This is not used, but if it is to be used, we should create a class and
+ * then a common shared object. *)
 let ranges (prog : AST_generic.program) : ranges =
   let visitor =
     object (_self : 'self)

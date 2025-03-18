@@ -138,21 +138,22 @@ end
 
 let is_best_match = Best_matches.is_best_match
 
+class ['self] find_origs_visitor =
+  object (_self : 'self)
+    inherit [_] IL.iter as super
+
+    method! visit_instr acc i =
+      acc := Seq.cons i.iorig !acc;
+      super#visit_instr acc i
+
+    method! visit_exp acc e =
+      acc := Seq.cons e.eorig !acc;
+      super#visit_exp acc e
+  end
+
+let find_origs_visitor_instance = new find_origs_visitor
 (* See NOTE "Best matches" for more context. *)
 let best_matches_in_nodes ~sub_matches_of_orig fun_cfg =
-  let find_origs_visitor =
-    object (_self : 'self)
-      inherit [_] IL.iter as super
-
-      method! visit_instr acc i =
-        acc := Seq.cons i.iorig !acc;
-        super#visit_instr acc i
-
-      method! visit_exp acc e =
-        acc := Seq.cons e.eorig !acc;
-        super#visit_exp acc e
-    end
-  in
   (* We traverse the CFG and we check for every sub-match for a taint specification.
    * These are the potential matches that we will pass to the 'Best_matches' data
    * structure, from which it will select the "best matches".
@@ -187,7 +188,7 @@ let best_matches_in_nodes ~sub_matches_of_orig fun_cfg =
   |> Seq.concat_map (fun node ->
          let all_origs : IL.orig Seq.t =
            let origs = ref Seq.empty in
-           find_origs_visitor#visit_node origs node;
+           find_origs_visitor_instance#visit_node origs node;
            !origs
          in
          all_origs |> Seq.concat_map sub_matches_of_orig)

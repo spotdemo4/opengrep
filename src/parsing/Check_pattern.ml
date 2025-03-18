@@ -68,9 +68,10 @@ class ['self] metavar_checker =
       super#visit_ident (error, lang) id
   end
 
+let metavar_checker_instance = new metavar_checker
 let check_pattern_metavars error lang ast =
   if lang_has_no_dollar_ids lang then
-    (new metavar_checker)#visit_any (error, lang) ast
+    metavar_checker_instance#visit_any (error, lang) ast
 
 exception CheckFailure of string
 
