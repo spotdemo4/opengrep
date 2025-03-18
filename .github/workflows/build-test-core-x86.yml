@@ -37,7 +37,7 @@ jobs:
       - name: Make checkout speedy
         run: git config --global fetch.parallel 50
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           submodules: true
 
@@ -52,8 +52,8 @@ jobs:
             libpsl-static zstd-static libidn2-static \
             libunistring-static tar zstd
 
-      - name: Set GHA cache for OPAM 
-        uses: actions/cache@v4
+      - name: Set GHA cache for OPAM
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # ratchet:actions/cache@v4
         with:
           key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ hashFiles('opam/*.opam') }}
           path: _opam
@@ -94,7 +94,7 @@ jobs:
           cp bin/opengrep-core artifacts/
           tar czf artifacts.tgz artifacts
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: opengrep-core-x86
           path: artifacts.tgz
@@ -107,13 +107,13 @@ jobs:
     steps:
       - name: Make checkout speedy
         run: git config --global fetch.parallel 50
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           submodules: true
       - run: |
           apk update
           apk add --no-cache zip python3 py3-pip py3-virtualenv python3-dev gcc musl-dev
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:
           name: opengrep-core-x86
       - run: |
@@ -122,7 +122,7 @@ jobs:
           python3 -m venv venv
           . venv/bin/activate
           ./scripts/build-wheels.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: musllinux-x86-wheel
           path: cli/dist.zip

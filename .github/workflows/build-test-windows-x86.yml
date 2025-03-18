@@ -10,7 +10,7 @@ on:
       - windows/**
       # - dm/** # branch where this change was introduced
     paths-ignore:
-    - '**.md'
+      - '**.md'
   workflow_call:
     inputs:
       use-cache:
@@ -69,14 +69,14 @@ jobs:
           git config --global core.autocrlf input;
           git config --system core.longpaths true;
           git config --global fetch.parallel 50
-      
-      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           submodules: true
 
       - name: Set-up cygwin
         # if: steps.cache.outputs.cache-hit != 'true'
-        uses: cygwin/cygwin-install-action@master
+        uses: cygwin/cygwin-install-action@f61179d72284ceddc397ed07ddb444d82bf9e559 # ratchet:cygwin/cygwin-install-action@master
         with:
           install-dir: D:/cygwin
           packages: curl,diffutils,m4,make,mingw64-i686-gcc-core,mingw64-i686-gcc-g++,mingw64-i686-openssl=1.0.2u+za-1,mingw64-x86_64-gcc-core,mingw64-x86_64-gcc-g++,mingw64-x86_64-openssl=1.0.2u+za-1,patch,perl,rsync,unzip,mingw64-x86_64-libssh2,mingw64-x86_64-nghttp2,mingw64-x86_64-pcre,mingw64-x86_64-pcre2,mingw64-x86_64-win-iconv,mingw64-x86_64-zstd,mingw64-x86_64-gettext,mingw64-x86_64-libidn2,mingw64-x86_64-curl,gnupg2,mingw64-x86_64-gmp
@@ -116,7 +116,7 @@ jobs:
 
       - name: Restore Dune cache
         id: cache-dune-win32-64
-        uses: actions/cache@v4
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # ratchet:actions/cache@v4
         with:
           path: ${{ env.DUNE_CACHE_ROOT }}
           key: dune-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ github.run_id }}
@@ -124,14 +124,14 @@ jobs:
       
       - name: Restore _opam
         id: cache-opam-win32-64
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # ratchet:actions/cache/restore@v4
         with:
           path: _opam
           key: opam-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ hashFiles('opam/*.opam') }}
 
       - name: Restore OPAM_ROOT
         id: cache-opamroot-win32-64
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # ratchet:actions/cache/restore@v4
         with:
           path: ${{ env.OPAMROOT }} # C:\Users\runneradmin\AppData\Local\opam
           key: opamroot-cache-${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ hashFiles('opam/*.opam') }}
@@ -298,7 +298,7 @@ jobs:
       - name: Save _opam
         if: steps.cache-opam-win32-64.outputs.cache-hit != 'true'
         id: cache-opam-win32-64-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@d4323d4df104b026a6aa633fdb11d772146be0bf # ratchet:actions/cache/save@v4
         with:
           path: _opam
           key: ${{ steps.cache-opam-win32-64.outputs.cache-primary-key }}
@@ -306,7 +306,7 @@ jobs:
       - name: Save OPAM_ROOT
         if: steps.cache-opamroot-win32-64.outputs.cache-hit != 'true'
         id: cache-opamroot-win32-64-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@d4323d4df104b026a6aa633fdb11d772146be0bf # ratchet:actions/cache/save@v4
         with:
           path: ${{ env.OPAMROOT }} # C:\Users\runneradmin\AppData\Local\opam
           key: ${{ steps.cache-opamroot-win32-64.outputs.cache-primary-key }}
@@ -381,7 +381,7 @@ jobs:
 
           tar czvf artifacts.tgz artifacts
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: opengrep-core-and-dependent-libs-w64-artifact
           path: artifacts.tgz
@@ -394,10 +394,10 @@ jobs:
       - build-core
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:
           name: opengrep-core-and-dependent-libs-w64-artifact
       - env:
@@ -406,7 +406,7 @@ jobs:
           tar xvfz artifacts.tgz
           cp artifacts/* cli/src/semgrep/bin
           ./scripts/build-wheels.sh --plat-name win_amd64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: windows-x86-wheel
           path: cli/dist.tgz
@@ -419,7 +419,7 @@ jobs:
       - build-wheels
     runs-on: windows-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:
           name: windows-x86-wheel
       - run: tar xzvf dist.tgz
@@ -434,7 +434,7 @@ jobs:
           export PYTHONIOENCODING=utf-8;
           echo '1 == 1' | opengrep -l python -e '$X == $X' -
       # Test SARIF output which previously failed on Windows only:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           submodules: false
       - name: include paths test
