@@ -8,7 +8,7 @@ jobs:
   build-self-contained-osx-binary:
     runs-on: macos-13-xlarge
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Install pipenv
@@ -19,8 +19,8 @@ jobs:
 
       - name: install some dependencies for windows (pyinstaller only)
         run: pipenv run pip install chardet charset-normalizer
-      
-      - uses: actions/download-artifact@v4
+
+      - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:
           name: osx-arm64-wheel
 
@@ -61,7 +61,7 @@ jobs:
       - name: Zip artifact
         run: zip -j opengrep.zip dist/opengrep
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: opengrep_osx_binary_arm64
           path: opengrep.zip 
@@ -70,7 +70,7 @@ jobs:
     needs: build-self-contained-osx-binary
     runs-on: macos-13-xlarge
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:
           name: opengrep_osx_binary_arm64
       - run: unzip opengrep.zip

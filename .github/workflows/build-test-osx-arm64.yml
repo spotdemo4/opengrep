@@ -34,10 +34,10 @@ jobs:
         ocaml_version: ["5.3.0"]
     runs-on: macos-13-xlarge # NOTE: For intel, we need macos-13-large it seems.
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # ratchet:actions/setup-python@v4
         with:
           python-version: "3.11"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           submodules: true
       - name: Debug use-cache input
@@ -47,7 +47,7 @@ jobs:
           SEGMENT_DOWNLOAD_TIMEOUT_MINS: 2
         # if: ${{ inputs.use-cache == 'true' || inputs.use-cache == '' }}
         name: Set GHA cache for OPAM in ~/.opam
-        uses: actions/cache@v4
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # ratchet:actions/cache@v4
         with:
           key: ${{ runner.os }}-${{ runner.arch }}-v1-opam-${{ matrix.ocaml_version }}-${{ hashFiles('opam/*.opam') }}
           path: ~/.opam
@@ -111,7 +111,7 @@ jobs:
 
           popd
           tar czf artifacts.tgz artifacts
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: opengrep-osx-arm64
           path: artifacts.tgz
@@ -121,20 +121,20 @@ jobs:
       - build-core
     runs-on: macos-13-xlarge
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # ratchet:actions/setup-python@v4
         with:
           python-version: "3.11"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:
           name: opengrep-osx-arm64
       - run: |
           tar xvfz artifacts.tgz
           cp artifacts/* cli/src/semgrep/bin
           ./scripts/build-wheels.sh --plat-name macosx_11_0_arm64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
           name: osx-arm64-wheel
           path: cli/dist.zip
@@ -144,10 +144,10 @@ jobs:
       - build-wheels
     runs-on: macos-13-xlarge
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # ratchet:actions/setup-python@v4
         with:
           python-version: "3.11"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:
           name: osx-arm64-wheel
       - run: unzip dist.zip
