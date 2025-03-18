@@ -41,7 +41,7 @@ def _print_product_status(sast_enabled: bool = True, sca_enabled: bool = False) 
     (Simple) print the statuses of enabled products to stdout when the user
     is given the product-focused CLI UX treatment.
     """
-    learn_more_url = with_color(Colors.cyan, "https://sg.run/cloud", underline=True)
+    learn_more_url = with_color(Colors.cyan, "https://opengrep.dev", underline=True)
     login_command = with_color(Colors.gray, "`semgrep login`")
     is_logged_in = auth.is_logged_in_weak()
     all_enabled = True  # assume all enabled until we find a disabled product
@@ -52,20 +52,6 @@ def _print_product_status(sast_enabled: bool = True, sca_enabled: bool = False) 
             sast_enabled,
             [
                 "Basic security coverage for first-party code vulnerabilities.",
-            ],
-        ),
-        (
-            "Semgrep Code (SAST)",
-            is_logged_in and sast_enabled,
-            [
-                "Find and fix vulnerabilities in the code you write with advanced scanning and expert security rules.",
-            ],
-        ),
-        (
-            "Semgrep Supply Chain (SCA)",
-            sca_enabled,
-            [
-                "Find and fix the reachable vulnerabilities in your OSS dependencies.",
             ],
         ),
     ]
@@ -79,20 +65,9 @@ def _print_product_status(sast_enabled: bool = True, sca_enabled: bool = False) 
             console.print(f"  {with_feature_status(enabled=enabled)} {feature}")
 
     if not is_logged_in:
-        message = "\n".join(
-            wrap(
-                f"💎 Get started with all Semgrep products via {login_command}.",
-                width=80,
-            )
-            + [f"✨ Learn more at {learn_more_url}."]
-        )
+        message = f"✨ Learn more at {learn_more_url}."
         console.print(f"\n{message}\n")
     elif not all_enabled:
-        # TODO: Handle cases where SAST / SCA are not enabled (GROW-53)
-        # We should suggest a resolution such as enabling supply chain in SCP settings, and
-        # run then `semgrep ci`. However, there are some additional edge cases to consider
-        # such as feature availability / required plan upgrades, and thus we will punt showing
-        # a resolution for now.
         console.print(" ")  # space intentional for progress bar padding
     else:
         console.print(" ")  # space intentional for progress bar padding

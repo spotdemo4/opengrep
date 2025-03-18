@@ -54,9 +54,10 @@ For more information about Opengrep, visit @{<cyan;ul>https://opengrep.dev@}
 
 @{<ul>Help@}:
   @{<cyan>opengrep COMMAND --help@}      For more information on each command
-
-For the CLI docs visit @{<cyan;ul>https://opengrep.dev/docs/cli-reference@}
 |}
+(* TODO: Add back when fixed, this was the last line above:
+ * For the CLI docs visit @{<cyan;ul>https://opengrep.dev/docs/cli-reference@}
+ *)
 
 (* coupling: see above *)
 let print_semgrep_dashdash_help (stdout : Cap.Console.stdout) =
