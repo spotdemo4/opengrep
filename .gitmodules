@@ -120,7 +120,7 @@ url = https://github.com/semgrep/pcre2-ocaml
 
 [submodule "OSS/languages/ql/tree-sitter/semgrep-ql"]
 path = languages/ql/tree-sitter/semgrep-ql
-url = https://github.com/semgrep/semgrep-ql
+url = https://github.com/opengrep/semgrep-ql
 
 [submodule "OSS/languages/ruby/tree-sitter/semgrep-ruby"]
 path = languages/ruby/tree-sitter/semgrep-ruby
