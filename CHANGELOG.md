@@ -1,5 +1,24 @@
 # Changelog
 
+
+## [1.0.1](https://github.com/opengrep/opengrep/releases/tag/v1.0.1) - 19-03-2025
+
+### Bug fixes
+
+- Fix tree-sitter parsers for lisp, clojure and terraform in #166
+- Pass jobs parameter to scan with --test in #164
+
+### Improvements
+
+- Pin Github actions to commit SHA in #162 and #163
+
+### Contributors
+
+@dimitris-m
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.0.0...v1.0.1
+
+
 ## [1.0.0](https://github.com/opengrep/opengrep/releases/tag/v1.0.0) - 18-03-2025
 
 ### Highlights
