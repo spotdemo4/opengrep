@@ -64,7 +64,7 @@ url = https://github.com/opengrep/semgrep-php
 
 [submodule "OSS/languages/terraform/tree-sitter/semgrep-hcl"]
 path = languages/terraform/tree-sitter/semgrep-hcl
-url = https://github.com/semgrep/semgrep-hcl
+url = https://github.com/opengrep/semgrep-hcl
 
 [submodule "OSS/languages/solidity/tree-sitter/semgrep-solidity"]
 path = languages/solidity/tree-sitter/semgrep-solidity
@@ -92,7 +92,7 @@ url = https://github.com/opengrep/semgrep-jsonnet.git
 
 [submodule "OSS/languages/lisp/tree-sitter/semgrep-clojure"]
 path = languages/lisp/tree-sitter/semgrep-clojure
-url = https://github.com/semgrep/semgrep-clojure.git
+url = https://github.com/opengrep/semgrep-clojure.git
 
 [submodule "OSS/languages/cairo/tree-sitter/semgrep-cairo"]
 path = languages/cairo/tree-sitter/semgrep-cairo
