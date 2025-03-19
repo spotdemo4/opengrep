@@ -458,6 +458,7 @@ def generate_test_results(
     json_output: bool,
     engine_type: EngineType,
     optimizations: str = "none",
+    jobs: int,
 ) -> None:
     config_filenames = get_config_filenames(config)
     config_test_filenames = get_config_test_filenames(config, config_filenames, target)
@@ -492,7 +493,11 @@ def generate_test_results(
         strict=strict,
         optimizations=optimizations,
     )
-    with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+    # XXX: Maybe no need for the pool if jobs = 1.
+    cpu_count = multiprocessing.cpu_count()
+    jobs = min(jobs, cpu_count) if (jobs is not None and jobs > 0) else cpu_count
+    # print(f"Running with {jobs} jobs")
+    with multiprocessing.Pool(jobs) as pool:
         results = pool.starmap(invoke_semgrep_fn, config_with_tests)
 
     config_with_errors, config_without_errors = partition(results, lambda r: bool(r[1]))
@@ -705,6 +710,7 @@ def test_main(
     json: bool,
     optimizations: str,
     engine_type: EngineType,
+    jobs: int,
 ) -> None:
     if len(target) != 1:
         raise Exception("only one target directory allowed for tests")
@@ -726,4 +732,5 @@ def test_main(
         json_output=json,
         engine_type=engine_type,
         optimizations=optimizations,
+        jobs=jobs,
     )
