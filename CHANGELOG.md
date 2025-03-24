@@ -1,6 +1,16 @@
 # Changelog
 
 
+## [1.0.2](https://github.com/opengrep/opengrep/releases/tag/v1.0.2) - 24-03-2025
+
+### Improvements
+
+* Produce aarch64 linux binaries by @dimitris-m in #171
+* Use opengrep's fork of semgrep-interfaces by @maciejpirog in #168
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.0.1...v1.0.2
+
+
 ## [1.0.1](https://github.com/opengrep/opengrep/releases/tag/v1.0.1) - 19-03-2025
 
 ### Bug fixes
