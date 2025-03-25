@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
  * LICENSE for more details.
  *)
-open Common
+open Fpath_.Operators
 module CST = Tree_sitter_elixir.CST
 open AST_elixir
 module G = AST_generic
@@ -89,10 +89,10 @@ let map_anon_choice_PLUS_8019319 (env : env) (x : CST.anon_choice_PLUS_8019319)
 let map_terminator (env : env) (x : CST.terminator) : Tok.t list =
   match x with
   | `Rep_pat_509ec78_SEMI (v1, v2) ->
-      let v1 = Common.map (token env (* pattern \r?\n *)) v1 in
+      let v1 = List_.map (token env (* pattern \r?\n *)) v1 in
       let v2 = (* ";" *) token env v2 in
       v1 @ [ v2 ]
-  | `Rep1_pat_509ec78 xs -> Common.map (token env (* pattern \r?\n *)) xs
+  | `Rep1_pat_509ec78 xs -> List_.map (token env (* pattern \r?\n *)) xs
 
 (* helper to factorize code *)
 let map_terminator_opt env v1 : Tok.t list option =
@@ -114,7 +114,7 @@ let map_identifier (env : env) (x : CST.identifier) : ident =
 let map_quoted_xxx (env : env) (v1, v2, v3) : string wrap bracket =
   let l = (* "/" or another one *) token env v1 in
   let xs =
-    Common.map
+    List_.map
       (fun x ->
         match x with
         | `Quoted_content_slash tok
@@ -137,7 +137,7 @@ let map_quoted_xxx (env : env) (v1, v2, v3) : string wrap bracket =
 let map_quoted_i_xxx f_map_interpolation (env : env) (v1, v2, v3) =
   let v1 = (* "<" or another one *) token env v1 in
   let v2 =
-    Common.map
+    List_.map
       (fun x ->
         match x with
         | `Quoted_content_i_angle tok
@@ -266,14 +266,14 @@ and map_anon_choice_choice_stab_clause_rep_term_choice_stab_clause_b295119
         match v1 with
         | `Stab_clause x -> map_stab_clause env x
       in
-      let v2 = Common.map (map_anon_term_choice_stab_clause_70647b7 env) v2 in
+      let v2 = List_.map (map_anon_term_choice_stab_clause_70647b7 env) v2 in
       Clauses (v1 :: v2)
   | `Choice_exp_rep_term_choice_exp_opt_term (v1, v2, v3) ->
       let v1 =
         match v1 with
         | `Exp x -> map_expression env x
       in
-      let v2 = Common.map (map_anon_term_choice_exp_996111b env) v2 in
+      let v2 = List_.map (map_anon_term_choice_exp_996111b env) v2 in
       let _v3 = map_terminator_opt env v3 in
       Body (v1 :: v2)
 
@@ -298,7 +298,7 @@ and map_anon_exp_rep_COMMA_exp_opt_COMMA_keywos_041d82e (env : env)
     arguments =
   let v1 = map_expression env v1 in
   let v2 =
-    Common.map
+    List_.map
       (fun (v1, v2) ->
         let _v1 = (* "," *) token env v1 in
         let v2 = map_expression env v2 in
@@ -367,6 +367,10 @@ and map_atom (env : env) (x : CST.atom) : atom =
       let t = (* quoted_atom_start *) token env v1 in
       let x = map_anon_choice_quoted_i_double_d7d5f65 env v2 in
       (t, Quoted1 x)
+  | `Meta_atom (v1, v2) ->
+    let t = (* ":" *) token env v1 in
+    let x = (* semgrep_metavariable *) str env v2 in
+    (t, X1 x)
 
 and map_binary_operator (env : env) (x : CST.binary_operator) : expr =
   match x with
@@ -532,7 +536,7 @@ and map_body (env : env) ((v1, v2, v3, v4) : CST.body) : body =
   let _v1 = map_terminator_opt env v1 in
   let v2 = map_expression env v2 in
   let v3 =
-    Common.map
+    List_.map
       (fun (v1, v2) ->
         let _v1 = map_terminator env v1 in
         let v2 = map_expression env v2 in
@@ -576,7 +580,7 @@ and map_call_arguments_with_trailing_separator (env : env)
   | `Exp_rep_COMMA_exp_opt_COMMA_keywos_with_trai_sepa (v1, v2, v3) ->
       let v1 = map_expression env v1 in
       let v2 =
-        Common.map
+        List_.map
           (fun (v1, v2) ->
             let _v1 = (* "," *) token env v1 in
             let v2 = map_expression env v2 in
@@ -683,7 +687,7 @@ and map_do_block (env : env) ((v1, v2, v3, v4, v5) : CST.do_block) : do_block =
     | None -> Clauses []
   in
   let extras =
-    Common.map
+    List_.map
       (fun x ->
         match x with
         | `After_blk x -> map_after_block env x
@@ -866,7 +870,7 @@ and map_expression (env : env) (x : CST.expression) : expr =
       let _v2 = map_terminator_opt env v2 in
       let x = map_stab_clause env v3 in
       let xs =
-        Common.map
+        List_.map
           (fun (v1, v2) ->
             let _v1 = map_terminator env v1 in
             let v2 = map_stab_clause env v2 in
@@ -890,7 +894,7 @@ and map_items_with_trailing_separator (env : env)
   | `Exp_rep_COMMA_exp_opt_COMMA (v1, v2, v3) ->
       let v1 = map_expression env v1 in
       let v2 =
-        Common.map
+        List_.map
           (fun (v1, v2) ->
             let _v1 = (* "," *) token env v1 in
             let v2 = map_expression env v2 in
@@ -905,7 +909,7 @@ and map_items_with_trailing_separator (env : env)
         | Some (v1, v2, v3) ->
             let v1 = map_expression env v1 in
             let v2 =
-              Common.map
+              List_.map
                 (fun (v1, v2) ->
                   let _v1 = (* "," *) token env v1 in
                   let v2 = map_expression env v2 in
@@ -919,6 +923,9 @@ and map_items_with_trailing_separator (env : env)
       let xs = map_keywords_with_trailing_separator env v2 in
       items_of_exprs_and_keywords v1 xs
 
+and map_pat_5eb9c21 (env : env) (tok : CST.pat_5eb9c21) =
+  (* pattern :\s *) token env tok
+
 and map_keyword (env : env) (x : CST.keyword) : keyword =
   match x with
   | `Kw_ tok ->
@@ -929,11 +936,15 @@ and map_keyword (env : env) (x : CST.keyword) : keyword =
       let v1 = map_anon_choice_quoted_i_double_d7d5f65 env v1 in
       let tcolon = (* pattern :\s *) token env v2 in
       (Quoted1 v1, tcolon)
+  | `Meta_kw (v1, v2) ->
+      let v1 = (* semgrep_metavariable *) str env v1 in
+      let v2 = map_pat_5eb9c21 (* token *) env v2 in
+      (X1 v1, v2)
 
 and map_keywords (env : env) ((v1, v2) : CST.keywords) : keywords =
   let v1 = map_pair env v1 in
   let v2 =
-    Common.map
+    List_.map
       (fun (v1, v2) ->
         let _v1 = (* "," *) token env v1 in
         let v2 = map_pair env v2 in
@@ -946,7 +957,7 @@ and map_keywords_with_trailing_separator (env : env)
     ((v1, v2, v3) : CST.keywords_with_trailing_separator) =
   let v1 = map_pair env v1 in
   let v2 =
-    Common.map
+    List_.map
       (fun (v1, v2) ->
         let _v1 = (* "," *) token env v1 in
         let v2 = map_pair env v2 in
@@ -963,10 +974,15 @@ and map_local_call_with_parentheses (env : env)
   let blopt = map_anon_opt_opt_nl_before_do_do_blk_3eff85f env v3 in
   mk_call_parens (I id) args blopt
 
-and map_pair (env : env) ((v1, v2) : CST.pair) : pair =
-  let v1 = map_keyword env v1 in
-  let v2 = map_expression env v2 in
-  (v1, v2)
+and map_pair (env : env) (pair : CST.pair) : pair =
+  match pair with
+  | `Kw_exp (v1, v2) ->
+      let v1 = map_keyword env v1 in
+      let v2 = map_expression env v2 in
+      (v1, v2)
+  | `Semg_ellips tok ->
+    let tk = token env tok in
+    ((X1 (str env tok), tk), I (IdEllipsis tk))
 
 and map_quoted_i_angle (env : env) ((v1, v2, v3) : CST.quoted_i_angle) : quoted
     =
@@ -1203,8 +1219,8 @@ let map_source (env : env) ((v1, v2) : CST.source) : program =
 
 let parse file =
   H.wrap_parser
-    (fun () -> Tree_sitter_elixir.Parse.file file)
-    (fun cst ->
+    (fun () -> Tree_sitter_elixir.Parse.file !!file)
+    (fun cst _extras ->
       let env = { H.file; conv = H.line_col_to_pos file; extra = () } in
       let es = map_source env cst in
       body_to_program es)
@@ -1212,8 +1228,8 @@ let parse file =
 let parse_pattern str =
   H.wrap_parser
     (fun () -> Tree_sitter_elixir.Parse.string str)
-    (fun cst ->
-      let file = "<pattern>" in
-      let env = { H.file; conv = Hashtbl.create 0; extra = () } in
+    (fun cst _extras ->
+      let file = Fpath.v "<pattern>" in
+      let env = { H.file; conv = H.line_col_to_pos_pattern str; extra = () } in
       let es = map_source env cst in
       Pr (body_to_program es))
