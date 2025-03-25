@@ -13,6 +13,7 @@
  * LICENSE for more details.
  *)
 open Common
+open Either_
 open AST_elixir
 module G = AST_generic
 module H = AST_generic_helpers
@@ -37,7 +38,7 @@ let exprstmt (e : G.expr) : G.stmt =
 let fb = Tok.unsafe_fake_bracket
 let map_string _env x = x
 let map_char _env x = x
-let map_list f env xs = Common.map (f env) xs
+let map_list f env xs = List_.map (f env) xs
 let map_option f env x = Option.map (f env) x
 
 let either_to_either3 = function
@@ -46,13 +47,13 @@ let either_to_either3 = function
 
 exception UnhandledIdEllipsis
 
-type quoted_generic = (string G.wrap, G.expr G.bracket) either list G.bracket
-type keywords_generic = ((G.ident, quoted_generic) either * G.expr) list
+type quoted_generic = (string G.wrap, G.expr G.bracket) Either_.t list G.bracket
+type keywords_generic = ((G.ident, quoted_generic) Either_.t * G.expr) list
 
 type stab_clause_generic =
   (G.argument list * (Tok.t * G.expr) option) * Tok.t * G.stmt list
 
-type body_or_clauses_generic = (G.stmt list, stab_clause_generic list) either
+type body_or_clauses_generic = (G.stmt list, stab_clause_generic list) Either_.t
 
 type do_block_generic =
   (body_or_clauses_generic
@@ -61,7 +62,7 @@ type do_block_generic =
 
 let expr_of_quoted (quoted : quoted_generic) : G.expr =
   let l, xs, r = quoted in
-  G.interpolated (l, xs |> Common.map either_to_either3, r)
+  G.interpolated (l, xs |> List_.map either_to_either3, r)
 
 let keyval_of_pair (kwd, e) : G.expr =
   let key =
@@ -80,9 +81,9 @@ let argument_of_pair (kwd, e) =
       OtherArg (("ArgKwdQuoted", l), [ G.E e ])
 
 let list_container_of_kwds (kwds : keywords_generic) : G.expr =
-  G.Container (G.List, fb (kwds |> Common.map keyval_of_pair)) |> G.e
+  G.Container (G.List, fb (kwds |> List_.map keyval_of_pair)) |> G.e
 
-let expr_of_expr_or_kwds (x : (G.expr, keywords_generic) either) : G.expr =
+let expr_of_expr_or_kwds (x : (G.expr, keywords_generic) Either_.t) : G.expr =
   match x with
   | Left e -> e
   | Right kwds -> list_container_of_kwds kwds
@@ -113,7 +114,7 @@ let case_and_body_of_stab_clause (x : stab_clause_generic) : G.case_and_body =
 let stab_clauses_to_function_definition tk (xs : stab_clause_generic list) :
     G.function_definition =
   (* mostly a copy-paste of code to handle Function in ml_to_generic *)
-  let xs = xs |> Common.map case_and_body_of_stab_clause in
+  let xs = xs |> List_.map case_and_body_of_stab_clause in
   let id = G.implicit_param_id tk in
   let params = [ G.Param (G.param_of_id id) ] in
   let body_stmt =
@@ -151,7 +152,7 @@ let kwds_of_do_block (bl : do_block_generic) : keywords_generic =
   let pair1 = (dokwd, e) in
   let rest =
     extras
-    |> Common.map (fun ((kind, t), body_or_clauses) ->
+    |> List_.map (fun ((kind, t), body_or_clauses) ->
            let s = string_of_exn_kind kind in
            let kwd = Left (s, t) in
            let e = expr_of_body_or_clauses t body_or_clauses in
@@ -164,7 +165,7 @@ let args_of_do_block_opt (blopt : do_block_generic option) : G.argument list =
   | None -> []
   | Some bl ->
       let kwds = kwds_of_do_block bl in
-      Common.map argument_of_pair kwds
+      List_.map argument_of_pair kwds
 
 (*****************************************************************************)
 (* Boilerplate *)
@@ -256,12 +257,12 @@ and map_quoted env v : quoted_generic =
 and map_arguments env (v1, v2) : G.argument list =
   let v1 = (map_list map_expr) env v1 in
   let v2 = map_keywords env v2 in
-  Common.map G.arg v1 @ Common.map argument_of_pair v2
+  List_.map G.arg v1 @ List_.map argument_of_pair v2
 
 and map_items env (v1, v2) : G.expr list =
   let v1 = (map_list map_expr) env v1 in
   let v2 = map_keywords env v2 in
-  v1 @ Common.map keyval_of_pair v2
+  v1 @ List_.map keyval_of_pair v2
 
 and map_keywords env v = (map_list map_pair) env v
 
@@ -270,7 +271,7 @@ and map_pair env (v1, v2) =
   let v2 = map_expr env v2 in
   (v1, v2)
 
-and map_expr_or_kwds env v : (G.expr, keywords_generic) either =
+and map_expr_or_kwds env v : (G.expr, keywords_generic) Either_.t =
   match v with
   | E v ->
       let v = map_expr env v in
@@ -319,7 +320,7 @@ and map_definition env (v : definition) : G.definition =
       (* TODO: split alias in components, and then use name_of_ids *)
       let v = map_alias env m_name in
       let n = H.name_of_id v in
-      let ent = { G.name = G.EN n; attrs = []; tparams = [] } in
+      let ent = { G.name = G.EN n; attrs = []; tparams = None } in
       let items = map_stmts env xs in
       (* alt: we could also generate a Package directive instead *)
       let def = { G.mbody = G.ModuleStruct (None, items) } in
@@ -347,7 +348,7 @@ and map_parameter env (p : parameter) : G.parameter =
                 let e = map_expr env e in
                 Some e
           in
-          let pclassic = G.param_of_id ~pdefault id in
+          let pclassic = G.param_of_id ?pdefault id in
           G.Param pclassic)
   | OtherParamExpr e ->
       let e = map_expr env e in
@@ -360,7 +361,7 @@ and map_parameter env (p : parameter) : G.parameter =
 
 and map_stmts env (xs : stmts) : G.stmt list =
   xs
-  |> Common.map (function
+  |> List_.map (function
        | S x -> map_stmt env x
        | e ->
            let e = map_expr env e in
@@ -372,7 +373,7 @@ and map_vardef env v1 v2 =
   let ent = G.basic_entity id in
   let e2 = map_expr env v2 in
   let def_stmt =
-    G.DefStmt (ent, VarDef { vinit = Some e2; vtype = None }) |> G.s
+    G.DefStmt (ent, VarDef { vinit = Some e2; vtype = None; vtok = G.no_sc }) |> G.s
   in
   G.StmtExpr def_stmt |> G.e
 
@@ -394,7 +395,7 @@ and map_binary_op env v1 v2 v3 =
   | Left (op, tk) -> G.opcall (op, tk) [ e1; e2 ]
   | Right id ->
       let n = G.N (H.name_of_id id) |> G.e in
-      G.Call (n, fb ([ e1; e2 ] |> Common.map G.arg)) |> G.e
+      G.Call (n, fb ([ e1; e2 ] |> List_.map G.arg)) |> G.e
 
 and map_match env v1 v2 =
   (* Single LHS names are VarDefs.
@@ -450,7 +451,7 @@ and map_expr env v : G.expr =
       G.Container (G.Tuple, v) |> G.e
   | Bits v ->
       let l, xs, r = (map_bracket map_items) env v in
-      G.OtherExpr (("Bits", l), Common.map (fun e -> G.E e) xs @ [ G.Tk r ])
+      G.OtherExpr (("Bits", l), List_.map (fun e -> G.E e) xs @ [ G.Tk r ])
       |> G.e
   | Map (v1, v2, v3) -> (
       let v2 = (map_option map_astruct) env v2 in
@@ -464,10 +465,10 @@ and map_expr env v : G.expr =
              | Some (Left id) ->
                  let n = H2.name_of_id id in
                  let ty = G.TyN n |> G.t in
-                 G.New (tpercent, ty, G.empty_id_info (), (l, Common.map G.arg xs, r))
+                 G.New (tpercent, ty, G.empty_id_info (), (l, List_.map G.arg xs, r))
                  |> G.e
           *)
-          G.Call (astruct, (l, Common.map G.arg xs, r)) |> G.e)
+          G.Call (astruct, (l, List_.map G.arg xs, r)) |> G.e)
   | Alias v ->
       (* TODO: split alias in components, and then use name_of_ids *)
       let v = map_alias env v in
@@ -565,7 +566,7 @@ and map_sigil_kind env v : G.any list =
 
 and map_body env v : G.stmt list =
   let xs = (map_list map_expr) env v in
-  xs |> Common.map exprstmt
+  xs |> List_.map exprstmt
 
 and map_call env (v1, v2, v3) : G.expr =
   let e = map_expr env v1 in
