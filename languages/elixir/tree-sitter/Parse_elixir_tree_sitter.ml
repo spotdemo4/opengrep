@@ -1184,7 +1184,7 @@ let map_source (env : env) ((v1, v2) : CST.source) : program =
     | Some (v1, v2, v3) ->
         let v1 = map_expression env v1 in
         let v2 =
-          Common.map
+          List_.map
             (fun (v1, v2) ->
               let _v1 = map_terminator env v1 in
               let v2 = map_expression env v2 in
