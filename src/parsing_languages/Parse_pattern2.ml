@@ -194,20 +194,18 @@ let parse_pattern options lang str =
   | Lang.Swift ->
       let res = Parse_swift_tree_sitter.parse_pattern str in
       extract_pattern_from_tree_sitter_result res
+  | Lang.Elixir ->
+      let res = Parse_elixir_tree_sitter.parse_pattern str in
+      let pattern = extract_pattern_from_tree_sitter_result res in
+      Elixir_to_generic.any pattern
   (* external plugins *)
   | Lang.Apex ->
       let res = Parsing_plugin.Apex.parse_pattern str in
       extract_pattern_from_tree_sitter_result res
   (* this is how semgrep used to call it before Elixir support moved into Pro. *)
-  (*
-  | Lang.Elixir ->
-      let res = Parse_elixir_tree_sitter.parse_pattern str in
-      let pattern = extract_pattern_from_tree_sitter_result res in
-      Elixir_to_generic.any pattern
-  *)
-  | Lang.Elixir ->
-      let res = Parsing_plugin.Elixir.parse_pattern str in
-      extract_pattern_from_tree_sitter_result res
+  (* | Lang.Elixir ->
+         let res = Parsing_plugin.Elixir.parse_pattern str in
+         extract_pattern_from_tree_sitter_result res *)
   | Lang.Move_on_sui ->
       let res = Parse_move_on_sui_tree_sitter.parse_pattern str in
       extract_pattern_from_tree_sitter_result res

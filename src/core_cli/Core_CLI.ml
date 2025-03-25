@@ -482,10 +482,10 @@ let all_actions (caps : Cap.all_caps) () =
     );
     ( "-dump_elixir_raw_ast",
       " <file>",
-      Arg_helpers.mk_action_1_arg Core_actions.dump_elixir_raw_ast );
+      Arg_.mk_action_1_arg (fun file -> Core_actions.dump_elixir_raw_ast (Fpath.v file)));
     ( "-dump_elixir_ast",
       " <file>",
-      Arg_helpers.mk_action_1_arg Core_actions.dump_elixir_ast );
+      Arg_.mk_action_1_arg (fun file -> Core_actions.dump_elixir_ast (Fpath.v file)) );
     ( "-diff_pfff_tree_sitter",
       " <file>",
       Arg_.mk_action_n_arg (fun xs ->
