@@ -331,6 +331,7 @@ let dump_lang_ast (lang : Lang.t) (file : Fpath.t) : unit =
       in
       let s = AST_ocaml.show_program ast in
       UCommon.pr2 s
+  (* However, we have [dump_elixir_ast] in src/core_cli/Core_actions.ml. *)
   | _else_ ->
       failwith (spf "dumper not supported yet for lang: %s" (Lang.show lang))
 
