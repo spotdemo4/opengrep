@@ -29,26 +29,25 @@ open AST_elixir
 (* Visitor *)
 (*****************************************************************************)
 class ['self] visitor =
-  object (self : 'self)
-    inherit [_] map
-
-    (* helpers *)
-    method params_of_args _env (args : arguments bracket) : parameters =
+  let params_of_args (args : arguments bracket) : parameters =
       let l, (exprs, kwdargs), r = args in
       let xs =
         exprs
-        |> Common.map (function
+        |> List_.map (function
              | I id -> P { pname = id; pdefault = None }
              (* TODO: recognize default value with \\ *)
              | x -> OtherParamExpr x)
       in
       let ys =
         kwdargs
-        |> Common.map (fun (kwd, e) ->
+        |> List_.map (fun (kwd, e) ->
                (* TODO generate keyword parameter? *)
                OtherParamPair (kwd, e))
       in
       (l, xs @ ys, r)
+  in
+  object (self : 'self)
+    inherit [_] map
 
     method! visit_Call env (x : call) =
       match x with
@@ -75,7 +74,7 @@ class ['self] visitor =
           (_, ([ Call (I ident, args, None) ], []), _),
           Some (tdo, (Body body, []), tend) ) ->
           let body = self#visit_body env body in
-          let params = self#params_of_args env args in
+          let params = params_of_args args in
           let def =
             {
               f_def = tdef;
@@ -107,10 +106,10 @@ class ['self] visitor =
 (* Entry points *)
 (*****************************************************************************)
 
+let visitor_instance = new visitor
 let map_program (x : program) : program =
-  let v = new visitor in
   let env = () in
-  v#visit_program env x
+  visitor_instance#visit_program env x
 
 let map_any (x : any) : any =
   (* alt: could also generate the visitors for any too *)

@@ -51,8 +51,9 @@ module G = AST_generic
 (* ------------------------------------------------------------------------- *)
 (* Tokens *)
 (* ------------------------------------------------------------------------- *)
-type 'a wrap = 'a * Tok.t [@@deriving show]
-type 'a bracket = Tok.t * 'a * Tok.t [@@deriving show]
+type tok = Tok.t [@@deriving show]
+type 'a wrap = 'a * tok [@@deriving show]
+type 'a bracket = tok * 'a * tok [@@deriving show]
 
 (* ------------------------------------------------------------------------- *)
 (* Names *)
@@ -62,7 +63,7 @@ type ident =
   (* lowercase ident *)
   | Id of string wrap
   (* actually part of Elixir! *)
-  | IdEllipsis of Tok.t (* '...' *)
+  | IdEllipsis of tok (* '...' *)
   (* semgrep-ext: *)
   | IdMetavar of string wrap
 [@@deriving show { with_path = false }]
@@ -98,7 +99,10 @@ type operator =
   | OOther of string
 [@@deriving show { with_path = false }]
 
-type ident_or_operator = (ident, operator wrap) Either_.t [@@deriving show]
+type ('a, 'b) either = ('a, 'b) Either_.t = Left of 'a | Right of 'b
+[@@deriving show]
+
+type ident_or_operator = (ident, operator wrap) either [@@deriving show]
 
 (* ------------------------------------------------------------------------- *)
 (* Visitor *)
@@ -114,24 +118,25 @@ class virtual ['self] map_parent =
     method visit_wrap : 'a. ('env -> 'a -> 'a) -> 'env -> 'a wrap -> 'a wrap =
       fun f env (x, tok) ->
         let x = f env x in
-        let tok = self#visit_t env tok in
+        let tok = self#visit_tok env tok in
         (x, tok)
 
     method visit_bracket
         : 'a. ('env -> 'a -> 'a) -> 'env -> 'a bracket -> 'a bracket =
       fun f env (left, x, right) ->
-        let left = self#visit_t env left in
+        let left = self#visit_tok env left in
         let x = f env x in
-        let right = self#visit_t env right in
+        let right = self#visit_tok env right in
         (left, x, right)
 
+    (* This is [Either_.t]. *)
     method visit_either f1 f2 env x =
       match x with
       | Either_.Left a -> Either_.Left (f1 env a)
       | Either_.Right b -> Either_.Right (f2 env b)
 
     (* Stubs *)
-    method visit_t _env x = x
+    method visit_tok _env x = x
     method visit_ident _env x = x
     method visit_alias _env x = x
     method visit_ident_or_operator _env x = x
@@ -148,10 +153,10 @@ class virtual ['self] map_parent =
 (* Recursive types because atoms can contain interpolated exprs *)
 
 (* TODO: need extract ':' for simple ident case *)
-type atom = Tok.t (* ':' *) * string__wrap__or_quoted
+type atom = tok (* ':' *) * string__wrap__or_quoted
 
 (* TODO: need to extract the ':' for the ident case *)
-and keyword = string__wrap__or_quoted * Tok.t (* : *)
+and keyword = string__wrap__or_quoted * tok (* : *)
 
 (* ideally we would use this generic type:
  *   and 'a or_quoted =
@@ -162,7 +167,7 @@ and keyword = string__wrap__or_quoted * Tok.t (* : *)
  * so we monomorphize it instead.
  *)
 and string__wrap__or_quoted = X1 of string wrap | Quoted1 of quoted
-and quoted = (string wrap, expr bracket) Either_.t list bracket
+and quoted = (string wrap, expr bracket) either list bracket
 
 (* ------------------------------------------------------------------------- *)
 (* Keywords and arguments *)
@@ -192,19 +197,19 @@ and expr =
   | A of atom
   | String of quoted
   | Charlist of quoted
-  | Sigil of Tok.t (* '~' *) * sigil_kind * string wrap option
+  | Sigil of tok (* '~' *) * sigil_kind * string wrap option
   | List of items bracket
   | Tuple of items bracket
   | Bits of items bracket
-  | Map of Tok.t (* "%" *) * astruct option * items bracket
+  | Map of tok (* "%" *) * astruct option * items bracket
   | Block of block
-  | DotAlias of expr * Tok.t * alias
-  | DotTuple of expr * Tok.t * items bracket
+  | DotAlias of expr * tok * alias
+  | DotTuple of expr * tok * items bracket
   (* only inside Call *)
-  | DotAnon of expr * Tok.t
+  | DotAnon of expr * tok
   (* only inside Call *)
   | DotRemote of remote_dot
-  | ModuleVarAccess of Tok.t (* @ *) * expr
+  | ModuleVarAccess of tok (* @ *) * expr
   | ArrayAccess of expr * expr bracket
   (* a Call can be a thousand things, including function and module definitions
    * when parsed in phase 1. A Call is transformed in more precise
@@ -216,18 +221,18 @@ and expr =
   (* coming from Erlang (coming itself from Prolog) *)
   | OpArity of
       operator wrap
-      * Tok.t
+      * tok
         (* '/' *)
-        (* must rename this so the visitor does not conflict with Tok.t *)
+        (* must rename this so the visitor does not conflict with tok *)
       * (Parsed_int.t[@name "parsed_int"])
-  | When of expr * Tok.t (* 'when' *) * expr_or_kwds
-  | Join of expr * Tok.t (* '|' *) * expr_or_kwds
-  | Lambda of Tok.t (* 'fn' *) * clauses * Tok.t (* 'end' *)
-  | Capture of Tok.t (* '&' *) * expr
-  | ShortLambda of Tok.t (* '&' *) * expr bracket
+  | When of expr * tok (* 'when' *) * expr_or_kwds
+  | Join of expr * tok (* '|' *) * expr_or_kwds
+  | Lambda of tok (* 'fn' *) * clauses * tok (* 'end' *)
+  | Capture of tok (* '&' *) * expr
+  | ShortLambda of tok (* '&' *) * expr bracket
   | PlaceHolder of
-      (* must rename this so the visitor does not conflict with Tok.t *)
-      Tok.t
+      (* must rename this so the visitor does not conflict with tok *)
+      tok
       (* & *)
       * (Parsed_int.t[@name "parsed_int"])
   | S of stmt
@@ -243,7 +248,7 @@ and sigil_kind =
 
 (* the parenthesis can be fake *)
 and call = expr * arguments bracket * do_block option
-and remote_dot = expr * Tok.t (* '.' *) * ident_or_operator__or_quoted
+and remote_dot = expr * tok (* '.' *) * ident_or_operator__or_quoted
 and ident_or_operator__or_quoted = X2 of ident_or_operator | Quoted2 of quoted
 
 (* ------------------------------------------------------------------------- *)
@@ -281,7 +286,7 @@ and clauses = stab_clause list
  * or for parameters (kind of patterns though).
  *)
 and stab_clause =
-  (arguments * (Tok.t (*'when'*) * expr) option) * Tok.t (* '->' *) * body
+  (arguments * (tok (*'when'*) * expr) option) * tok (* '->' *) * body
 
 (*****************************************************************************)
 (* Kernel constructs *)
@@ -295,12 +300,12 @@ and stmts = expr list
 
 and stmt =
   | If of
-      Tok.t
+      tok
       * expr
-      * Tok.t (* 'do' *)
+      * tok (* 'do' *)
       * stmts
-      * (Tok.t * stmts) option
-      * Tok.t (* 'end' *)
+      * (tok * stmts) option
+      * tok (* 'end' *)
   | D of definition
 
 (* ------------------------------------------------------------------------- *)
@@ -311,7 +316,7 @@ and definition =
   | ModuleDef of module_definition
 
 and function_definition = {
-  f_def : Tok.t;
+  f_def : tok;
   (* alt: could introduce an external 'entity' like in AST_generic.ml
    * but FuncDef and ModuleDef have different kind of constraints
    * on the name so better to be precise when we can.
@@ -331,11 +336,11 @@ and parameter =
 
 and parameter_classic = {
   pname : ident;
-  pdefault : (Tok.t (* \\ *) * expr) option;
+  pdefault : (tok (* \\ *) * expr) option;
 }
 
 and module_definition = {
-  m_defmodule : Tok.t;
+  m_defmodule : tok;
   m_name : alias;
   (* less: we could restrict it maybet to definition list *)
   m_body : stmts bracket;
@@ -346,14 +351,15 @@ and module_definition = {
 (*****************************************************************************)
 and program = body
 [@@deriving
-  show { with_path = false },
+  show { with_path = false } ,
     (* Autogenerated visitors:
      * http://gallium.inria.fr/~fpottier/visitors/manual.pdf
      * To view the generated source, build, navigate to
      * `_build/default/languages/elixir/ast/`, and then run:
      *     ocamlc -stop-after parsing -dsource AST_elixir.pp.ml
      *)
-    visitors { variety = "map"; ancestors = [ "map_parent" ] }]
+    visitors { variety = "map"; ancestors = [ "map_parent" ] }
+  ]
 
 (*****************************************************************************)
 (* Any *)

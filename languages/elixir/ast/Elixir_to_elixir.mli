@@ -1,4 +1,4 @@
-(* Perform phase 2 of parsing (see AST_elixit.ml top comment) and
+(* Perform phase 2 of parsing (see AST_elixir.ml top comment) and
  * transform some Raw elixir constructs in Kernel constructs
  * (e.g., actually parse function definition instead of keeping
  *  them as raw calls)
