@@ -45,6 +45,7 @@ jobs:
           docker run --rm \
             --volume ${{ github.workspace }}:/workspace \
             --env SHOULD_INIT_OPAM=${{ env.SHOULD_INIT_OPAM }} \
+            --env OCAML_VERSION=${{ matrix.ocaml_version }} \
             --workdir /workspace \
             alpine:3.21.3 \
             sh -c \
