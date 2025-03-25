@@ -295,6 +295,8 @@ let test_parse_tree_sitter lang root_paths =
                  Tree_sitter_php.Parse.file file |> fail_on_error |> ignore
              | Lang.Terraform ->
                  Tree_sitter_hcl.Parse.file file |> fail_on_error |> ignore
+             | Lang.Elixir ->
+                 Tree_sitter_elixir.Parse.file file |> fail_on_error |> ignore
              | Lang.Dart ->
                  Tree_sitter_dart.Parse.file file |> fail_on_error |> ignore
              | Lang.Move_on_sui ->
