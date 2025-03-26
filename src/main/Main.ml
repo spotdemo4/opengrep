@@ -108,6 +108,22 @@ let with_experimental_flag argv =
    let _ = assert (with_experimental_flag [| "opengrep"; "-c"; "rules"; "libs" |]
                    = [| "opengrep"; "--experimental"; "-c"; "rules"; "libs" |]) *)
 
+let flags_that_require_experimental : string list =
+  [ "--output-enclosing-context" ]
+
+let experimental_flags_error_msg : string =
+  "The --experimental option required for the following flags: "
+
+let check_experimental_flags (argv : string array) : unit =
+  if Array.mem "--experimental" argv
+  then ()
+  else
+    match
+      List.filter (Fun.flip Array.mem argv) flags_that_require_experimental
+    with
+    | [] -> ()
+    | xs -> ignore (Error.abort (experimental_flags_error_msg ^ String.concat ", " xs))
+
 (*****************************************************************************)
 (* Entry point *)
 (*****************************************************************************)
@@ -144,7 +160,9 @@ let () =
                   (* XXX: Should be after "scan" or similar.
                    * See line 161 in: src/osemgrep/cli/CLI.ml. *)
                   (with_experimental_flag argv)
-            | _else_ -> CLI.main (caps :> CLI.caps) argv
+            | _else_ ->
+                check_experimental_flags argv;
+                CLI.main (caps :> CLI.caps) argv
           in
           if not (Exit_code.Equal.ok exit_code) then
             Logs.info (fun m ->
