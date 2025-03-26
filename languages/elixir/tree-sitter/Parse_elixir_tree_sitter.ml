@@ -360,13 +360,13 @@ and map_anonymous_dot (env : env) ((v1, v2) : CST.anonymous_dot) =
 and map_atom (env : env) (x : CST.atom) : atom =
   match x with
   | `Atom_ tok ->
-      (* less: should remove the leading ':' from x *)
-      let x = (* atom_ *) str env tok in
-      (fk ":", X1 x)
+    (* less: should remove the leading ':' from x *)
+    let x = (* atom_ *) str env tok in
+    (fk ":", X1 x)
   | `Quoted_atom (v1, v2) ->
-      let t = (* quoted_atom_start *) token env v1 in
-      let x = map_anon_choice_quoted_i_double_d7d5f65 env v2 in
-      (t, Quoted1 x)
+    let t = (* quoted_atom_start *) token env v1 in
+    let x = map_anon_choice_quoted_i_double_d7d5f65 env v2 in
+    (t, Quoted1 x)
   | `Meta_atom (v1, v2) ->
     let t = (* ":" *) token env v1 in
     let x = (* semgrep_metavariable *) str env v2 in
@@ -977,9 +977,9 @@ and map_local_call_with_parentheses (env : env)
 and map_pair (env : env) (pair : CST.pair) : pair =
   match pair with
   | `Kw_exp (v1, v2) ->
-      let v1 = map_keyword env v1 in
-      let v2 = map_expression env v2 in
-      (v1, v2)
+    let v1 = map_keyword env v1 in
+    let v2 = map_expression env v2 in
+    (v1, v2)
   | `Semg_ellips tok ->
     let tk = token env tok in
     ((X1 (str env tok), tk), I (IdEllipsis tk))
