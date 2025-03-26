@@ -33,7 +33,7 @@ end
  *)
 module Apex : T
 module Csharp : T
-module Elixir : T
+(* module Elixir : T *)
 
 (* Exception indicating that a plugin is missing. The argument is
    a human-readable error message. *)

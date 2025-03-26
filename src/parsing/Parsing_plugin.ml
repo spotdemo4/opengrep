@@ -141,9 +141,4 @@ module Csharp = struct
     make ~optional:true Lang.Csharp
 end
 
-module Elixir = struct
-  let is_optional, register_parsers, is_available, parse_pattern, parse_target =
-    make Lang.Elixir
-end
-
 let all_possible_plugins = List.rev !all_possible_plugins
