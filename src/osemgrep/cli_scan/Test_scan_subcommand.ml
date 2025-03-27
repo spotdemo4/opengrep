@@ -126,6 +126,26 @@ let test_basic_output (caps : Scan_subcommand.caps) () =
           in
           Exit_code.Check.ok exit_code))
 
+let test_basic_output_enclosing_context (caps : Scan_subcommand.caps) () =
+  with_env_app_token (fun () ->
+      let repo_files =
+        [
+          F.File ("rules.yml", eqeq_basic_content);
+          F.File ("stupid.py", stupid_py_content);
+        ]
+      in
+      Testutil_git.with_git_repo ~verbose:true repo_files (fun _cwd ->
+          let exit_code =
+            without_settings (fun () ->
+                Scan_subcommand.main caps
+                  [|
+                    "opengrep-scan"; "--experimental"; "--config"; "rules.yml";
+                    "--output-enclosing-context";
+                    "--json"
+                  |])
+          in
+          Exit_code.Check.ok exit_code))
+
 (* This test fails for me (Martin) when run alone with e.g.
 
      ./test -s "basic verbose output"
@@ -185,6 +205,8 @@ let tests (caps : < Scan_subcommand.caps >) =
                         "SEMGREP_APP_TOKEN should override the settings file")));
       t "basic output" ~checked_output:(Testo.stdxxx ()) ~normalize
         (test_basic_output caps);
+      t "basic output with --output-enclosing-context" ~checked_output:(Testo.stdxxx ()) ~normalize
+        (test_basic_output_enclosing_context caps);
       t "basic verbose output"
         ~skipped:"captured output depends on which tests run before it"
         ~checked_output:(Testo.stdxxx ()) ~normalize
