@@ -459,6 +459,9 @@ and map_expr env v : G.expr =
       let v = (map_bracket map_items) env v in
       G.Container (G.List, v) |> G.e
   | Tuple v ->
+      (* NOTE: Getting Tuple (..., ...) instead of ... for the last occurrence of:
+       * "%{..., some_item: $V, ...}", but the pattern "%{..., some_item: $V}"
+       * works for most purposes... *)
       let v = (map_bracket map_items) env v in
       G.Container (G.Tuple, v) |> G.e
   | Bits v ->
