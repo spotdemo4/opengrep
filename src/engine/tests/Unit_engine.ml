@@ -850,8 +850,6 @@ let semgrep_rules_repo_tests () : Testo.t list =
                     *)
                     s =~ ".*/unicode/security/bidi.yml"
                     || s =~ ".*/dockerfile/security/dockerd-socket-mount.yaml"
-                    (* Elixir requires Pro *)
-                    || s =~ ".*/elixir/lang/.*"
                     (* Apex requires Pro *)
                     || s =~ ".*/apex/lang/.*"
                        (* but the following are generic rules ... *)

@@ -480,6 +480,12 @@ let all_actions (caps : Cap.all_caps) () =
       Arg_.mk_action_1_conv Fpath.v (fun file ->
           Test_parsing.dump_pfff_ast (Xlang.lang_of_opt_xlang_exn !lang) file)
     );
+    ( "-dump_elixir_raw_ast",
+      " <file>",
+      Arg_.mk_action_1_arg (fun file -> Core_actions.dump_elixir_raw_ast (Fpath.v file)));
+    ( "-dump_elixir_ast",
+      " <file>",
+      Arg_.mk_action_1_arg (fun file -> Core_actions.dump_elixir_ast (Fpath.v file)) );
     ( "-diff_pfff_tree_sitter",
       " <file>",
       Arg_.mk_action_n_arg (fun xs ->

@@ -14,7 +14,7 @@ module type T = sig
      one that is available by default. *)
   val is_optional : bool
 
-  (* Register parsing functions for a language (called in semgrep-pro) *)
+  (* Register parsing functions for a language (called in semgrep-pro). *)
   val register_parsers :
     parse_pattern:pattern_parser -> parse_target:target_file_parser -> unit
 
@@ -33,7 +33,7 @@ end
  *)
 module Apex : T
 module Csharp : T
-module Elixir : T
+(* module Elixir : T *)
 
 (* Exception indicating that a plugin is missing. The argument is
    a human-readable error message. *)

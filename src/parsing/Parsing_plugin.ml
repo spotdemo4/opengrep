@@ -48,15 +48,12 @@ exception Missing_plugin of string
 (* Table of missing plugins that are not optional *)
 let missing_plugins : (Lang.t, unit) Hashtbl.t = Hashtbl.create 10
 
-(*****************************************************************************)
-(* Helpers *)
-(*****************************************************************************)
-
 let missing_plugin_msg lang =
   spf
     "Missing Semgrep extension needed for parsing %s target. Try adding \
      `--pro-languages` to your command."
     (Lang.to_string lang)
+
 
 let check_if_missing lang =
   if Hashtbl.mem missing_plugins lang then Error (missing_plugin_msg lang)
@@ -127,6 +124,7 @@ let make ?(optional = false) lang =
   in
   (optional, register, is_available, parse_pattern, parse_target)
 
+
 (*****************************************************************************)
 (* Plugins *)
 (*****************************************************************************)
@@ -141,11 +139,6 @@ end
 module Csharp = struct
   let is_optional, register_parsers, is_available, parse_pattern, parse_target =
     make ~optional:true Lang.Csharp
-end
-
-module Elixir = struct
-  let is_optional, register_parsers, is_available, parse_pattern, parse_target =
-    make Lang.Elixir
 end
 
 let all_possible_plugins = List.rev !all_possible_plugins

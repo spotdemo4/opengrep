@@ -211,6 +211,11 @@ let just_parse_with_lang lang file : Parsing_result2.t =
       run file [ TreeSitter Parse_move_on_aptos_tree_sitter.parse ] (fun x -> x)
   | Lang.Circom ->
       run file [ TreeSitter Parse_circom_tree_sitter.parse ] (fun x -> x)
+  (* this is how semgrep used to call Elixir right before they moved it into Pro. *)
+  | Lang.Elixir ->
+      run file
+        [ TreeSitter Parse_elixir_tree_sitter.parse ]
+        Elixir_to_generic.program
   (* External proprietary parsers. The parsers need to register themselves
    * for parsing to take place.
    *)
@@ -223,5 +228,3 @@ let just_parse_with_lang lang file : Parsing_result2.t =
         else Parse_csharp_tree_sitter.parse
       in
       run file [ TreeSitter parse_target ] (fun x -> x)
-  | Lang.Elixir -> run_external_parser file Parsing_plugin.Elixir.parse_target
-(* TODO *)
