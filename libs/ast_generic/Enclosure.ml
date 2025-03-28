@@ -1,4 +1,5 @@
 module AST = AST_generic
+module Helpers = AST_generic_helpers
 
 type delimiter_kind = Module | Class | Func
 [@@deriving show, eq]
@@ -16,14 +17,14 @@ type delimiter_info = {
 
 type t = delimiter_info list
 [@@deriving show, eq]
+    
 
-
-let human_readable_entity_name (name : AST.entity_name) : string option =
-  match name with
-  | AST.EN (Id ((i, _tok), _)) -> Some i
-  | AST.EN (IdQualified {name_last = ((i, _tok), _type_args); _}) -> Some i
+let human_readable_entity_name (entity_name : AST.entity_name) : string option =
+  match entity_name with
+  | AST.EN name ->
+      Some (name |> Helpers.id_of_name |> fst |> Helpers.str_of_ident)
   | _ -> None
-
+  
 let delimiter_kind_of_definition_kind (kind : AST.definition_kind)
   : delimiter_kind option =
   match kind with
@@ -31,7 +32,7 @@ let delimiter_kind_of_definition_kind (kind : AST.definition_kind)
   | AST.ClassDef _ -> Some Class
   | AST.ModuleDef _ -> Some Module
   | _ -> None
-
+    
 let (let*) = Option.bind
 
 let delimiter_info_of_stmt (stmt : AST.stmt) : delimiter_info option =
