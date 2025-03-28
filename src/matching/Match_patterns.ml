@@ -461,14 +461,16 @@ class ['self] check_visitor range_filter m_env has_as_metavariable
                         Stack_.push pm mp_env.matches;
                         hook pm));
 
-      match enclosure, Enclosure.delimiter_info_of_stmt x with
-      | Some enclosure_stack, Some delim ->
-          Stack_.push delim enclosure_stack;
-          super#visit_stmt env x;
-          ignore (Stack_.pop enclosure_stack)
-      | _ ->
-          super#visit_stmt env x;
-
+      match enclosure with
+      | Some enclosure_stack ->
+          (match Enclosure.delimiter_info_of_stmt x with
+          | Some delim ->
+              Stack_.push delim enclosure_stack;
+              super#visit_stmt env x;
+              Stack_.pop enclosure_stack |> ignore
+          | _ -> super#visit_stmt env x)
+      | _ -> super#visit_stmt env x
+          
     method! v_stmts env x =
       (* this is potentially slower than what we did in Coccinelle with
        * CTL. We try every sequences. Hopefully the first statement in

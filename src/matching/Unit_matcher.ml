@@ -35,7 +35,7 @@ let enclosing_context_test file lang pattern
                 metadata=None;
                 severity=`Warning;
                 langs=[lang];
-                pattern_string="patstr1";
+                pattern_string="test: no need for pattern string";
                 fix=None;
                 fix_regexp=None})
   in
@@ -49,9 +49,6 @@ let enclosing_context_test file lang pattern
        (spf "failed test for tracking enclosing context in matching: |%s|" file)
        true
                                                                                                                  
-
-    (* Parse_python.parse_program (Fpath.v "tests/parsing/python/tuple_expansion.py")
-    *)
 let tests ~any_gen_of_string =
   [
     t "sgrep(generic) features" (fun () ->
@@ -177,14 +174,28 @@ let tests ~any_gen_of_string =
                    failwith (spf "problem parsing %s or %s" spattern scode)));
     
     t "tracking enclosing context in matching" (fun () ->
-     enclosing_context_test "python/class.py" Lang.Python "i = 5"
-      (fun r ->
-        match r with
-        | {Core_match.enclosure = Some
-             Enclosure.([
-                {kind = Func;
-                 name = "myFun"; _};
-                {kind = Class;
-                 name = "MyClass" ;_}]); _} :: _ -> true
-        | _ -> false))
+
+      enclosing_context_test "python/class.py" Lang.Python "i = 5"
+       (fun r ->
+         match r with
+         | {Core_match.enclosure = Some
+              Enclosure.([
+                 {kind = Func;
+                  name = "myFun"; _};
+                 {kind = Class;
+                  name = "MyClass"; _}]); _} :: _ -> true
+         | _ -> false);
+
+      enclosing_context_test "cpp/namespace.cpp" Lang.Cpp "i = 5"
+       (fun r ->
+         match r with
+         | {Core_match.enclosure = Some
+              Enclosure.([
+                 {kind = Func;
+                  name = "fun2"; _};
+                 {kind = Func;
+                  name = "fun1"; _};
+                 {kind = Class;
+                  name = "Class1"; _}]); _} :: _ -> true
+         | _ -> false))
   ]

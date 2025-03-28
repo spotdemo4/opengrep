@@ -608,7 +608,7 @@ let o_output_enclosing_context : bool Term.t =
   H.negatable_flag [ "output-enclosing-context" ] ~neg_options:[ "no-output-enclosing-context" ]
     ~default:Match_patterns.default_matching_conf.track_enclosing_context
     ~doc:
-      {|Include information about the syntactic context of the matched fragmetns of code, such as the function or the class in which the match is defined.|}
+      {|Include information about the syntactic context of the matched fragments of code, such as the function or the class in which the match is defined.|}
 
 (* ------------------------------------------------------------------ *)
 (* Run Secrets Post Processors                                  *)
