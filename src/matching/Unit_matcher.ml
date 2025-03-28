@@ -15,6 +15,43 @@ let t = Testo.create
  *  - we could add unit tests for the code dealing with equivalences
  *)
 
+let enclosing_context_test_dir = Fpath.v "tests/match-patterns-check"
+
+let enclosing_context_test file lang pattern
+    (pred : Core_match.t list -> bool) : unit =
+  let program =
+    (Parse_target2.just_parse_with_lang
+      lang (Fpath.append enclosing_context_test_dir (Fpath.v file)))
+    .Parsing_result2.ast
+  in
+  let pattern =
+    Parse_pattern2.parse_pattern None lang pattern
+  in
+  let rule =
+    Mini_rule.({id=Rule_ID.of_string_exn "myrule1";
+                pattern;
+                inside=false;
+                message="msg1";
+                metadata=None;
+                severity=`Warning;
+                langs=[lang];
+                pattern_string="patstr1";
+                fix=None;
+                fix_regexp=None})
+  in
+  let matching_conf = {Match_patterns.track_enclosing_context = true} in
+  Match_patterns.check ~hook:(fun _ -> ())
+    ~matching_conf
+    (Rule_options.default, []) [rule]
+    (Fpath.v "some/path", Origin.File (Fpath.v "some/origin"), lang, program)
+  |> pred
+  |> Alcotest.(check bool)
+       (spf "failed test for tracking enclosing context in matching: |%s|" file)
+       true
+                                                                                                                 
+
+    (* Parse_python.parse_program (Fpath.v "tests/parsing/python/tuple_expansion.py")
+    *)
 let tests ~any_gen_of_string =
   [
     t "sgrep(generic) features" (fun () ->
@@ -138,4 +175,16 @@ let tests ~any_gen_of_string =
                with
                | Parsing.Parse_error ->
                    failwith (spf "problem parsing %s or %s" spattern scode)));
+    
+    t "tracking enclosing context in matching" (fun () ->
+     enclosing_context_test "python/class.py" Lang.Python "i = 5"
+      (fun r ->
+        match r with
+        | {Core_match.enclosure = Some
+             Enclosure.([
+                {kind = Func;
+                 name = "myFun"; _};
+                {kind = Class;
+                 name = "MyClass" ;_}]); _} :: _ -> true
+        | _ -> false))
   ]
