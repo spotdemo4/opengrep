@@ -982,6 +982,9 @@ and map_pair (env : env) (pair : CST.pair) : pair =
     (v1, v2)
   | `Semg_ellips tok ->
     let tk = token env tok in
+    (* It may seem strange to return this tuple, but we adjust it later,
+     * see [Elixir_to_elixir] and [Elixir_to_generic]. It's just a way to
+     * minimise the changes. *)
     ((X1 (str env tok), tk), I (IdEllipsis tk))
 
 and map_quoted_i_angle (env : env) ((v1, v2, v3) : CST.quoted_i_angle) : quoted

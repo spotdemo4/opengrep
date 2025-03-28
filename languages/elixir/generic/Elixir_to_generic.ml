@@ -67,14 +67,26 @@ let expr_of_quoted (quoted : quoted_generic) : G.expr =
 let keyval_of_pair (kwd, e) : G.expr =
   let key =
     match kwd with
-    | Left id -> G.N (H.name_of_id id) |> G.e
+    | Left id ->
+      begin
+        (* TODO: How about ellipsis-metavariables `$...ARG`? *)
+        match id, e.G.e with
+        | ("...", tok), G.Ellipsis _tok' -> G.Ellipsis tok |> G.e
+        |_ -> G.N (H.name_of_id id) |> G.e
+       end
     | Right (quoted : quoted_generic) -> expr_of_quoted quoted
   in
   G.keyval key (G.fake "=>") e
 
 let argument_of_pair (kwd, e) =
   match kwd with
-  | Left id -> G.ArgKwd (id, e)
+  | Left id ->
+    begin
+      (* TODO: How about ellipsis-metavariables `$...ARG`? *)
+      match id, e.G.e with
+      | ("...", tok), G.Ellipsis _tok' -> G.Arg (G.Ellipsis tok |> G.e)
+      | _ -> G.ArgKwd (id, e)
+    end
   | Right (quoted : quoted_generic) ->
       let l, _, _ = quoted in
       let e = expr_of_quoted quoted in

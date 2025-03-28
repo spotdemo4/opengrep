@@ -42,7 +42,13 @@ class ['self] visitor =
         kwdargs
         |> List_.map (fun (kwd, e) ->
                (* TODO generate keyword parameter? *)
-               OtherParamPair (kwd, e))
+               (* HACK: If we find ... here, convert to P. But how about
+                * `semgrep_ellipsis_metavar`, `$...ARG`? This will be done
+                * later. *)
+               match kwd, e with (* note: here tok == tok' *)
+                | (X1 ("...", _), _tok), I (IdEllipsis _tok' as id) ->
+                  P { pname = id; pdefault = None }
+                | _ -> OtherParamPair (kwd, e))
       in
       (l, xs @ ys, r)
   in
