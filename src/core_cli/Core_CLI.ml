@@ -318,6 +318,8 @@ let mk_config () : Core_scan_config.t =
       | Some file -> Target_file file);
     output_format = !output_format;
     strict = !strict;
+    matching_conf =
+      {Match_patterns.track_enclosing_context = !Flag.output_enclosing_context};
     report_time = !report_time;
     matching_explanations = !matching_explanations;
     respect_rule_paths = !respect_rule_paths;
@@ -650,10 +652,15 @@ let options caps (actions : unit -> Arg_.cmdline_actions) =
     ( "-log_to_file",
       Arg.String (fun file -> log_to_file := Some (Fpath.v file)),
       " <file> log debugging info to file" );
-    ("-trace", Arg.Set trace, " output tracing information");
+    ( "-trace", Arg.Set trace, " output tracing information");
     ( "-trace_endpoint",
       Arg.String (fun url -> trace_endpoint := Some url),
       " url endpoint for collecting tracing information" );
+    ( "-output_enclosing_context",
+      Arg.Set Flag.output_enclosing_context,
+      "Include information about the syntactic context of the matched fragmetns of\
+       code, such as the function or the class in which the match is defined."
+    )
   ]
   @ Flag_parsing_cpp.cmdline_flags_macrofile ()
   (* inlining of: Common2.cmdline_flags_devel () @ *)

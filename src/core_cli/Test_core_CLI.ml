@@ -124,6 +124,12 @@ let semgrep_core_tests (caps : Cap.all_caps) : Testo.t list =
              tests/semgrep-core-e2e/targets.json -debug"
           in
           run_main caps cmd |> assert_Ok);
+      t ~checked_output:(Testo.stdout ()) "the -output_enclosing_context flag" (fun () ->
+          let cmd =
+            "-rules tests/semgrep-core-e2e/rules/basic.yaml  -targets \
+             tests/semgrep-core-e2e/targets.json -debug -json -output_enclosing_context"
+          in
+          run_main caps cmd |> assert_Ok);
     ]
 
 let tests (caps : Cap.all_caps) : Testo.t list = semgrep_core_tests caps
