@@ -399,7 +399,7 @@ let file_type_of_file file =
       PL Go
   | "lua" -> PL Lua
   | "r" -> PL R
-  | "ex" -> PL Elixir
+  | "ex" | "exs" -> PL Elixir
   | _ when UFile.is_executable file -> Binary e
   | _ when b = "Makefile" || b = "mkfile" || b = "Imakefile" -> Config Makefile
   | _ when b = "Dockerfile" -> Config Dockerfile
