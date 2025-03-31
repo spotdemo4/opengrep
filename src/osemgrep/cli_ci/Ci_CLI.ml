@@ -191,6 +191,10 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
       scan_unknown_extensions secrets text text_outputs timeout
       _timeout_interfileTODO timeout_threshold (* trace trace_endpoint *) use_git
       version_check vim vim_outputs =
+    if output_enclosing_context && not json then
+      Logs.warn (fun m ->
+          m
+            "The --output-enclosing-context option has no effect without --json.");
     let output_format : Output_format.t =
       Scan_CLI.output_format_conf ~text ~files_with_matches ~json ~emacs ~vim
         ~sarif ~gitlab_sast ~gitlab_secrets ~junit_xml
