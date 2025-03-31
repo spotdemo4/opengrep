@@ -7,3 +7,8 @@ end
 def my_function(key1: value1, key2: value2, key3: value3) do
   IO.inspect({value1, value2, value3})
 end
+
+# MATCH: 3 parameters different order
+def my_function(key2: value2, key1: value1, key3: value3) do
+  IO.inspect({value1, value2, value3})
+end
