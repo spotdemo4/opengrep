@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1](https://github.com/opengrep/opengrep/releases/tag/v1.1.1) - 31-03-2025
+
+### Bug fixes
+
+* Elixir: allow pairs to be ellipsis by @dimitris-m in #181; now patterns such as `%{..., some_item: $V, ...}` work as expected.
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.1.0...v1.1.1
+
+
 ## [1.1.0](https://github.com/opengrep/opengrep/releases/tag/v1.1.0) - 31-03-2025
 
 ### New features
