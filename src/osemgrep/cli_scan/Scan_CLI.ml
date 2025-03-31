@@ -1317,6 +1317,10 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
             "!!! You're using one or more options starting with '--x-'. These \
              options are not part of the opengrep API. They will change or will \
              be removed without notice !!! ");
+    if output_enclosing_context && not json then
+      Logs.warn (fun m ->
+          m
+            "The --output-enclosing-context option has no effect without --json.");
     let target_roots, imply_always_select_explicit_targets =
       replace_target_roots_by_regular_files_where_needed caps
         ~experimental:(common.CLI_common.maturity =*= Maturity.Experimental)
