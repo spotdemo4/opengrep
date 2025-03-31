@@ -979,13 +979,10 @@ and map_pair (env : env) (pair : CST.pair) : pair =
   | `Kw_exp (v1, v2) ->
     let v1 = map_keyword env v1 in
     let v2 = map_expression env v2 in
-    (v1, v2)
+    Kw_expr (v1, v2)
   | `Semg_ellips tok ->
     let tk = token env tok in
-    (* It may seem strange to return this tuple, but we adjust it later,
-     * see [Elixir_to_elixir] and [Elixir_to_generic]. It's just a way to
-     * minimise the changes. *)
-    ((X1 (str env tok), tk), I (IdEllipsis tk))
+    Semg_ellipsis tk
 
 and map_quoted_i_angle (env : env) ((v1, v2, v3) : CST.quoted_i_angle) : quoted
     =

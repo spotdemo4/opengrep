@@ -182,7 +182,7 @@ and items = expr list * keywords
 and keywords = pair list
 
 (* note that Elixir supports also pairs using the (:atom => expr) syntax *)
-and pair = keyword * expr
+and pair = Kw_expr of keyword * expr | Semg_ellipsis of tok
 and expr_or_kwds = E of expr | Kwds of keywords
 
 (* ------------------------------------------------------------------------- *)
@@ -332,7 +332,7 @@ and parameters = parameter list bracket
 and parameter =
   | P of parameter_classic
   | OtherParamExpr of expr
-  | OtherParamPair of pair
+  | OtherParamPair of keyword * expr (* real pair *)
 
 and parameter_classic = {
   pname : ident;

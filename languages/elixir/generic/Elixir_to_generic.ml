@@ -48,7 +48,8 @@ let either_to_either3 = function
 exception UnhandledIdEllipsis
 
 type quoted_generic = (string G.wrap, G.expr G.bracket) Either_.t list G.bracket
-type keywords_generic = ((G.ident, quoted_generic) Either_.t * G.expr) list
+type keywords_generic =
+  (((G.ident, quoted_generic) Either_.t * G.expr), G.expr (* ... *)) Either_.t list
 
 type stab_clause_generic =
   (G.argument list * (Tok.t * G.expr) option) * Tok.t * G.stmt list
@@ -64,33 +65,30 @@ let expr_of_quoted (quoted : quoted_generic) : G.expr =
   let l, xs, r = quoted in
   G.interpolated (l, xs |> List_.map either_to_either3, r)
 
-let keyval_of_pair (kwd, e) : G.expr =
-  let key =
-    match kwd with
-    | Left id ->
-      begin
-        (* TODO: How about ellipsis-metavariables `$...ARG`? *)
-        match id, e.G.e with
-        | ("...", tok), G.Ellipsis _tok' -> G.Ellipsis tok |> G.e
-        |_ -> G.N (H.name_of_id id) |> G.e
-       end
-    | Right (quoted : quoted_generic) -> expr_of_quoted quoted
-  in
-  G.keyval key (G.fake "=>") e
+let keyval_of_pair p : G.expr =
+  match p with
+  | Left (kwd, e) ->
+    let key =
+      match kwd with
+      | Left id -> G.N (H.name_of_id id) |> G.e
+      | Right (quoted : quoted_generic) -> expr_of_quoted quoted
+    in
+    G.keyval key (G.fake "=>") e
+  (* TODO: How about ellipsis-metavariables `$...ARG`? *)
+  | Right expr -> expr (* ... *)
 
-let argument_of_pair (kwd, e) =
-  match kwd with
-  | Left id ->
-    begin
-      (* TODO: How about ellipsis-metavariables `$...ARG`? *)
-      match id, e.G.e with
-      | ("...", tok), G.Ellipsis _tok' -> G.Arg (G.Ellipsis tok |> G.e)
-      | _ -> G.ArgKwd (id, e)
+let argument_of_pair p =
+  match p with
+  | Left (kwd, e) ->
+    begin match kwd with
+      | Left id -> G.ArgKwd (id, e)
+      | Right (quoted : quoted_generic) ->
+          let l, _, _ = quoted in
+          let e = expr_of_quoted quoted in
+          OtherArg (("ArgKwdQuoted", l), [ G.E e ])
     end
-  | Right (quoted : quoted_generic) ->
-      let l, _, _ = quoted in
-      let e = expr_of_quoted quoted in
-      OtherArg (("ArgKwdQuoted", l), [ G.E e ])
+  (* TODO: How about ellipsis-metavariables `$...ARG`? *)
+  | Right expr -> G.Arg expr (* ... *)
 
 let list_container_of_kwds (kwds : keywords_generic) : G.expr =
   G.Container (G.List, fb (kwds |> List_.map keyval_of_pair)) |> G.e
@@ -161,14 +159,14 @@ let kwds_of_do_block (bl : do_block_generic) : keywords_generic =
    *)
   let dokwd = Left ("do", tdo) in
   let e = expr_of_body_or_clauses tdo body_or_clauses in
-  let pair1 = (dokwd, e) in
+  let pair1 = Left (dokwd, e) in
   let rest =
     extras
     |> List_.map (fun ((kind, t), body_or_clauses) ->
            let s = string_of_exn_kind kind in
            let kwd = Left (s, t) in
            let e = expr_of_body_or_clauses t body_or_clauses in
-           (kwd, e))
+           Left (kwd, e))
   in
   pair1 :: rest
 
@@ -278,10 +276,15 @@ and map_items env (v1, v2) : G.expr list =
 
 and map_keywords env v = (map_list map_pair) env v
 
-and map_pair env (v1, v2) =
+and map_pair_kw_expr env (v1, v2) =
   let v1 = map_keyword env v1 in
   let v2 = map_expr env v2 in
-  (v1, v2)
+  Left (v1, v2)
+
+and map_pair env p =
+  match p with
+  | Kw_expr (v1, v2) -> map_pair_kw_expr env (v1, v2)
+  | Semg_ellipsis tok -> Right (map_expr env (I (IdEllipsis tok))) 
 
 and map_expr_or_kwds env v : (G.expr, keywords_generic) Either_.t =
   match v with
@@ -368,7 +371,7 @@ and map_parameter env (p : parameter) : G.parameter =
   | OtherParamPair (kwd, e) ->
       let kwd = map_keyword env kwd in
       let e = map_expr env e in
-      let e = keyval_of_pair (kwd, e) in
+      let e = keyval_of_pair (Left (kwd, e)) in
       G.OtherParam (("OtherParamPair", G.fake ""), [ G.E e ])
 
 and map_stmts env (xs : stmts) : G.stmt list =
