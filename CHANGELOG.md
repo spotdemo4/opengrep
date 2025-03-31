@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.0](https://github.com/opengrep/opengrep/releases/tag/v1.1.0) - 31-03-2025
+
+### New features
+
+* Add support for reporting enclosure of matches by @maciejpirog in #169 and #178
+* Resurrection of Elixir by @mbacarella and @dimitris-m in #150
+
+### Details
+
+There's now a new flag `--output-enclosing-context` that can be added to the `scan` command, adding information about the surrounding context of the matched fragments of code, such as the innermost function and/or class in which the match occurs.
+
+This is only available for json output, so the `--json`flag must also be passed, and it's an experimental feature so it also requires `--experimental`.
+
+Elixir support has been restored and will continue to be improved.
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.0.2...v1.1.0
+
 
 ## [1.0.2](https://github.com/opengrep/opengrep/releases/tag/v1.0.2) - 24-03-2025
 
