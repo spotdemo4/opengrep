@@ -83,7 +83,7 @@ let env_truthy var =
  *)
 type t = {
   semgrep_url : Uri.t;
-  fail_open_url : Uri.t;
+  (* fail_open_url : Uri.t; *)
   metrics_url : Uri.t;
   app_token : Auth.token option;
   integration_name : string option;
@@ -137,9 +137,9 @@ let of_current_sys_env () : t =
              (env_opt "SEMGREP_APP_URL"
              |> Option.value ~default:"https://semgrep.dev")
       |> Uri.of_string;
-    fail_open_url =
-      env_or Uri.of_string "SEMGREP_FAIL_OPEN_URL"
-        (Uri.of_string "https://fail-open.prod.semgrep.dev/failure");
+    (* fail_open_url =
+         env_or Uri.of_string "SEMGREP_FAIL_OPEN_URL"
+           (Uri.of_string "https://fail-open.prod.semgrep.dev/failure"); *)
     metrics_url =
       env_or Uri.of_string "SEMGREP_METRICS_URL" Metrics_.metrics_url;
     app_token =
@@ -147,13 +147,13 @@ let of_current_sys_env () : t =
     (* integration_name can take a label like "funkyintegration" for custom partner integrations *)
     integration_name = env_opt "SEMGREP_INTEGRATION_NAME";
     version_check_url =
-      env_or Uri.of_string "SEMGREP_VERSION_CHECK_URL"
-        (Uri.of_string "https://semgrep.dev/api/check-version");
+      env_or Uri.of_string "OPENGREP_VERSION_CHECK_URL"
+        (Uri.of_string "https://opengrep.dev/api/check-version");
     version_check_timeout =
-      env_or int_of_string "SEMGREP_VERSION_CHECK_TIMEOUT" 2;
+      env_or int_of_string "OPENGREP_VERSION_CHECK_TIMEOUT" 2;
     version_check_cache_path =
-      env_or Fpath.v "SEMGREP_VERSION_CACHE_PATH"
-        (Fpath.v (Sys.getcwd ()) / ".cache" / "semgrep_version");
+      env_or Fpath.v "OPENGREP_VERSION_CACHE_PATH"
+        (Fpath.v (Sys.getcwd ()) / ".cache" / "opengrep_version");
     git_command_timeout = env_or int_of_string "SEMGREP_GIT_COMMAND_TIMEOUT" 300;
     src_directory = env_or Fpath.v "SEMGREP_SRC_DIRECTORY" (Fpath.v "/src");
     (* user_agent_append is a literal string like "(Docker)" for inclusion in our metrics user agent field *)
