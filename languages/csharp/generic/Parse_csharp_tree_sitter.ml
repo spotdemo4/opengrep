@@ -372,10 +372,10 @@ let boolean_literal (env : env) (x : CST.boolean_literal) =
 
 let predefined_type (env : env) (tok : CST.predefined_type) =
   G.ty_builtin (str env tok)
-
+(*
 let verbatim_string_literal (env : env) (tok : CST.verbatim_string_literal) =
   G.String (fb (str env tok))
-
+*)
 (* verbatim_string_literal *)
 
 let default_switch_label (env : env) ((v1, v2) : CST.default_switch_label) =
@@ -662,18 +662,36 @@ let literal (env : env) (x : CST.literal) : literal =
           (fun x ->
             match x with
             | `Str_lit_frag tok -> str env tok (* pattern "[^\"\\\\\\n]+" *)
-            | `Esc_seq tok -> str env tok
-            (* escape_sequence *))
+            | `Esc_seq tok -> str env tok (* escape_sequence *))
           v2
       in
       let r = token env v3 in
       G.String (G.string_ (l, xs, r))
-  | `Verb_str_lit tok -> verbatim_string_literal env tok
-  | `Raw_str_lit tok ->
-      (* same as verbatim_string_literal *)
-      G.String (fb (str env tok))
-
-(* verbatim_string_literal *)
+  | `Verb_str_lit (v1, v2, v3, _v4TODO) ->
+      (* v4 is the "string literal encoding" *)
+      let l = token env v1 (* "@\"" *) in
+      let xs =
+        List_.map
+          (fun x ->
+            match x with
+            | `Verb_str_lit_frag tok -> str env tok
+            | `DQUOTDQUOT tok -> str env tok)
+          v2
+      in
+      let r = token env v3 in
+      G.String (G.string_ (l, xs, r))
+  | `Raw_str_lit (v1, v2, v3, _v4TODO) ->
+      (* v4 is the "string literal encoding" *)
+      let l = token env v1 (* "\"\"\""\"" *) in
+      let xs =
+        List_.map
+          (fun x ->
+            match x with
+            | `Raw_str_lit_frag tok -> str env tok)
+          v2
+      in
+      let r = token env v3 in
+      G.String (G.string_ (l, xs, r))
 
 (* "void" *)
 let rec type_pattern (env : env) (x : CST.type_pattern) = type_ env x
