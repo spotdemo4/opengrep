@@ -145,7 +145,7 @@ let o_version_check : bool Term.t =
   H.negatable_flag_with_env [ "enable-version-check" ]
     ~neg_options:[ "disable-version-check" ]
     ~default:default.version_check
-    ~env:(Cmd.Env.info "SEMGREP_ENABLE_VERSION_CHECK")
+    ~env:(Cmd.Env.info "OPENGREP_ENABLE_VERSION_CHECK")
     ~doc:
       {|Checks Opengrep servers to see if the latest version is run; disabling
  this may reduce exit time after returning results.

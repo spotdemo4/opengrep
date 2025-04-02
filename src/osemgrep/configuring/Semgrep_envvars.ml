@@ -147,13 +147,13 @@ let of_current_sys_env () : t =
     (* integration_name can take a label like "funkyintegration" for custom partner integrations *)
     integration_name = env_opt "SEMGREP_INTEGRATION_NAME";
     version_check_url =
-      env_or Uri.of_string "SEMGREP_VERSION_CHECK_URL"
-        (Uri.of_string "https://semgrep.dev/api/check-version");
+      env_or Uri.of_string "OPENGREP_VERSION_CHECK_URL"
+        (Uri.of_string "https://opengrep.dev/api/check-version");
     version_check_timeout =
-      env_or int_of_string "SEMGREP_VERSION_CHECK_TIMEOUT" 2;
+      env_or int_of_string "OPENGREP_VERSION_CHECK_TIMEOUT" 2;
     version_check_cache_path =
-      env_or Fpath.v "SEMGREP_VERSION_CACHE_PATH"
-        (Fpath.v (Sys.getcwd ()) / ".cache" / "semgrep_version");
+      env_or Fpath.v "OPENGREP_VERSION_CACHE_PATH"
+        (Fpath.v (Sys.getcwd ()) / ".cache" / "opengrep_version");
     git_command_timeout = env_or int_of_string "SEMGREP_GIT_COMMAND_TIMEOUT" 300;
     src_directory = env_or Fpath.v "SEMGREP_SRC_DIRECTORY" (Fpath.v "/src");
     (* user_agent_append is a literal string like "(Docker)" for inclusion in our metrics user agent field *)
