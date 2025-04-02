@@ -83,7 +83,7 @@ let env_truthy var =
  *)
 type t = {
   semgrep_url : Uri.t;
-  fail_open_url : Uri.t;
+  (* fail_open_url : Uri.t; *)
   metrics_url : Uri.t;
   app_token : Auth.token option;
   integration_name : string option;
@@ -137,9 +137,9 @@ let of_current_sys_env () : t =
              (env_opt "SEMGREP_APP_URL"
              |> Option.value ~default:"https://semgrep.dev")
       |> Uri.of_string;
-    fail_open_url =
-      env_or Uri.of_string "SEMGREP_FAIL_OPEN_URL"
-        (Uri.of_string "https://fail-open.prod.semgrep.dev/failure");
+    (* fail_open_url =
+         env_or Uri.of_string "SEMGREP_FAIL_OPEN_URL"
+           (Uri.of_string "https://fail-open.prod.semgrep.dev/failure"); *)
     metrics_url =
       env_or Uri.of_string "SEMGREP_METRICS_URL" Metrics_.metrics_url;
     app_token =
