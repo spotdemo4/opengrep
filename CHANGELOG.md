@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/opengrep/opengrep/releases/tag/v1.1.2) - 02-04-2025
+
+### Improvements
+
+* Fix string literals in parser for C# by @maciejpirog in #186
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.1.1...v1.1.2
+
+
 ## [1.1.1](https://github.com/opengrep/opengrep/releases/tag/v1.1.1) - 31-03-2025
 
 ### Bug fixes
