@@ -442,28 +442,28 @@ let rec inits_and_rest_of_list = function
       ([ e ], l)
       :: List_.map (fun (l, rest) -> (e :: l, rest)) (inits_and_rest_of_list l)
 
-let _ =
-  Common2.example
-    (inits_and_rest_of_list [ 'a'; 'b'; 'c' ]
-    =*= [
-          ([ 'a' ], [ 'b'; 'c' ]);
-          ([ 'a'; 'b' ], [ 'c' ]);
-          ([ 'a'; 'b'; 'c' ], []);
-        ])
+(* let _ =
+     Common2.example
+       (inits_and_rest_of_list [ 'a'; 'b'; 'c' ]
+       =*= [
+             ([ 'a' ], [ 'b'; 'c' ]);
+             ([ 'a'; 'b' ], [ 'c' ]);
+             ([ 'a'; 'b'; 'c' ], []);
+           ]) *)
 
 let inits_and_rest_of_list_empty_ok = function
   | [] -> [ ([], []) ]
   | xs -> [ ([], xs) ] @ inits_and_rest_of_list xs
 
-let _ =
-  Common2.example
-    (inits_and_rest_of_list_empty_ok [ 'a'; 'b'; 'c' ]
-    =*= [
-          ([], [ 'a'; 'b'; 'c' ]);
-          ([ 'a' ], [ 'b'; 'c' ]);
-          ([ 'a'; 'b' ], [ 'c' ]);
-          ([ 'a'; 'b'; 'c' ], []);
-        ])
+(* let _ =
+     Common2.example
+       (inits_and_rest_of_list_empty_ok [ 'a'; 'b'; 'c' ]
+       =*= [
+             ([], [ 'a'; 'b'; 'c' ]);
+             ([ 'a' ], [ 'b'; 'c' ]);
+             ([ 'a'; 'b' ], [ 'c' ]);
+             ([ 'a'; 'b'; 'c' ], []);
+           ]) *)
 
 (* todo? optimize, probably not the optimal version ... *)
 let all_elem_and_rest_of_list xs =

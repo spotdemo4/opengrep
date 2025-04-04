@@ -327,22 +327,11 @@ let pause () =
   pr2 "pause: type return";
   ignore (UStdlib.read_line ())
 
-(* was used by fix_caml *)
-let _trace_var = ref 0
-let add_var () = incr _trace_var
-let dec_var () = decr _trace_var
-let get_var () = !_trace_var
-
 let (print_n : int -> string -> unit) =
  fun i s -> do_n i (fun () -> UStdlib.print_string s)
 
 let (printerr_n : int -> string -> unit) =
  fun i s -> do_n i (fun () -> UStdlib.prerr_string s)
-
-let _debug = ref true
-let debugon () = _debug := true
-let debugoff () = _debug := false
-let debug f = if !_debug then f () else ()
 
 (*****************************************************************************)
 (* Profiling *)
@@ -369,22 +358,6 @@ let timenow () =
   ^ (tm.tm_sec |> string_of_int)
   ^ ".00 seconds"
 
-let _count1 = ref 0
-let _count2 = ref 0
-let _count3 = ref 0
-let _count4 = ref 0
-let _count5 = ref 0
-let count1 () = incr _count1
-let count2 () = incr _count2
-let count3 () = incr _count3
-let count4 () = incr _count4
-let count5 () = incr _count5
-
-let profile_diagnostic_basic () =
-  Printf.sprintf
-    "count1 = %d\ncount2 = %d\ncount3 = %d\ncount4 = %d\ncount5 = %d\n" !_count1
-    !_count2 !_count3 !_count4 !_count5
-
 let time_func f =
   (*   let _ = Timing () in *)
   let x = f () in
@@ -399,10 +372,10 @@ let time_func f =
 
 (* commented because does not play well with js_of_ocaml
 *)
-let example b =
-  if b then () else failwith ("ASSERT FAILURE: " ^ Printexc.get_backtrace ())
+(* let example b =
+     if b then () else failwith ("ASSERT FAILURE: " ^ Printexc.get_backtrace ()) *)
 
-let _ex1 = assert (List_.enum 1 4 =*= [ 1; 2; 3; 4 ])
+(* let _ex1 = assert (List_.enum 1 4 =*= [ 1; 2; 3; 4 ]) *)
 
 let assert_equal a b =
   if not (a =*= b) then
@@ -410,10 +383,10 @@ let assert_equal a b =
       ("assert_equal: those 2 values are not equal:\n\t" ^ Dumper.dump a
      ^ "\n\t" ^ Dumper.dump b ^ "\n")
 
-let (example2 : string -> bool -> unit) =
- fun s b ->
-  try assert b with
-  | _x -> failwith s
+(* let (example2 : string -> bool -> unit) =
+    fun s b ->
+     try assert b with
+     | _x -> failwith s *)
 
 (*-------------------------------------------------------------------*)
 let _list_bool = ref []
@@ -628,27 +601,6 @@ let take_one xs =
     List.nth xs i, filter_index (fun j _ -> i <> j) xs
 *)
 
-(*****************************************************************************)
-(* Counter *)
-(*****************************************************************************)
-let _counter = ref 0
-
-let counter () =
-  _counter := !_counter + 1;
-  !_counter
-
-let _counter2 = ref 0
-
-let counter2 () =
-  _counter2 := !_counter2 + 1;
-  !_counter2
-
-let _counter3 = ref 0
-
-let counter3 () =
-  _counter3 := !_counter3 + 1;
-  !_counter3
-
 type timestamp = int
 
 (*****************************************************************************)
@@ -764,110 +716,11 @@ let mk_str_func_of_assoc_conv xs =
 (* Composition/Control *)
 (*****************************************************************************)
 
-(* now in prelude:
- * let (+>) o f = f o
- *)
-let ( +!> ) refo f = refo := f !refo
-(* alternatives:
- *  let ((@): 'a -> ('a -> 'b) -> 'b) = fun a b -> b a
- *  let o f g x = f (g x)
- *)
-
 let ( $ ) f g x = g (f x)
-
-let forever f =
-  while true do
-    f ()
-  done
-
-class ['a] shared_variable_hook (x : 'a) =
-  object (self)
-    val mutable data = x
-    val mutable registered = []
-
-    method set x =
-      data <- x;
-      pr "refresh registered";
-      registered |> List.iter (fun f -> f ())
-
-    method get = data
-    method modify f = self#set (f self#get)
-    method register f = registered <- f :: registered
-  end
-
-(* src: from aop project. was called ptFix *)
-let rec fixpoint trans elem =
-  let image = trans elem in
-  if image =*= elem then elem (* point fixe *) else fixpoint trans image
-
-(* le point fixe  pour les objets. was called ptFixForObjetct *)
-let rec fixpoint_for_object trans elem =
-  let image = trans elem in
-  if image#equal elem then elem (* point fixe *)
-  else fixpoint_for_object trans image
-
-let (add_hook :
-      ('a -> ('a -> 'b) -> 'b) ref -> ('a -> ('a -> 'b) -> 'b) -> unit) =
- fun var f ->
-  let oldvar = !var in
-  var := fun arg k -> f arg (fun x -> oldvar x k)
-
-let (add_hook_action : ('a -> unit) -> ('a -> unit) list ref -> unit) =
- fun f hooks -> Stack_.push f hooks
-
-let (run_hooks_action : 'a -> ('a -> unit) list ref -> unit) =
- fun obj hooks ->
-  !hooks
-  |> List.iter (fun f ->
-         try f obj with
-         | _ -> ())
-
-type 'a mylazy = unit -> 'a
 
 (* TODO: Check non thread-safe use of references below. *)
 
-(* a la emacs.
- * bugfix: add finalize, otherwise exns can mess up the reference
- *)
-let save_excursion reference newv f =
-  let old = !reference in
-  reference := newv;
-  Common.finalize f (fun _ -> reference := old)
-
-let save_excursion_and_disable reference f =
-  save_excursion reference false (fun () -> f ())
-
-let save_excursion_and_enable reference f =
-  save_excursion reference true (fun () -> f ())
-
 let memoized = Common.memoized
-
-let cache_in_ref myref f =
-  match !myref with
-  | Some e -> e
-  | None ->
-      let e = f () in
-      myref := Some e;
-      e
-
-let oncef f =
-  let already = ref false in
-  fun x ->
-    if not !already then (
-      already := true;
-      f x)
-
-let once aref f =
-  if !aref then ()
-  else (
-    aref := true;
-    f ())
-
-(* cache_file, cf below *)
-
-let before_leaving f x =
-  f x;
-  x
 
 (* finalize, cf prelude *)
 
@@ -906,24 +759,6 @@ let before_leaving f x =
  * successful."
 
  *)
-
-exception FileAlreadyLocked
-
-(* Racy if lock file on NFS!!! But still racy with recent Linux ? *)
-let acquire_file_lock filename =
-  pr2 ("Locking file: " ^ filename);
-  try
-    let _fd = UUnix.openfile filename [ Unix.O_CREAT; Unix.O_EXCL ] 0o777 in
-    ()
-  with
-  | UUnix.Unix_error (e, fm, argm) ->
-      pr2 (spf "exn Unix_error: %s %s %s\n" (Unix.error_message e) fm argm);
-      raise FileAlreadyLocked
-
-let release_file_lock filename =
-  pr2 ("Releasing file: " ^ filename);
-  USys.remove filename;
-  ()
 
 (*****************************************************************************)
 (* Error managment *)
@@ -984,19 +819,19 @@ let evoval = ()
 (* Environment *)
 (*****************************************************************************)
 
-let _check_stack = ref true
-
-let check_stack_size limit =
-  if !_check_stack then (
-    pr2 "checking stack size (do ulimit -s 40000 if problem)";
-    let rec aux i = if i =|= limit then 0 else 1 + aux (i + 1) in
-    assert (aux 0 =|= limit);
-    ())
-
-let test_check_stack_size limit =
-  (* bytecode: 100000000 *)
-  (* native:   10000000 *)
-  check_stack_size (int_of_string limit)
+(* let _check_stack = ref true
+   
+   let check_stack_size limit =
+     if !_check_stack then (
+       pr2 "checking stack size (do ulimit -s 40000 if problem)";
+       let rec aux i = if i =|= limit then 0 else 1 + aux (i + 1) in
+       assert (aux 0 =|= limit);
+       ())
+   
+   let test_check_stack_size limit =
+     (\* bytecode: 100000000 *\)
+     (\* native:   10000000 *\)
+     check_stack_size (int_of_string limit) *)
 
 (* only relevant in bytecode, in native the stacklimit is the os stacklimit
  * (adjustable by ulimit -s)
@@ -1013,7 +848,7 @@ let _init_gc_stack = ()
  * On Centos 5.2 with ulimit -s 40000 I can only go up to 2000000 in
  * native mode (and it crash with ulimit -s 10000, which is what we want).
  *)
-let check_stack_nbfiles nbfiles = if nbfiles > 200 then check_stack_size 2000000
+(* let check_stack_nbfiles nbfiles = if nbfiles > 200 then check_stack_size 2000000 *)
 
 (*###########################################################################*)
 (* Basic types *)
@@ -1685,10 +1520,6 @@ type dirname = string
 (* file or dir *)
 type path = string
 
-module BasicType = struct
-  type filename = string
-end
-
 let adjust_ext_if_needed filename ext =
   if String.get ext 0 <> '.' then
     failwith "I need an extension such as .c not just c";
@@ -1760,23 +1591,6 @@ let filename_without_leading_path prj_path s =
     failwith (spf "cant find filename_without_project_path: %s  %s" prj_path s)
 
 (* realpath: see end of file *)
-
-let grep_dash_v_str =
-  "| grep -v /.hg/ |grep -v /CVS/ | grep -v /.git/ |grep -v /_darcs/"
-  ^ "| grep -v /.svn/ | grep -v .git_annot | grep -v .marshall"
-
-let arg_symlink () = if !UFile.follow_symlinks then " -L " else ""
-
-let files_of_dir_or_files_no_vcs ext xs =
-  xs
-  |> List_.map (fun x ->
-         if USys.is_directory x then
-           (* nosemgrep: forbid-exec *)
-           UCmd.cmd_to_list
-             ("find " ^ arg_symlink () ^ x ^ " -noleaf -type f -name \"*." ^ ext
-            ^ "\"" ^ grep_dash_v_str)
-         else [ x ])
-  |> List_.flatten
 
 (*****************************************************************************)
 (* i18n *)
@@ -4846,7 +4660,6 @@ let cmdline_flags_verbose () =
 
 let cmdline_flags_other () =
   [
-    ("-nocheck_stack", Arg.Clear _check_stack, " ");
     ("-batch_mode", Arg.Set _batch_mode, " no interactivity");
   ]
 
@@ -4885,12 +4698,12 @@ let cmdline_flags_other () =
    " ";
 *)
 
-let cmdline_actions () =
-  [
-    ( "-test_check_stack",
-      "  <limit>",
-      Arg_.mk_action_1_arg test_check_stack_size );
-  ]
+(* let cmdline_actions () =
+     [
+       ( "-test_check_stack",
+         "  <limit>",
+         Arg_.mk_action_1_arg test_check_stack_size );
+     ] *)
 
 (*e: common.ml cmdline *)
 
@@ -4899,11 +4712,6 @@ let cmdline_actions () =
 (* Postlude *)
 (*****************************************************************************)
 (* stuff put here cos of of forward definition limitation of ocaml *)
-
-(* Infix trick, seen in jane street lib and harrop's code, and maybe in GMP *)
-module Infix = struct
-  let ( ==~ ) = ( ==~ )
-end
 
 let with_pr2_to_string caps f =
   CapTmp.with_temp_file caps ~suffix:".out" (fun path ->
@@ -4915,34 +4723,6 @@ let with_pr2_to_string caps f =
 (* Directories part 2 *)
 (*---------------------------------------------------------------------------*)
 
-(* todo? vs common_prefix_of_files_or_dirs? *)
-let find_common_root files =
-  let dirs_part = files |> List_.map fst in
-
-  let rec aux current_candidate xs =
-    try
-      let topsubdirs =
-        xs |> List_.map (List_.hd_exn "unexpected empty list") |> uniq_eff
-      in
-      match topsubdirs with
-      | [ x ] ->
-          aux (x :: current_candidate)
-            (xs |> List_.map (List_.tl_exn "unexpected empty list"))
-      | _ -> List.rev current_candidate
-    with
-    | _ -> List.rev current_candidate
-  in
-  aux [] dirs_part
-
-(*
-let _ = example
-  (find_common_root
-      [(["home";"pad"], "foo.php");
-       (["home";"pad";"bar"], "bar.php");
-      ]
-    =*= ["home";"pad"])
-*)
-
 let dirs_and_base_of_file file =
   let dir, base = Filename_.db_of_filename file in
   let dirs = split "/" dir in
@@ -4952,120 +4732,3 @@ let dirs_and_base_of_file file =
     | _ -> dirs
   in
   (dirs, base)
-
-(*
-let _ = example
-  (dirs_and_base_of_file "/home/pad/foo.php" =*= (["home";"pad"], "foo.php"))
-*)
-
-let inits_of_absolute_dir dir =
-  if not (is_absolute dir) then
-    failwith (spf "inits_of_absolute_dir: %s is not an absolute path" dir);
-  if not (UFile.is_dir ~follow_symlinks:true (Fpath.v dir)) then
-    failwith (spf "inits_of_absolute_dir: %s is not a directory" dir);
-  let dir = chop_dirsymbol dir in
-
-  let dirs = split "/" dir in
-  let dirs =
-    match dirs with
-    | [ "." ] -> []
-    | _ -> dirs
-  in
-  inits dirs |> List_.map (fun xs -> "/" ^ join "/" xs)
-
-let inits_of_relative_dir dir =
-  if not (is_relative dir) then
-    failwith (spf "inits_of_relative_dir: %s is not a relative dir" dir);
-  let dir = chop_dirsymbol dir in
-
-  let dirs = split "/" dir in
-  let dirs =
-    match dirs with
-    | [ "." ] -> []
-    | _ -> dirs
-  in
-  inits dirs
-  |> List_.tl_exn "unexpected empty list"
-  |> List_.map (fun xs -> join "/" xs)
-
-(*
-let _ = example
-  (inits_of_absolute_dir "/usr/bin" =*= (["/"; "/usr"; "/usr/bin"]))
-
-let _ = example
-  (inits_of_relative_dir "usr/bin" =*= (["usr"; "usr/bin"]))
-*)
-
-(* main entry *)
-let (tree_of_files : filename list -> (string, string * filename) tree) =
- fun files ->
-  let files_fullpath = files in
-
-  (* extract dirs and file from file, e.g. ["home";"pad"], "__flib.php", path *)
-  let files = files |> List_.map dirs_and_base_of_file in
-
-  (* find root, eg ["home";"pad"] *)
-  let root = find_common_root files in
-
-  let files = zip files files_fullpath in
-
-  (* remove the root part *)
-  let files =
-    files
-    |> List_.map (fun ((dirs, base), path) ->
-           let n = List.length root in
-           let root', rest = (take n dirs, drop n dirs) in
-           assert (root' =*= root);
-           ((rest, base), path))
-  in
-
-  (* now ready to build the tree recursively *)
-  let rec aux (xs : ((string list * string) * filename) list) =
-    let files_here, rest =
-      xs |> List.partition (fun ((dirs, _base), _) -> List_.null dirs)
-    in
-    let groups =
-      rest
-      |> group_by_mapped_key (fun ((dirs, _base), _) ->
-             (* would be a file if null dirs *)
-             assert (not (List_.null dirs));
-             List_.hd_exn "unexpected empty list" dirs)
-    in
-
-    let nodes =
-      groups
-      |> List_.map (fun (k, xs) ->
-             let xs' =
-               xs
-               |> List_.map (fun ((dirs, base), path) ->
-                      ((List_.tl_exn "unexpected empty list" dirs, base), path))
-             in
-             Node (k, aux xs'))
-    in
-    let leaves =
-      files_here |> List_.map (fun ((_dir, base), path) -> Leaf (base, path))
-    in
-    nodes @ leaves
-  in
-  Node (join "/" root, aux files)
-
-(* finding the common root *)
-let common_prefix_of_files_or_dirs xs =
-  let xs = xs |> List_.map relative_to_absolute in
-  match xs with
-  | [] -> failwith "common_prefix_of_files_or_dirs: empty list"
-  | [ x ] -> x
-  | _y :: _ys ->
-      (* todo: work when dirs ?*)
-      let xs = xs |> List_.map dirs_and_base_of_file in
-      let dirs = find_common_root xs in
-      "/" ^ join "/" dirs
-
-(*
-let _ =
-  example
-    (common_prefix_of_files_or_dirs ["/home/pad/visual";
-                                     "/home/pad/commons";]
-     =*= "/home/pad/pfff"
-    )
-*)
