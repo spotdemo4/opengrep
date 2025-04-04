@@ -44,40 +44,6 @@ type dirname = string
 (* file or dir *)
 type path = string
 
-(* Trick in case you dont want to do an 'open Common' while still wanting
- * more pervasive types than the one in Pervasives. Just do the selective
- * open Common.BasicType.
- *)
-module BasicType : sig
-  type filename = string
-end
-
-(* Same spirit. Trick found in Jane Street core lib, but originated somewhere
- * else I think: the ability to open nested modules. *)
-module Infix : sig
-  val ( ==~ ) : string -> Str.regexp -> bool
-end
-
-(*
- * Another related trick, found via Jon Harrop to have an extended standard
- * lib is to do something like
- *
- * module List = struct
- *  include List
- *  val map2 : ...
- * end
- *
- * And then can put this "module extension" somewhere to open it.
- *)
-
-(* This module defines the Timeout and UnixExit exceptions.
- * You  have to make sure that those exn are not intercepted. So
- * avoid exn handler such as try (...) with _ -> cos Timeout will not bubble up
- * enough. In such case, add a case before such as
- * with Timeout -> raise Timeout | _ -> ...
- * The same is true for UnixExit (see below).
- *)
-
 (*****************************************************************************)
 (* Debugging/logging *)
 (*****************************************************************************)
@@ -128,17 +94,8 @@ val if_log3 : (unit -> unit) -> unit
 val if_log4 : (unit -> unit) -> unit
 val pause : unit -> unit
 
-(* was used by fix_caml *)
-val _trace_var : int ref
-val add_var : unit -> unit
-val dec_var : unit -> unit
-val get_var : unit -> int
 val print_n : int -> string -> unit
 val printerr_n : int -> string -> unit
-val _debug : bool ref
-val debugon : unit -> unit
-val debugoff : unit -> unit
-val debug : (unit -> unit) -> unit
 
 (* see also logger.ml *)
 
@@ -150,17 +107,6 @@ val debug : (unit -> unit) -> unit
 
 val memory_stat : unit -> string
 val timenow : unit -> string
-val _count1 : int ref
-val _count2 : int ref
-val _count3 : int ref
-val _count4 : int ref
-val _count5 : int ref
-val count1 : unit -> unit
-val count2 : unit -> unit
-val count3 : unit -> unit
-val count4 : unit -> unit
-val count5 : unit -> unit
-val profile_diagnostic_basic : unit -> string
 val time_func : (unit -> 'a) -> 'a
 
 (*****************************************************************************)
@@ -168,10 +114,10 @@ val time_func : (unit -> 'a) -> 'a
 (*****************************************************************************)
 
 (*old: val example : bool -> unit, PB with js_of_ocaml? *)
-val example : bool -> unit
+(* val example : bool -> unit *)
 
 (* generate failwith <string> when pb *)
-val example2 : string -> bool -> unit
+(* val example2 : string -> bool -> unit *)
 
 (* use Dumper to report when pb *)
 val assert_equal : 'a -> 'a -> unit
@@ -218,16 +164,6 @@ val statistic_number : 'a list -> (int * 'a) list
 val statistic : 'a list -> (int * 'a) list
 val laws2 : string -> ('a -> bool * 'b) -> 'a gen -> 'a option * (int * 'b) list
 
-(*****************************************************************************)
-(* Counter *)
-(*****************************************************************************)
-val _counter : int ref
-val _counter2 : int ref
-val _counter3 : int ref
-val counter : unit -> int
-val counter2 : unit -> int
-val counter3 : unit -> int
-
 type timestamp = int
 
 (*****************************************************************************)
@@ -264,49 +200,9 @@ val mk_str_func_of_assoc_conv :
 (* Composition/Control *)
 (*****************************************************************************)
 
-val ( +!> ) : 'a ref -> ('a -> 'a) -> unit
 val ( $ ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
-val forever : (unit -> unit) -> unit
-
-class ['a] shared_variable_hook : 'a -> object
-  val mutable data : 'a
-  val mutable registered : (unit -> unit) list
-  method get : 'a
-  method modify : ('a -> 'a) -> unit
-  method register : (unit -> unit) -> unit
-  method set : 'a -> unit
-end
-
-val fixpoint : ('a -> 'a) -> 'a -> 'a
-
-val fixpoint_for_object :
-  ((< equal : 'a -> bool ; .. > as 'a) -> 'a) -> 'a -> 'a
-
-val add_hook : ('a -> ('a -> 'b) -> 'b) ref -> ('a -> ('a -> 'b) -> 'b) -> unit
-val add_hook_action : ('a -> unit) -> ('a -> unit) list ref -> unit
-val run_hooks_action : 'a -> ('a -> unit) list ref -> unit
-
-type 'a mylazy = unit -> 'a
-
-(* emacs spirit *)
-val save_excursion_and_disable : bool ref -> (unit -> 'b) -> 'b
-val save_excursion_and_enable : bool ref -> (unit -> 'b) -> 'b
-val cache_in_ref : 'a option ref -> (unit -> 'a) -> 'a
-val oncef : ('a -> unit) -> 'a -> unit
-val once : bool ref -> (unit -> unit) -> unit
-val before_leaving : ('a -> unit) -> 'a -> 'a
 
 (* cf also the timeout function below that are control related too *)
-
-(*****************************************************************************)
-(* Concurrency *)
-(*****************************************************************************)
-
-(* how ensure really atomic file creation ? hehe :) *)
-exception FileAlreadyLocked
-
-val acquire_file_lock : filename -> unit
-val release_file_lock : filename -> unit
 
 (*****************************************************************************)
 (* Error managment *)
@@ -332,9 +228,9 @@ val evoval : evotype
 (* Environment *)
 (*****************************************************************************)
 
-val _check_stack : bool ref
-val check_stack_size : int -> unit
-val check_stack_nbfiles : int -> unit
+(* val _check_stack : bool ref
+   val check_stack_size : int -> unit
+   val check_stack_nbfiles : int -> unit *)
 
 (* internally common.ml set Gc. parameters *)
 val _init_gc_stack : unit
@@ -605,16 +501,6 @@ val is_relative : filename -> bool
 val is_absolute : filename -> bool
 val filename_without_leading_path : string -> filename -> filename
 
-(* see below
-   val tree2_of_files: filename list -> (dirname, (string * filename)) tree2
-*)
-
-val inits_of_absolute_dir : dirname -> dirname list
-val inits_of_relative_dir : dirname -> dirname list
-
-val files_of_dir_or_files_no_vcs :
-  string (* extension *) -> string (* root *) list -> string (* filename *) list
-
 (*****************************************************************************)
 (* i18n *)
 (*****************************************************************************)
@@ -774,8 +660,6 @@ val glob : string -> filename list
   * or subdirectories ending in .extension. This function is equivalent
   * to "ls pattern" in the shell.
   *)
-
-val common_prefix_of_files_or_dirs : path list -> dirname
 
 val sanity_check_files_and_adjust :
   string (* ext *) -> string list -> filename list
@@ -1282,7 +1166,6 @@ val map_tree :
   ('abis, 'bbis) tree
 
 val dirs_and_base_of_file : path -> string list * string
-val tree_of_files : filename list -> (dirname, string * filename) tree
 
 (*****************************************************************************)
 (* N-ary tree with updatable childrens *)
@@ -1500,4 +1383,3 @@ val unserial : 'a cached -> 'a
 val cmdline_flags_devel : unit -> Arg_.cmdline_options
 val cmdline_flags_verbose : unit -> Arg_.cmdline_options
 val cmdline_flags_other : unit -> Arg_.cmdline_options
-val cmdline_actions : unit -> Arg_.cmdline_actions
