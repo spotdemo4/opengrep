@@ -139,6 +139,10 @@ def get_file_ignore(max_log_list_entries: int) -> FileIgnore:
                 raise FilesNotFoundError(
                     f"Could not find {IGNORE_FILE_NAME} in {TEMPLATES_DIR}"
                 )
+            else:
+                logger.verbose(
+                    f"Using default .semgrepignore rules from {semgrepignore_path}"
+                )
         else:
             logger.verbose("using path ignore rules from user provided .semgrepignore")
 
