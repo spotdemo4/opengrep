@@ -233,7 +233,7 @@ core-test-e2e:
 # version constraints incompatibilities.
 #
 REQUIRED_DEPS = \
- ./ \
+ ./opam/*.opam \
  ./libs/ocaml-tree-sitter-core/tree-sitter.opam \
   ./dev/required.opam \
   $(EXTRA_OPAM_DEPS)
