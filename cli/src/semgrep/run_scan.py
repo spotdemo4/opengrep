@@ -106,7 +106,12 @@ logger = getLogger(__name__)
 
 
 def get_file_ignore(max_log_list_entries: int) -> FileIgnore:
-    TEMPLATES_DIR = Path(__file__).parent / "templates"
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # Running in pyinstaller bundle:
+        base_path = Path(sys._MEIPASS) / "semgrep"
+    else:
+        base_path = Path(__file__).parent
+    TEMPLATES_DIR = base_path / "templates"
     try:
         workdir = Path.cwd()
     except FileNotFoundError:
