@@ -7,13 +7,11 @@ import json
 import os
 import subprocess
 import time
-import urllib.request
 from typing import List
 
-HOST = "https://dashboard.semgrep.dev"
 
 # This script assumes it's run from the current directory
-SEMGREP_CORE = "../../bin/semgrep-core"
+SEMGREP_CORE = "../../bin/opengrep-core"
 
 
 class Test:
@@ -142,16 +140,6 @@ def run_tests(
     return results
 
 
-def upload_results(results: List[Result]) -> None:
-    for res in results:
-        url = f"{HOST}/api/metric/semgrep.core.perf.{res.name}.seconds"
-        r = urllib.request.urlopen(  # nosem: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
-            url=url,
-            data=str(res.duration).encode("ascii"),
-        )
-        print(r.read().decode())
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -166,9 +154,6 @@ def main() -> None:
     parser.add_argument(
         "--max-cache", help="use most aggressive caching", action="store_true"
     )
-    parser.add_argument(
-        "--upload", help="upload results to semgrep dashboard", action="store_true"
-    )
     args = parser.parse_args()
 
     if args.list:
@@ -181,8 +166,6 @@ def main() -> None:
         else:
             tests = TESTS
         results = run_tests("input", tests, args.no_cache, args.max_cache)
-        if args.upload:
-            upload_results(results)
 
 
 if __name__ == "__main__":
