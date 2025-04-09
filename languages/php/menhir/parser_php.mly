@@ -857,9 +857,10 @@ variance_opt:
 (*************************************************************************)
 
 type_php:
- | primary_type_php { $1 }
  (* facebook-ext: classes can define type constants referenced using `::`*)
  | type_php "::" primary_type_php { HintTypeConst ($1, $2, $3) }
+ | union_type_php_list
+    { match $1 with | [Left v] -> v | xs -> HintUnion xs }
 
 primary_type_php:
  | class_name { $1 }
@@ -872,7 +873,6 @@ primary_type_php:
      { HintTuple ($1, $2, $3) }
  | "(" T_FUNCTION "(" type_php_or_dots_list ")" return_type ")"
      { HintCallback ($1, ($2, ($3, $4, $5), Some $6), $7)}
-
 
 (* similar to parameter_list, but without names for the parameters *)
 type_php_or_dots_list:
@@ -1479,6 +1479,8 @@ non_empty_type_php_list:
  | listc(type_php) { $1 }
  | listc(type_php) "," { $1 @ [Right $2] }
 
+union_type_php_list:
+ | list_sep(primary_type_php, "|") { $1 }
 
 class_name_list: listc(class_name_no_array) { $1 }
 
