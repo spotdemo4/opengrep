@@ -99,12 +99,12 @@ class Env:
 
     @version_check_timeout.default
     def version_check_timeout_default(self) -> int:
-        value = os.getenv("SEMGREP_VERSION_CHECK_TIMEOUT", "2")
+        value = os.getenv("OPENGREP_VERSION_CHECK_TIMEOUT", "2")
         return int(value)
 
     @version_check_cache_path.default
     def version_check_cache_path_default(self) -> Path:
-        value = os.getenv("SEMGREP_VERSION_CACHE_PATH")
+        value = os.getenv("OPENGREP_VERSION_CACHE_PATH")
         if value:
             return Path(value)
         return Path.home() / ".cache" / "opengrep_version"

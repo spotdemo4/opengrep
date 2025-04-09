@@ -33,7 +33,7 @@ from semgrep.app import auth
 from semgrep.config_resolver import Config
 from semgrep.console import console
 from semgrep.constants import Colors
-from semgrep.constants import PLEASE_FILE_ISSUE_TEXT
+from semgrep.constants import PLEASE_FILE_ISSUE_TEXT, IS_WINDOWS
 from semgrep.core_output import core_error_to_semgrep_error
 from semgrep.core_output import core_matches_to_rule_matches
 from semgrep.core_targets_plan import Plan
@@ -71,7 +71,6 @@ INPUT_BUFFER_LIMIT: int = 1024 * 1024 * 1024
 # test/e2e/test_performance.py is one test that exercises this risk.
 LARGE_READ_SIZE: int = 1024 * 1024 * 512
 
-IS_WINDOWS = platform.system() == "Windows"
 if not IS_WINDOWS:
     import resource
 

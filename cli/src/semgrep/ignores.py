@@ -13,7 +13,7 @@ from attr import frozen
 from attrs import define
 from boltons.iterutils import partition
 
-from semgrep.constants import TOO_MUCH_DATA
+from semgrep.constants import TOO_MUCH_DATA, IS_WINDOWS
 from semgrep.error import SemgrepError
 from semgrep.state import get_state
 from semgrep.types import FilteredFiles
@@ -27,17 +27,6 @@ COMMENT_START_REGEX = re.compile(r"(?P<ignore_pattern>.*?)(?:\s+|^)#.*")
 IGNORE_FILE_NAME = ".semgrepignore"
 
 logger = getLogger(__name__)
-
-
-# path.is_relative_to is only available starting with Python 3.9
-# So we just copy its implementation
-def path_is_relative_to(p1: Path, p2: Path) -> bool:
-    try:
-        p1.relative_to(p2)
-        return True
-    except ValueError:
-        return False
-
 
 @frozen
 class FileIgnore:
@@ -59,15 +48,16 @@ class FileIgnore:
         # For example, the fnmatch pattern 'tests' will match the paths
         # 'tests' and 'tests/foo'.
 
-        path.is_dir()
-        path_is_relative_to_base = path_is_relative_to(path, self.base_path)
+        # path.is_dir() # NOTE (dimitris): This has no effect.
+        path_is_relative_to_base = path.is_relative_to(self.base_path)
         matchable_path = (
             str(path.relative_to(self.base_path))
             if path_is_relative_to_base
             else str(path)
         )
+        star_star_pat_prefix = "**/" if not IS_WINDOWS else "**\\"
         for pat in self.fnmatch_patterns:
-            if path_is_relative_to_base or pat.startswith("**/"):
+            if path_is_relative_to_base or pat.startswith(star_star_pat_prefix):
                 if fnmatch.fnmatch(matchable_path, pat):
                     return False
         return True
@@ -302,4 +292,7 @@ class Processor:
             for unescaped in self.unescape(pat)
             for pattern in self.to_fnmatch(unescaped)
         }
+        if IS_WINDOWS:
+            # This is needed for Cygwin:
+            patterns = {p.replace("/", "\\") for p in patterns}
         return patterns

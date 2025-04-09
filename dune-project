@@ -27,7 +27,7 @@
 (opam_file_location inside_opam_directory)
 
 ;; set here so the semgrep package below can use it and we can easily bump it
-(version 1.100.0) ; TODO (dimitris): Eventually move to Opengrep versioning.
+(version 1.100.0) ; TODO: Bump as per our version, but this ruins caching.
 
 ;; Default attributes of opam packages
 (source (github opengrep/opengrep))
@@ -467,7 +467,7 @@ For more information see https://opengrep.dev.
     ; (is it, though?), we need a version that doesn't register
     ; rogue exception printers.
     ; See https://github.com/janestreet/base/issues/146
-    (base (>= v0.15.1))
+    (base (>= v0.17.1))
     fpath
     bos
     fileutils
@@ -501,7 +501,7 @@ For more information see https://opengrep.dev.
     ppx_deriving_yojson
     ppx_hash
     ppx_inline_test
-    (ppx_sexp_conv ( = v0.16.0))
+    (ppx_sexp_conv (>= v0.16.0))
     ppx_expect
     (visitors (= 20250212))
     ; regexps

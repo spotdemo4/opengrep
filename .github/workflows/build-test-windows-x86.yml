@@ -243,9 +243,9 @@ jobs:
           opam env
 
           # opam pin --no-action add semgrep.dev .
-          echo "Pinning local packages..."
-          for f in opam/*.opam;
-            do opam pin --no-action add "$(basename "$f" .opam).dev" .; done;
+          # echo "Pinning local packages..."
+          # for f in opam/*.opam;
+          #   do opam pin --no-action add "$(basename "$f" .opam).dev" .; done;
 
           echo "Installing dune..."
           opam install dune

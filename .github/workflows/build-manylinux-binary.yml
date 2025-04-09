@@ -107,7 +107,7 @@ jobs:
 
   test-manylinux-binary:
     needs: build-self-contained-manylinux-binary
-    runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-20.04' || 'ubuntu-24.04-arm' }}
+    runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-22.04' || 'ubuntu-24.04-arm' }}
     steps:
       - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:

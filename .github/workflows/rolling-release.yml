@@ -117,7 +117,6 @@ jobs:
           prerelease: true
           body: |
             This is a rolling release from `main`.
-            Note that the Windows version is not yet functional, but can be tested if the following parameters are passed to the `scan` command in addition to any other parameters: `-j 1 --timeout 0`.
           files: |
             artifacts/opengrep_manylinux_binary_x86_64/opengrep_manylinux_x86
             artifacts/opengrep_manylinux_binary_aarch64/opengrep_manylinux_aarch64
