@@ -28,17 +28,6 @@ IGNORE_FILE_NAME = ".semgrepignore"
 
 logger = getLogger(__name__)
 
-
-# path.is_relative_to is only available starting with Python 3.9
-# So we just copy its implementation
-def path_is_relative_to(p1: Path, p2: Path) -> bool:
-    try:
-        p1.relative_to(p2)
-        return True
-    except ValueError:
-        return False
-
-
 @frozen
 class FileIgnore:
     # Pysemgrep supports only one '.semgrepignore' file, and it must be in the
