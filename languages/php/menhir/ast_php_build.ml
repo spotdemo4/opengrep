@@ -618,6 +618,8 @@ and hint_type env = function
   | HintQuestion (tok, t) -> A.HintQuestion (tok, hint_type env t)
   | HintTuple (t1, v1, t2) ->
       A.HintTuple (t1, List_.map (hint_type env) (comma_list v1), t2)
+  | HintUnion v1 ->
+      A.HintUnion (List_.map (hint_type env) (comma_list v1))
   | HintCallback (_, (_, args, ret), _) ->
       let args = List_.map (hint_type env) (comma_list_dots (brace args)) in
       let ret = Option.map (fun (_, t) -> hint_type env t) ret in

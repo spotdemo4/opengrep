@@ -142,6 +142,7 @@ type hint_type =
   | HintArray of tok
   | HintQuestion of (tok * hint_type)
   | HintTuple of hint_type comma_list paren
+  | HintUnion of hint_type comma_list
   | HintCallback of
       (tok (* "function" *)
       * hint_type comma_list_dots paren

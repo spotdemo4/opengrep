@@ -498,6 +498,9 @@ and hint_type = function
   | HintTuple (t1, v1, t2) ->
       let v1 = list hint_type v1 in
       G.TyTuple (t1, v1, t2) |> G.t
+  | HintUnion v1 -> (* TODO: Why are union types traslated to tuples? *)
+      let v1 = list hint_type v1 in
+      G.TyTuple (fb v1) |> G.t
   | HintCallback (v1, v2) ->
       let v1 = list hint_type v1 and v2 = option hint_type v2 in
       let params = v1 |> List_.map (fun x -> G.Param (G.param_of_type x)) in
