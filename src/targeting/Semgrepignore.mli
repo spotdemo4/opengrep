@@ -26,7 +26,7 @@ type exclusion_mechanism = {
    The project_root path must exist. It is used to
    locate .gitignore and .semgrepignore files.
 
-   This is an instanciation of Gitignore_filter.t specific to Semgrep.
+   This is an instantiation of Gitignore_filter.t specific to Semgrep.
 
    Use Git_project.find_project_root to determine the root of the
    git project.
