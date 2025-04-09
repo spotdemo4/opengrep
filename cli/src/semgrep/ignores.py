@@ -48,15 +48,16 @@ class FileIgnore:
         # For example, the fnmatch pattern 'tests' will match the paths
         # 'tests' and 'tests/foo'.
 
-        path.is_dir()
-        path_is_relative_to_base = path_is_relative_to(path, self.base_path)
+        # path.is_dir() # NOTE (dimitris): This has no effect.
+        path_is_relative_to_base = path.is_relative_to(self.base_path)
         matchable_path = (
             str(path.relative_to(self.base_path))
             if path_is_relative_to_base
             else str(path)
         )
+        star_star_pat_prefix = "**/" if not IS_WINDOWS else "**\\"
         for pat in self.fnmatch_patterns:
-            if path_is_relative_to_base or pat.startswith("**/"):
+            if path_is_relative_to_base or pat.startswith(star_star_pat_prefix):
                 if fnmatch.fnmatch(matchable_path, pat):
                     return False
         return True
