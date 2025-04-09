@@ -1,8 +1,11 @@
 import re
+import sys
 from enum import auto
 from enum import Enum
 
 import semgrep.semgrep_interfaces.semgrep_output_v1 as out
+
+IS_WINDOWS = sys.platform.startswith("win32") or sys.platform.startswith("cygwin")
 
 RULES_KEY = "rules"
 MISSED_KEY = "missed"  # The number of Pro rules missed out on

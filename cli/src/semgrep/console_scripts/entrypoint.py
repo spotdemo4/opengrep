@@ -45,6 +45,7 @@ import subprocess
 # import requests
 import semgrep.main
 import semgrep.cli
+from semgrep.constants import IS_WINDOWS
 # from semgrep import tracing
 
 # alt: you can also add '-W ignore::DeprecationWarning' after the python3 above,
@@ -64,8 +65,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 PATH = os.environ.get("PATH", "")
 # nosem: no-env-vars-on-top-level
 os.environ["PATH"] = PATH + os.pathsep + sysconfig.get_path("scripts")
-
-IS_WINDOWS = platform.system() == "Windows"
 
 PRO_FLAGS = ["--pro", "--pro-languages", "--pro-intrafile"]
 

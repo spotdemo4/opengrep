@@ -15,8 +15,8 @@ import semgrep.semgrep_interfaces.semgrep_output_v1 as out
 from semgrep.error import SemgrepError
 from semgrep.rule import Rule
 from semgrep.rule_match import RuleMatch
+# from semgrep.constants import IS_WINDOWS
 
-IS_WINDOWS = platform.system() == "Windows"
 
 class SarifFormatter(base.BaseFormatter):
     def keep_ignores(self) -> bool:

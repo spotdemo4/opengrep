@@ -13,7 +13,7 @@ from attr import frozen
 from attrs import define
 from boltons.iterutils import partition
 
-from semgrep.constants import TOO_MUCH_DATA
+from semgrep.constants import TOO_MUCH_DATA, IS_WINDOWS
 from semgrep.error import SemgrepError
 from semgrep.state import get_state
 from semgrep.types import FilteredFiles
