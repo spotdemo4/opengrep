@@ -291,4 +291,7 @@ class Processor:
             for unescaped in self.unescape(pat)
             for pattern in self.to_fnmatch(unescaped)
         }
+        if IS_WINDOWS:
+            # This is needed for Cygwin:
+            patterns = {p.replace("/", "\\") for p in patterns}
         return patterns
