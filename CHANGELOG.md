@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.3](https://github.com/opengrep/opengrep/releases/tag/v1.1.3) - 10-04-2025
+
+### Improvements
+
+* Fix string templates in Kotlin by @maciejpirog in #191
+* Add union types to PHP menhir parser by @maciejpirog in #201
+
+### Bug fixes
+
+* Fix: .semgrepignore not working on windows when path is not relative by @dimitris-m in #194
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.1.2...v1.1.3
+
+
 ## [1.1.2](https://github.com/opengrep/opengrep/releases/tag/v1.1.2) - 02-04-2025
 
 ### Improvements
