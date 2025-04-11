@@ -114,6 +114,7 @@ let visitor_info_of_tok f = function
   | T_AS ii -> T_AS (f ii)
   | T_SUPER ii -> T_SUPER (f ii)
   | T_FUNCTION ii -> T_FUNCTION (f ii)
+  | T_FN ii -> T_FN (f ii)
   | T_CONST ii -> T_CONST (f ii)
   | T_STATIC ii -> T_STATIC (f ii)
   | T_ABSTRACT ii -> T_ABSTRACT (f ii)

@@ -153,7 +153,7 @@ let str_of_info x = Tok.content_of_tok x
  T_DO  T_WHILE   T_ENDWHILE  T_FOR     T_ENDFOR T_FOREACH T_ENDFOREACH
  T_SWITCH  T_ENDSWITCH T_CASE T_DEFAULT    T_BREAK T_CONTINUE
  T_RETURN  T_TRY  T_CATCH  T_FINALLY  T_THROW
- T_EXIT T_DECLARE T_ENDDECLARE T_USE T_GLOBAL T_AS T_FUNCTION T_CONST T_VAR
+ T_EXIT T_DECLARE T_ENDDECLARE T_USE T_GLOBAL T_AS T_FUNCTION T_FN T_CONST T_VAR
 (* ugly: because of my hack around the implicit echo when use <?=,
  * this T_ECHO might have a string different than "echo"
  *)
@@ -1029,6 +1029,8 @@ expr:
    }
  (* php-facebook-ext: lambda (short closure)s *)
  | lambda_expr { $1 }
+ (* arrow functions, since PHP 7.4 *)
+ | arrow_expr { $1 }
 
  (* php-facebook-ext: in hphp.y yield are at the statement level
   * and are restricted to a few forms.
@@ -1251,8 +1253,22 @@ encaps_var_offset:
    }
 
 (*----------------------------*)
-(* Lambda: succinct closure syntax *)
+(* Lambdas and arrows: succinct closure syntax *)
 (*----------------------------*)
+
+(* "lambdas" are facebook-exts, "arrows" are the PHP 7.4 arrow
+ * functions. Other than tiny syntax differences (keyword fn and
+ * => vs ==>) they are the same, so we parse them to the same CST
+ *)
+
+arrow_expr:
+ | T_FN "(" parameter_list ")" T_ARROW expr
+   { validate_parameter_list $3;
+     let sl_tok = Some $5 in
+     let sl_body = SLExpr $6 in
+     let sl_params = SLParams ($2, $3, $4) in
+     ShortLambda { sl_params; sl_tok; sl_body; sl_modifiers = []; }
+   }
 
 lambda_expr:
  (* facebook-ext: lambdas (short closures), as in ($x ==> $x + 1) *)
