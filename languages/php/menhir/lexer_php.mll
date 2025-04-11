@@ -180,6 +180,7 @@ let keyword_table = Hashtbl_.hash_of_list [
 
   "global",          (fun ii -> T_GLOBAL ii);
   "function",        (fun ii -> T_FUNCTION ii);
+  "fn",              (fun ii -> T_FN ii);
   "empty",           (fun ii -> T_EMPTY ii);
   "const",           (fun ii -> T_CONST ii);
   "var",             (fun ii -> T_VAR ii); (* was VARTOKEN *)
