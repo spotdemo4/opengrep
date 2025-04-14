@@ -64,6 +64,8 @@ let set_timeout (_caps : < Cap.time_limit >) ?(granularity_float_s=0.1) ~name ma
       timeout (duration -. granularity_float_s)
     )
   in
+  (* TODO: Investigate why too many threads are created, to the point of failing
+   * to create more. *)
   ignore (Thread.create timeout max_duration);
   match M.limit_with_token ~token
           (fun () -> Fun.protect ~finally:(fun () -> Atomic.set finished_work true) f) with
