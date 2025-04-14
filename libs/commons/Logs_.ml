@@ -192,6 +192,9 @@ let mk_reporter ?(additional_reporters : Logs.reporter list = []) ~dst
         msgf (fun ?header ?(tags = default_tag_set) fmt ->
             let pp_w_time ~tags =
               let current = now () in
+              (* Add a header that will look like [00.02][ERROR](lib):
+               * coupling: if you modify the format, please update
+               * the Testutil_logs.mask* regexps. *)
               Format.kfprintf k dst
                 ("@[[%05.2f]%a%a%s: " ^^ fmt ^^ "@]@.")
                 (current -. time_program_start)
@@ -200,12 +203,16 @@ let mk_reporter ?(additional_reporters : Logs.reporter list = []) ~dst
             in
             match level with
             | App ->
+                (* App level: no timestamp, tags, or other decorations *)
                 Format.kfprintf k dst (fmt ^^ "@.")
             | Error
             | Warning
             | Info ->
+                (* Print no tags for levels other than Debug since we can't
+                   filter these messages by tag. *)
                 pp_w_time ~tags:Logs.Tag.empty
             | Debug ->
+                (* Tag-based filtering *)
                 if
                   select_all_debug_messages
                   || has_nonempty_intersection require_one_of_these_tags tags
@@ -216,6 +223,8 @@ let mk_reporter ?(additional_reporters : Logs.reporter list = []) ~dst
       Format.fprintf dst "%a" pp_style style_off;
       r)
   in
+  (* Copied directly from the Logs.mli docs. Just calls a bunch of reporters in
+     a row *)
   let combine r1 r2 =
     let report src level ~over k msgf =
       let v = r1.Logs.report src level ~over:(fun () -> ()) k msgf in
