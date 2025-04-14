@@ -135,7 +135,7 @@ let empty_env =
   {
     locals = Map_.empty;
     depth = 0;
-    in_debug_call = false;
+    in_debug_call = true; (* FIXME: When [false], we get Logs error trying to lock Mutex. *)
     (* fake implem; Each Eval_jsonnet_xxx.ml need to define those methods *)
     eval_expr = (fun _ _ -> failwith "TODO: eval_expr not implemented");
     eval_std_filter_element =

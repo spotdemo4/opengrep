@@ -26,6 +26,8 @@ module TLS = Thread_local_storage
 (* Globals *)
 (*****************************************************************************)
 
+let logs_mutex = Mutex.create ()
+
 (* unix time in seconds *)
 let now () : float = UUnix.gettimeofday ()
 
@@ -165,6 +167,7 @@ let create_formatter opt_file =
 let mk_reporter ?(additional_reporters : Logs.reporter list = []) ~dst
     ~require_one_of_these_tags ~read_tags_from_env_vars:(env_vars : string list)
     ~highlight () =
+  (* TODO: additional_reporters seems to be always empty. Confirm and remove. *)
   let require_one_of_these_tags =
     match read_comma_sep_strs_from_env_vars env_vars with
     | Some tags -> tags
@@ -183,45 +186,42 @@ let mk_reporter ?(additional_reporters : Logs.reporter list = []) ~dst
       | None ->
           ((fun _ppf _style -> ()), "", "")
     in
-    let k _ =
-      over ();
-      k ()
-    in
-    let r =
-      msgf (fun ?header ?(tags = default_tag_set) fmt ->
-          let pp_w_time ~tags =
-            let current = now () in
-            (* Add a header that will look like [00.02][ERROR](lib):
-             * coupling: if you modify the format, please update
-             * the Testutil_logs.mask* regexps.
-             *)
-            Format.kfprintf k dst
-              ("@[[%05.2f]%a%a%s: " ^^ fmt ^^ "@]@.")
-              (current -. time_program_start)
-              Logs_fmt.pp_header (level, header) pp_tags tags
-              (if is_default_src then "" else "(" ^ src_name ^ ")")
-          in
-          match level with
-          | App ->
-              (* App level: no timestamp, tags, or other decorations *)
-              Format.kfprintf k dst (fmt ^^ "@.")
-          | Error
-          | Warning
-          | Info ->
-              (* Print no tags for levels other than Debug since we can't
-                 filter these messages by tag. *)
-              pp_w_time ~tags:Logs.Tag.empty
-          | Debug ->
-              (* Tag-based filtering *)
-              if
-                select_all_debug_messages
-                || has_nonempty_intersection require_one_of_these_tags tags
-              then pp_w_time ~tags
-              else (* print nothing *)
-                Format.ikfprintf k dst fmt)
-    in
-    Format.fprintf dst "%a" pp_style style_off;
-    r
+    let k _ = k () in
+    Fun.protect ~finally:over (fun () ->
+      let r =
+        msgf (fun ?header ?(tags = default_tag_set) fmt ->
+            let pp_w_time ~tags =
+              let current = now () in
+              (* Add a header that will look like [00.02][ERROR](lib):
+               * coupling: if you modify the format, please update
+               * the Testutil_logs.mask* regexps. *)
+              Format.kfprintf k dst
+                ("@[[%05.2f]%a%a%s: " ^^ fmt ^^ "@]@.")
+                (current -. time_program_start)
+                Logs_fmt.pp_header (level, header) pp_tags tags
+                (if is_default_src then "" else "(" ^ src_name ^ ")")
+            in
+            match level with
+            | App ->
+                (* App level: no timestamp, tags, or other decorations *)
+                Format.kfprintf k dst (fmt ^^ "@.")
+            | Error
+            | Warning
+            | Info ->
+                (* Print no tags for levels other than Debug since we can't
+                   filter these messages by tag. *)
+                pp_w_time ~tags:Logs.Tag.empty
+            | Debug ->
+                (* Tag-based filtering *)
+                if
+                  select_all_debug_messages
+                  || has_nonempty_intersection require_one_of_these_tags tags
+                then pp_w_time ~tags
+                else (* print nothing *)
+                  Format.ikfprintf k dst fmt)
+      in
+      Format.fprintf dst "%a" pp_style style_off;
+      r)
   in
   (* Copied directly from the Logs.mli docs. Just calls a bunch of reporters in
      a row *)
@@ -258,103 +258,15 @@ let read_level_from_env (vars : string list) : Logs.level option option =
 (*****************************************************************************)
 
 (* Enable threaded logging. *)
-module RMutex = struct
-  (* This is a light copy/paste of the re-entrant mutex from BatteriesThread.RMutex.
-     We do this to avoid importing the massive batteries library. Ours has
-     minor changes to use precise compare instead of polymorphic compare. *)
-  (*
-  * RMutex - Reentrant mutexes
-  * Copyright (C) 2008 David Teller, LIFO, Universite d'Orleans
-  *               2011 Edgar Friendly <thelema314@gmail.com>
-  *
-  * This library is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU Lesser General Public
-  * License as published by the Free Software Foundation; either
-  * version 2.1 of the License, or (at your option) any later version,
-  * with the special exception on linking described in file LICENSE.
-  *
-  * This library is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  * Lesser General Public License for more details.
-  *
-  * You should have received a copy of the GNU Lesser General Public
-  * License along with this library; if not, write to the Free Software
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  *)
 
-  type owner =
-    {
-      thread : int;       (**Identity of the latest owner (possibly the current owner)*)
-      mutable depth : int (**Number of times the current owner owns the lock.*)
-    }
-  type t =
-    {
-      primitive : Mutex.t; (**A low-level mutex, used to protect access to [ownership]*)
-      wait      : Condition.t; (** a condition to wait on when the lock is locked *)
-      mutable ownership : owner option;
-    }
-
-  let owner_equal a b =
-    Int.equal a.thread b.thread && Int.equal a.depth b.depth
-
-  let create () =
-    {
-      primitive = Mutex.create ();
-      wait      = Condition.create ();
-      ownership = None
-    }
-
-  (**
-     Attempt to acquire the mutex, waiting indefinitely
-  *)
-  let lock m =
-    let id = Thread.id (Thread.self ()) in
-    Mutex.lock m.primitive; (******Critical section begins*)
-    (
-      match m.ownership with
-      | None -> (*Lock belongs to nobody, I can take it. *)
-        m.ownership <- Some {thread = id; depth = 1}
-      | Some s when Int.equal s.thread id -> (*Lock already belongs to me, I can keep it. *)
-        s.depth <- s.depth + 1
-      | _ -> (*Lock belongs to someone else. *)
-        while not (Option.equal owner_equal m.ownership None) do
-          Condition.wait m.wait m.primitive
-        done;
-        m.ownership <- Some {thread = id; depth = 1}
-    );
-    Mutex.unlock m.primitive (******Critical section ends*)
-
-  (** Unlock the mutex; this function checks that the thread calling
-      unlock is the owner and raises an assertion failure if this is not
-      the case. It will also raise an assertion failure if the mutex is
-      not locked. *)
-  let unlock m =
-    let id = Thread.id (Thread.self ()) in
-    Mutex.lock m.primitive; (******Critical section begins*)
-    (match m.ownership with
-     | Some s ->
-       assert (Int.equal s.thread id); (*If I'm not the owner, we have a consistency issue.*)
-       if s.depth > 1 then
-         s.depth <- s.depth - 1 (*release one depth but we're still the owner*)
-       else
-         begin
-           m.ownership <- None;  (*release once and for all*)
-           Condition.signal m.wait   (*wake up waiting threads *)
-         end
-     | _ -> assert false
-    );
-    Mutex.unlock m.primitive (******Critical section ends  *)
-end
-
-let reentrant_mutex = RMutex.create ()
 let _ =
-  let lock () = RMutex.lock reentrant_mutex
-  and unlock () = RMutex.unlock reentrant_mutex in
+  let lock () = Mutex.lock logs_mutex
+  and unlock () = Mutex.unlock logs_mutex in
 Logs.set_reporter_mutex ~lock ~unlock
 
-(* We use a re-entrant mutex above because otherwise tests using [make core-test]
- * deadlock. *)
+(* We previously used use a re-entrant mutex above because otherwise tests
+ * using [make core-test] raise an error when trying to lock the already locked
+ * mutex. *)
 (* let _ = Logs_threaded.enable () *)
 
 (* Enable basic logging so that you can use Logging calls even before a
@@ -458,7 +370,10 @@ let with_debug_trace ?(src = debug_trace_src) ~__FUNCTION__
   with
   | exn ->
       let exn' = Exception.catch exn in
-      let msgf ppf =
+      (* FIXME: We still get occasional deadlocks when we log exceptions.
+       * So for now these logs are disabled.
+       * See commented out [Logs.{debug, err}] below. *)
+      let _msgf ppf =
         Format.fprintf ppf "exception during %s:\n" name;
         match pp_input with
         | None -> ()
@@ -478,8 +393,8 @@ let with_debug_trace ?(src = debug_trace_src) ~__FUNCTION__
       | Exception.Timeout _ ->
           (* %t the little known give me back my format stream
              specifier. *)
-          Logs.debug (fun m -> m "%t" msgf)
-      | _ -> Logs.err (fun m -> m "%t" msgf));
+          () (* Logs.debug (fun m -> m "%t" msgf) *)
+      | _ -> () (* Logs.err (fun m -> m "%t" msgf) *));
       Exception.reraise exn'
 
 (*****************************************************************************)
