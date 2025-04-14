@@ -172,11 +172,10 @@ let print_cli_additional_targets (config : Core_scan_config.t) (n : int) : unit
  * newline with no dot. Exit code is 0 but because of this the scan fails. This
  * is a little weird since we flush on the string, but it seems it can be interleaved
  * so it does not always work. *)
-let print_progress_mutex = Mutex.create ()
 let print_cli_progress (config : Core_scan_config.t) : unit =
   (* Print when each file is done so the Python progress bar knows *)
   match config.output_format with
-  | Json true -> Mutex.protect print_progress_mutex (fun () -> UConsole.print ".")
+  | Json true -> Mutex.protect Logs_.logs_mutex (fun () -> UConsole.print ".")
   | _ -> ()
 
 (*****************************************************************************)
