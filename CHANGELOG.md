@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.4](https://github.com/opengrep/opengrep/releases/tag/v1.1.4) - 14-04-2025
+
+### Improvements
+
+* PHP: Add arrow functions to the menhir parser by @maciejpirog in #205
+
+### Bug fixes
+
+* Fix logging mutex by @dimitris-m and @maciejpirog in #208
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.1.3...v1.1.4
+
+
 ## [1.1.3](https://github.com/opengrep/opengrep/releases/tag/v1.1.3) - 10-04-2025
 
 ### Improvements
