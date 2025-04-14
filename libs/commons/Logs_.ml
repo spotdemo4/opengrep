@@ -167,7 +167,7 @@ let create_formatter opt_file =
 let mk_reporter ?(additional_reporters : Logs.reporter list = []) ~dst
     ~require_one_of_these_tags ~read_tags_from_env_vars:(env_vars : string list)
     ~highlight () =
-  assert (List.is_empty additional_reporters);
+  (* TODO: additional_reporters seems to be always empty. Confirm and remove. *)
   let require_one_of_these_tags =
     match read_comma_sep_strs_from_env_vars env_vars with
     | Some tags -> tags
@@ -186,38 +186,35 @@ let mk_reporter ?(additional_reporters : Logs.reporter list = []) ~dst
       | None ->
           ((fun _ppf _style -> ()), "", "")
     in
-    let k _ =
-      let v = k () in
-      v
-    in
+    let k _ = k () in
     Fun.protect ~finally:over (fun () ->
-    let r =
-      msgf (fun ?header ?(tags = default_tag_set) fmt ->
-          let pp_w_time ~tags =
-            let current = now () in
-            Format.kfprintf k dst
-              ("@[[%05.2f]%a%a%s: " ^^ fmt ^^ "@]@.")
-              (current -. time_program_start)
-              Logs_fmt.pp_header (level, header) pp_tags tags
-              (if is_default_src then "" else "(" ^ src_name ^ ")")
-          in
-          match level with
-          | App ->
-              Format.kfprintf k dst (fmt ^^ "@.")
-          | Error
-          | Warning
-          | Info ->
-              pp_w_time ~tags:Logs.Tag.empty
-          | Debug ->
-              if
-                select_all_debug_messages
-                || has_nonempty_intersection require_one_of_these_tags tags
-              then pp_w_time ~tags
-              else (* print nothing *)
-                Format.ikfprintf k dst fmt)
-    in
-    Format.fprintf dst "%a" pp_style style_off;
-    r)
+      let r =
+        msgf (fun ?header ?(tags = default_tag_set) fmt ->
+            let pp_w_time ~tags =
+              let current = now () in
+              Format.kfprintf k dst
+                ("@[[%05.2f]%a%a%s: " ^^ fmt ^^ "@]@.")
+                (current -. time_program_start)
+                Logs_fmt.pp_header (level, header) pp_tags tags
+                (if is_default_src then "" else "(" ^ src_name ^ ")")
+            in
+            match level with
+            | App ->
+                Format.kfprintf k dst (fmt ^^ "@.")
+            | Error
+            | Warning
+            | Info ->
+                pp_w_time ~tags:Logs.Tag.empty
+            | Debug ->
+                if
+                  select_all_debug_messages
+                  || has_nonempty_intersection require_one_of_these_tags tags
+                then pp_w_time ~tags
+                else (* print nothing *)
+                  Format.ikfprintf k dst fmt)
+      in
+      Format.fprintf dst "%a" pp_style style_off;
+      r)
   in
   let combine r1 r2 =
     let report src level ~over k msgf =
