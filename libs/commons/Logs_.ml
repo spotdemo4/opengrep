@@ -361,7 +361,10 @@ let with_debug_trace ?(src = debug_trace_src) ~__FUNCTION__
   with
   | exn ->
       let exn' = Exception.catch exn in
-      let msgf ppf =
+      (* FIXME: We still get occasional deadlocks when we log exceptions.
+       * So for now these logs are disabled.
+       * See commented out [Logs.{debug, err}] below. *)
+      let _msgf ppf =
         Format.fprintf ppf "exception during %s:\n" name;
         match pp_input with
         | None -> ()
@@ -381,8 +384,8 @@ let with_debug_trace ?(src = debug_trace_src) ~__FUNCTION__
       | Exception.Timeout _ ->
           (* %t the little known give me back my format stream
              specifier. *)
-          Logs.debug (fun m -> m "%t" msgf)
-      | _ -> Logs.err (fun m -> m "%t" msgf));
+          () (* Logs.debug (fun m -> m "%t" msgf) *)
+      | _ -> () (* Logs.err (fun m -> m "%t" msgf) *));
       Exception.reraise exn'
 
 (*****************************************************************************)
