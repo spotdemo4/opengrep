@@ -181,6 +181,10 @@ _scan_options: List[Callable] = [
         default=True,
     ),
     optgroup.option(
+        "--opengrep-ignore-pattern",
+        help="Set a custom pattern to use along with the default 'nosem' and 'nosemgrep' prefixes for comments to be ignored by opengrep. For example, use '--opengrep-ignore-pattern=noopengrep' to also ignore lines with 'noopengrep' comments.",
+    ),
+    optgroup.option(
         "--force-color/--no-force-color",
         is_flag=True,
     ),
@@ -542,6 +546,7 @@ def scan(
     metrics: Optional[MetricsState],
     optimizations: str,
     dataflow_traces: bool,
+    opengrep_ignore_pattern: Optional[str],
     output: Optional[str],
     output_format: OutputFormat,
     outputs_text: List[str],
@@ -671,6 +676,13 @@ def scan(
 
     # Note this must be after the call to `terminal.configure` so that verbosity is respected
     possibly_notify_user()
+
+    # Set the custom ignore pattern if specified
+    if opengrep_ignore_pattern:
+        from semgrep.constants import CUSTOM_IGNORE_PATTERN
+        import semgrep.constants
+        semgrep.constants.CUSTOM_IGNORE_PATTERN = opengrep_ignore_pattern
+        logger.debug(f"Using custom ignore pattern: {opengrep_ignore_pattern}")
 
     # change cwd if using docker
     if not targets:

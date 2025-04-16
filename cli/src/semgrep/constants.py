@@ -65,6 +65,9 @@ class RuleScanSource(Enum):
 
 RULE_ID_RE_STR = r"(?:[:=][\s]?(?P<ids>([^,\s](?:[,\s]+)?)+))?"
 
+# Custom ignore pattern can be set using --opengrep-ignore-pattern option
+CUSTOM_IGNORE_PATTERN = None
+
 # Inline 'noqa' implementation modified from flake8:
 # https://github.com/PyCQA/flake8/blob/master/src/flake8/defaults.py
 # We're looking for items that look like this:
@@ -72,6 +75,7 @@ RULE_ID_RE_STR = r"(?:[:=][\s]?(?P<ids>([^,\s](?:[,\s]+)?)+))?"
 # ' nosemgrep: example-pattern-id'
 # ' nosem: pattern-id1,pattern-id2'
 # ' NOSEMGREP:pattern-id1,pattern-id2'
+# ' noopengrep: example-pattern-id' (if --opengrep-ignore-pattern=noopengrep is set)
 #
 # * We do not want to capture the ': ' that follows 'nosem'
 # * We do not care about the casing of 'nosem'
@@ -80,6 +84,8 @@ RULE_ID_RE_STR = r"(?:[:=][\s]?(?P<ids>([^,\s](?:[,\s]+)?)+))?"
 #   Python comments that begin with '# '
 # * nosem and nosemgrep should be interchangeable
 #
+
+# Original regex patterns - don't modify these to maintain backward compatibility
 NOSEM_INLINE_RE_STR = r" nosem(?:grep)?" + RULE_ID_RE_STR
 NOSEM_INLINE_RE = re.compile(NOSEM_INLINE_RE_STR, re.IGNORECASE)
 
@@ -97,10 +103,49 @@ NOSEM_INLINE_COMMENT_RE = re.compile(rf"[:#/]+{NOSEM_INLINE_RE_STR}$", re.IGNORE
 # The following will match:
 #   # nosemgrep
 #   print('nosemgrep');
-NOSEM_PREVIOUS_LINE_RE = re.compile(
-    r"^[^a-zA-Z0-9]* nosem(?:grep)?" + RULE_ID_RE_STR,
-    re.IGNORECASE,
-)
+NOSEM_PREVIOUS_LINE_RE_STR = r"^[^a-zA-Z0-9]* nosem(?:grep)?" + RULE_ID_RE_STR
+NOSEM_PREVIOUS_LINE_RE = re.compile(NOSEM_PREVIOUS_LINE_RE_STR, re.IGNORECASE)
+
+# Functions to get the appropriate regex pattern based on custom ignore pattern
+def get_nosem_pattern_choices():
+    if CUSTOM_IGNORE_PATTERN:
+        # When custom pattern is set, use the full pattern with word boundaries for the custom pattern
+        return f"nosem(?:grep)?|\\b{CUSTOM_IGNORE_PATTERN}\\b"
+    else:
+        # When no custom pattern, use the original regex
+        return "nosem(?:grep)?"
+
+def get_nosem_inline_re_str():
+    if CUSTOM_IGNORE_PATTERN:
+        pattern_choices = get_nosem_pattern_choices()
+        return r" (?:{})".format(pattern_choices) + RULE_ID_RE_STR
+    else:
+        return NOSEM_INLINE_RE_STR
+
+def get_nosem_inline_re():
+    if CUSTOM_IGNORE_PATTERN:
+        return re.compile(get_nosem_inline_re_str(), re.IGNORECASE)
+    else:
+        return NOSEM_INLINE_RE
+
+def get_nosem_inline_comment_re():
+    if CUSTOM_IGNORE_PATTERN:
+        return re.compile(rf"[:#/]+{get_nosem_inline_re_str()}$", re.IGNORECASE)
+    else:
+        return NOSEM_INLINE_COMMENT_RE
+
+def get_nosem_previous_line_re_str():
+    if CUSTOM_IGNORE_PATTERN:
+        pattern_choices = get_nosem_pattern_choices()
+        return r"^[^a-zA-Z0-9]* (?:{})".format(pattern_choices) + RULE_ID_RE_STR
+    else:
+        return NOSEM_PREVIOUS_LINE_RE_STR
+
+def get_nosem_previous_line_re():
+    if CUSTOM_IGNORE_PATTERN:
+        return re.compile(get_nosem_previous_line_re_str(), re.IGNORECASE)
+    else:
+        return NOSEM_PREVIOUS_LINE_RE
 
 COMMA_SEPARATED_LIST_RE = re.compile(r"[,\s]")
 
