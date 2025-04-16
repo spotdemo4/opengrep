@@ -679,8 +679,6 @@ def scan(
 
     # Set the custom ignore pattern if specified
     if opengrep_ignore_pattern:
-        from semgrep.constants import CUSTOM_IGNORE_PATTERN
-        import semgrep.constants
         semgrep.constants.CUSTOM_IGNORE_PATTERN = opengrep_ignore_pattern
         logger.debug(f"Using custom ignore pattern: {opengrep_ignore_pattern}")
 
