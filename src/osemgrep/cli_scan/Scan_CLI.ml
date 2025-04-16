@@ -500,7 +500,7 @@ let o_opengrep_ignore_pattern : string option Term.t =
   let info =
     Arg.info [ "opengrep-ignore-pattern" ]
       ~doc:
-        {|Set a custom pattern to use along with the default 'nosem' and 'nosemgrep' prefixes for comments to be ignored by opengrep. 
+        {|Set a custom pattern to use along with the default 'nosem' and 'nosemgrep' prefixes for comments to be ignored by opengrep.
           For example, use '--opengrep-ignore-pattern=noopengrep' to also ignore lines with 'noopengrep' comments.|}
   in
   Arg.value (Arg.opt Arg.(some string) None info)
@@ -1326,10 +1326,10 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
             "!!! You're using one or more options starting with '--x-'. These \
              options are not part of the opengrep API. They will change or will \
              be removed without notice !!! ");
-    
+
     (* Set the custom ignore pattern if specified *)
     Flag_semgrep.custom_ignore_pattern := opengrep_ignore_pattern;
-    
+
     if output_enclosing_context && not json then
       Logs.warn (fun m ->
           m

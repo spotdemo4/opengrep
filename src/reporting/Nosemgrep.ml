@@ -55,18 +55,18 @@ let rule_id_re_str = {|(?:[:=][\s]?(?P<ids>([^,\s](?:[,\s]+)?)+))?|}
 *)
 
 let get_nosem_pattern_choices () =
-  let patterns = 
+  let patterns =
     match !Flag_semgrep.custom_ignore_pattern with
     | None -> ["nosem"; "nosemgrep"]
     | Some pattern -> ["nosem"; "nosemgrep"; pattern]
   in
   (* Convert the patterns to a regex with word boundaries to ensure exact match *)
-  let pattern_str = patterns 
-    |> List.map (fun p -> "\\b" ^ p ^ "\\b") 
-    |> String.concat "|" 
+  let pattern_str = patterns
+    |> List.map (fun p -> "\\b" ^ p ^ "\\b")
+    |> String.concat "|"
   in
   (* nosemgrep: no-logs-in-library *)
-  Logs.debug (fun m -> m "Using dynamic patterns: %s (custom pattern: %s)" 
+  Logs.debug (fun m -> m "Using dynamic patterns: %s (custom pattern: %s)"
     pattern_str
     (match !Flag_semgrep.custom_ignore_pattern with None -> "None" | Some p -> p));
   pattern_str
@@ -87,7 +87,7 @@ let get_nosem_inline_re () =
      # nosemgrep
      print('nosemgrep');
 *)
-let nosem_previous_line_re =
+let get_nosem_previous_line_re () =
   let pattern_str = {|^[^a-zA-Z0-9]* |} ^ "(?:" ^ get_nosem_pattern_choices () ^ ")" in
   Pcre2_.regexp (pattern_str ^ rule_id_re_str) ~flags:[ `CASELESS ]
 
