@@ -354,6 +354,7 @@ let check_files
       CapConsole.print caps#stdout (SJ.string_of_core_output json)
 
 (* for semgrep-core -stat_rules *)
+let cache = Domain.DLS.new_key (fun () -> Hashtbl.create 101)
 let stat_files (caps : < Cap.stdout >) xs =
   let fullxs, _skipped_paths =
     xs
@@ -364,7 +365,9 @@ let stat_files (caps : < Cap.stdout >) xs =
   in
   let good = ref 0 in
   let bad = ref 0 in
-  let cache = Some (Kcas_data.Hashtbl.create () (* 101 *)) in
+  (* Reset cache. *)
+  let _ = Domain.DLS.set cache (Hashtbl.create 101) in
+  let cache = Some cache in 
   fullxs
   |> List.iter (fun file ->
          Logs.info (fun m -> m "stat_files: processing rule file %s" !!file);

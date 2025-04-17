@@ -326,14 +326,16 @@ let matched7 s =
     matched 6 s,
     matched 7 s )
 
-let _memo_compiled_regexp = Kcas_data.Hashtbl.create () (* 101 *)
+module DLS = Domain.DLS
+
+let _memo_compiled_regexp = DLS.new_key (fun () -> Hashtbl.create 101)
 
 let candidate_match_func s re =
   (* old: Str.string_match (Str.regexp re) s 0 *)
   let compile_re =
     (* NOTE: The internal state of matches is in DLS, but we are sharing
      * here between domains also. Maybe make key domain local? [re ^ domain-id]. *)
-    memoized _memo_compiled_regexp
+    memoized_not_thread_safe (DLS.get _memo_compiled_regexp)
       re
       (* (re ^ "-" ^ string_of_int ((Domain.self ()) :> int)) *)
       (fun () -> Str.regexp re)
