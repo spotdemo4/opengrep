@@ -19,7 +19,7 @@ from attrs import field
 from attrs import frozen
 
 import semgrep.semgrep_interfaces.semgrep_output_v1 as out
-from semgrep.constants import get_nosem_inline_comment_re
+from semgrep.constants import NOSEM_INLINE_COMMENT_RE
 from semgrep.constants import RuleScanSource
 from semgrep.external.pymmh3 import hash128  # type: ignore[attr-defined]
 from semgrep.rule import Rule
@@ -31,15 +31,6 @@ from semgrep.semgrep_interfaces.semgrep_output_v1 import Transitivity
 from semgrep.util import get_lines_from_file
 from semgrep.util import get_lines_from_git_blob
 from semgrep.verbose_logging import getLogger
-import ujson as json
-
-from semgrep.client.core_client import RawMatch
-from semgrep.constants import BREAK_LINE
-from semgrep.constants import BREAK_LINE_CHAR
-from semgrep.constants import BREAK_LINE_WIDTH
-from semgrep.constants import ELLIPSIS_STRING
-from semgrep.constants import get_nosem_inline_comment_re
-from semgrep.error import FATAL_EXIT_CODE
 
 logger = getLogger(__name__)
 
@@ -226,7 +217,7 @@ class RuleMatch:
         """
         lines = [*self.lines]
         if len(lines) > 0:
-            lines[0] = get_nosem_inline_comment_re().sub("", lines[0])
+            lines[0] = NOSEM_INLINE_COMMENT_RE.sub("", lines[0])
             lines[0] = lines[0].rstrip() + "\n"
 
         code = "".join(lines)  # the lines end with newlines already
@@ -599,29 +590,6 @@ class RuleMatch:
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.ordering_key < other.ordering_key
-
-    def match_content_with_clean_whitespace(self) -> str:
-        """
-        Return a string of the matched code without whitespace at the start or end
-        of each line and without trailing newlines.
-
-        This is meant for checking for the presence of a nosemgrep comment.
-        """
-        lines = self.match_content.splitlines()
-        if not lines:
-            return ""
-
-        # Remove inline nosem comment. This is necessary because match_content is
-        # grabbed from source code right now, and can include a nosem comment.
-        # For example, when `    5 == 5` is updated to `  5 == 5  # nosemgrep`,
-        # match_content will include the comment. We strip it out to avoid missing pattern
-        # matches when comparing the code between a fixed and unfixed version
-        # which might have a nosem comment.
-        lines[0] = get_nosem_inline_comment_re().sub("", lines[0])
-
-        filtered_lines = [line for line in lines if line]
-        lines_without_leading_spaces = map(lambda l: l.strip(), filtered_lines)
-        return "\n".join(lines_without_leading_spaces)
 
 
 class RuleMatches(Iterable[RuleMatch]):
