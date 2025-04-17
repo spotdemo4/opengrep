@@ -58,9 +58,8 @@ let get_nosem_pattern_choices () =
   let patterns =
     match !Flag_semgrep.custom_ignore_pattern with
     | None -> ["nosem"; "nosemgrep"]
-    | Some pattern -> ["nosem"; "nosemgrep"; pattern]
+    | Some pattern -> [pattern]  (* Now only using the custom pattern *)
   in
-  (* Convert the patterns to a regex with word boundaries to ensure exact match *)
   let pattern_str = patterns
     |> List.map (fun p -> "\\b" ^ p ^ "\\b")
     |> String.concat "|"
@@ -88,7 +87,7 @@ let get_nosem_inline_re () =
      print('nosemgrep');
 *)
 let get_nosem_previous_line_re () =
-  let pattern_str = {|^[^a-zA-Z0-9]* |} ^ "(?:" ^ get_nosem_pattern_choices () ^ ")" in
+  let pattern_str = {|^[^a-zA-Z0-9]*\s*|} ^ "(?:" ^ get_nosem_pattern_choices () ^ ")" in
   Pcre2_.regexp (pattern_str ^ rule_id_re_str) ~flags:[ `CASELESS ]
 
 (*****************************************************************************)
