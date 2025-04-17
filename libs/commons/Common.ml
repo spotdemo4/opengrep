@@ -180,6 +180,16 @@ let memoized ?(use_cache = true) h k f =
         Kcas_data.Hashtbl.replace h k v;
         v
 
+let memoized_not_thread_safe ?(use_cache = true) h k f =
+  if not use_cache then f ()
+  else
+    match Hashtbl.find_opt h k with
+    | Some v -> v
+    | None ->
+        let v = f () in
+        Hashtbl.replace h k v;
+        v
+
 exception Todo
 exception Impossible
 exception Multi_found (* to be consistent with Not_found *)
