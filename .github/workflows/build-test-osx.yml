@@ -1,4 +1,4 @@
-name: build-test-osx-arm64
+name: build-test-osx
 on:
   push:
     branches:
@@ -9,6 +9,11 @@ on:
       - '**.md'
   workflow_call:
     inputs:
+      arch:
+        description: "Architecture (x86_64 or aarch64)"
+        required: false
+        default: "aarch64"
+        type: string
       use-cache:
         default: true
         description: Use Opam Cache - uncheck the box to disable use of the opam cache, meaning a long-running but completely from-scratch build.
@@ -32,7 +37,7 @@ jobs:
     strategy:
       matrix:
         ocaml_version: ["5.3.0"]
-    runs-on: macos-13-xlarge # NOTE: For intel, we need macos-13-large it seems.
+    runs-on: ${{ inputs.arch == 'x86_64' && 'macos-13-large' || 'macos-13-xlarge' }}
     steps:
       - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # ratchet:actions/setup-python@v4
         with:
@@ -57,6 +62,15 @@ jobs:
         run: opam exec -- make core
       - name: Test opengrep-core
         run: opam exec -- make core-test
+      - name: Set DYLIB_DIR based on inputs.arch
+        env:
+          ARCH: ${{ inputs.arch }}
+        run: |
+          if [ "$ARCH" = "x86_64" ]; then
+            echo "DYLIB_DIR=/usr/local" >> $GITHUB_ENV
+          else
+            echo "DYLIB_DIR=/opt/homebrew" >> $GITHUB_ENV
+          fi
       - name: Make artifact for ./bin/opengrep-core
         run: |
           mkdir artifacts
@@ -66,27 +80,27 @@ jobs:
           pushd artifacts
 
           install_name_tool -change \
-            /opt/homebrew/opt/zstd/lib/libzstd.1.dylib \
+            ${{ env.DYLIB_DIR }}/opt/zstd/lib/libzstd.1.dylib \
             @loader_path/libzstd.1.dylib \
             opengrep-core
 
           install_name_tool -change \
-            /opt/homebrew/opt/gmp/lib/libgmp.10.dylib \
+            ${{ env.DYLIB_DIR }}/opt/gmp/lib/libgmp.10.dylib \
             @loader_path/libgmp.10.dylib \
             opengrep-core
           
           install_name_tool -change \
-            /opt/homebrew/opt/libev/lib/libev.4.dylib \
+            ${{ env.DYLIB_DIR }}/opt/libev/lib/libev.4.dylib \
             @loader_path/libev.4.dylib \
             opengrep-core
 
           install_name_tool -change \
-            /opt/homebrew/opt/pcre2/lib/libpcre2-8.0.dylib \
+            ${{ env.DYLIB_DIR }}/opt/pcre2/lib/libpcre2-8.0.dylib \
             @loader_path/libpcre2-8.0.dylib \
             opengrep-core
 
           install_name_tool -change \
-            /opt/homebrew/opt/pcre/lib/libpcre.1.dylib \
+            ${{ env.DYLIB_DIR }}/opt/pcre/lib/libpcre.1.dylib \
             @loader_path/libpcre.1.dylib \
             opengrep-core
 
@@ -102,24 +116,24 @@ jobs:
           # otool -l opengrep-core
           otool -L opengrep-core | grep -v "^\\s*/usr/lib/"
 
-          cp /opt/homebrew/opt/zstd/lib/libzstd.1.dylib . 
-          cp /opt/homebrew/opt/gmp/lib/libgmp.10.dylib . 
-          cp /opt/homebrew/opt/libev/lib/libev.4.dylib . 
-          cp /opt/homebrew/opt/pcre2/lib/libpcre2-8.0.dylib . 
-          cp /opt/homebrew/opt/pcre/lib/libpcre.1.dylib .
+          cp ${{ env.DYLIB_DIR }}/opt/zstd/lib/libzstd.1.dylib . 
+          cp ${{ env.DYLIB_DIR }}/opt/gmp/lib/libgmp.10.dylib . 
+          cp ${{ env.DYLIB_DIR }}/opt/libev/lib/libev.4.dylib . 
+          cp ${{ env.DYLIB_DIR }}/opt/pcre2/lib/libpcre2-8.0.dylib . 
+          cp ${{ env.DYLIB_DIR }}/opt/pcre/lib/libpcre.1.dylib .
           cp /Users/runner/work/opengrep/opengrep/libs/ocaml-tree-sitter-core/tree-sitter/lib/libtree-sitter.0.dylib .
 
           popd
           tar czf artifacts.tgz artifacts
       - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
-          name: opengrep-osx-arm64
+          name: opengrep-osx-${{ inputs.arch == 'x86_64' && 'x86' || 'arm64' }}
           path: artifacts.tgz
 
   build-wheels:
     needs:
       - build-core
-    runs-on: macos-13-xlarge
+    runs-on: ${{ inputs.arch == 'x86_64' && 'macos-13-large' || 'macos-13-xlarge' }}
     steps:
       - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # ratchet:actions/setup-python@v4
         with:
@@ -129,27 +143,39 @@ jobs:
           submodules: true
       - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:
-          name: opengrep-osx-arm64
-      - run: |
+          name: opengrep-osx-${{ inputs.arch == 'x86_64' && 'x86' || 'arm64' }}
+      - name: Set PLAT_NAME based on inputs.arch
+        env:
+          ARCH: ${{ inputs.arch }}
+        run: |
+          if [ "$ARCH" = "x86_64" ]; then
+            echo "PLAT_NAME=macosx_10_9_x86_64" >> $GITHUB_ENV
+          else
+            echo "PLAT_NAME=macosx_11_0_arm64" >> $GITHUB_ENV
+          fi
+      - name: Build wheels
+        run: |
           tar xvfz artifacts.tgz
           cp artifacts/* cli/src/semgrep/bin
-          ./scripts/build-wheels.sh --plat-name macosx_11_0_arm64
+
+          ./scripts/build-wheels.sh --plat-name ${{ env.PLAT_NAME }}
+
       - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # ratchet:actions/upload-artifact@v4
         with:
-          name: osx-arm64-wheel
+          name: osx-${{ inputs.arch == 'x86_64' && 'x86' || 'arm64' }}-wheel
           path: cli/dist.zip
 
   test-wheels:
     needs:
       - build-wheels
-    runs-on: macos-13-xlarge
+    runs-on: ${{ inputs.arch == 'x86_64' && 'macos-13-large' || 'macos-13-xlarge' }}
     steps:
       - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # ratchet:actions/setup-python@v4
         with:
           python-version: "3.11"
       - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # ratchet:actions/download-artifact@v4
         with:
-          name: osx-arm64-wheel
+          name: osx-${{ inputs.arch == 'x86_64' && 'x86' || 'arm64' }}-wheel
       - run: unzip dist.zip
       - name: install package
         run: pip3 install dist/*.whl
