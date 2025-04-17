@@ -500,8 +500,8 @@ let o_opengrep_ignore_pattern : string option Term.t =
   let info =
     Arg.info [ "opengrep-ignore-pattern" ]
       ~doc:
-        {|Set a custom pattern to use along with the default 'nosem' and 'nosemgrep' prefixes for comments to be ignored by opengrep.
-          For example, use '--opengrep-ignore-pattern=noopengrep' to also ignore lines with 'noopengrep' comments.|}
+        {|Set a custom pattern to replace the default 'nosem' and 'nosemgrep' prefixes for comments to be ignored by opengrep.
+          For example, use '--opengrep-ignore-pattern=noopengrep' to make opengrep only recognize lines with 'noopengrep' comments instead of 'nosem' or 'nosemgrep'.|}
   in
   Arg.value (Arg.opt Arg.(some string) None info)
 

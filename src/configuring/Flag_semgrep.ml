@@ -60,7 +60,7 @@ let get_ignore_patterns () : string list =
      | Some pattern -> pattern));
   match !custom_ignore_pattern with
   | None -> ["nosem"; "nosemgrep"]
-  | Some pattern -> ["nosem"; "nosemgrep"; pattern]
+  | Some pattern -> [pattern]
 
 (* Note that an important flag used during parsing is actually in pfff in
  * Flag_parsing.sgrep_mode
