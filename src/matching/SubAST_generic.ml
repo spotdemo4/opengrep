@@ -380,9 +380,19 @@ let lambdas_in_expr e =
 let hmemo : (expr, function_definition list) Hashtbl.t Domain.DLS.key =
   Domain.DLS.new_key (fun () -> Hashtbl.create 101) 
 
-let lambdas_in_expr_memo a =
-  Common.memoized_not_thread_safe ~use_cache:false (Domain.DLS.get hmemo) a (fun () -> lambdas_in_expr a)
+let _dummy_hmemo = Hashtbl.create 1 (* Not to be used. *)
+
+(* NOT USED for now, see below. *)
+let _lambdas_in_expr_memo a =
+  Common.memoized_not_thread_safe
+    ~use_cache:false (* [true] makes it much slower. *)
+    (Domain.DLS.get hmemo)
+    a
+    (fun () -> lambdas_in_expr a)
 [@@profiling]
+
+(* XXX: Shortcut, because we don't use the cache due to performance degradation. *)
+let lambdas_in_expr_memo = lambdas_in_expr
 
 (*****************************************************************************)
 (* Really substmts_of_stmts *)
