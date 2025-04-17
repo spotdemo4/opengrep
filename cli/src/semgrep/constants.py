@@ -79,6 +79,22 @@ def get_nosem_pattern_choices():
         # When no custom pattern, use the original pattern
         return "nosem(?:grep)?"
 
+# Inline 'noqa' implementation modified from flake8:
+# https://github.com/PyCQA/flake8/blob/master/src/flake8/defaults.py
+# We're looking for items that look like this:
+# ' nosem'
+# ' nosemgrep: example-pattern-id'
+# ' nosem: pattern-id1,pattern-id2'
+# ' NOSEMGREP:pattern-id1,pattern-id2'
+#
+# * We do not want to capture the ': ' that follows 'nosem'
+# * We do not care about the casing of 'nosem'
+# * We want a comma-separated list of ids
+# * We want multi-language support, so we cannot strictly look for
+#   Python comments that begin with '# '
+# * nosem and nosemgrep should be interchangeable
+#
+
 # Define regex patterns using the pattern choices
 NOSEM_INLINE_RE_STR = r" " + get_nosem_pattern_choices() + RULE_ID_RE_STR
 NOSEM_INLINE_RE = re.compile(NOSEM_INLINE_RE_STR, re.IGNORECASE)
