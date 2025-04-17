@@ -671,15 +671,6 @@ def scan(
 
     # Note this must be after the call to `terminal.configure` so that verbosity is respected
     possibly_notify_user()
-
-<<<<<<< HEAD
-    # Set the custom ignore pattern if specified
-    if opengrep_ignore_pattern:
-        semgrep.constants.CUSTOM_IGNORE_PATTERN = opengrep_ignore_pattern
-        logger.debug(f"Using custom ignore pattern: {opengrep_ignore_pattern}")
-
-=======
->>>>>>> parent of 27ba25c0a (added python cli flag)
     # change cwd if using docker
     if not targets:
         semgrep.config_resolver.adjust_for_docker()
