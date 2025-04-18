@@ -454,7 +454,6 @@ val strip : char -> string -> string
 
 val regexp_alpha : Str.regexp
 val regexp_word : Str.regexp
-val _memo_compiled_regexp : (string, Str.regexp) Kcas_data.Hashtbl.t
 val ( ==~ ) : string -> Str.regexp -> bool
 val regexp_match : string -> string -> string
 val matched : int -> string -> string

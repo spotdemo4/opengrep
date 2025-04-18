@@ -25,7 +25,7 @@ from ruamel.yaml import RoundTripConstructor
 from ruamel.yaml import YAML
 
 import semgrep.semgrep_interfaces.semgrep_output_v1 as out
-from semgrep import __VERSION__
+from semgrep import __VERSION__, __SEMGREP_VERSION__
 from semgrep import tracing
 from semgrep.constants import PLEASE_FILE_ISSUE_TEXT
 from semgrep.error import OK_EXIT_CODE
@@ -461,12 +461,14 @@ def remove_incompatible_rules_based_on_version(
             if "min-version" in rule_value:
                 min_version = rule_value["min-version"]
                 min_version_value = min_version.value
-                if Version(__VERSION__) < Version(min_version_value):
+                if Version(__SEMGREP_VERSION__) < Version(min_version_value):
                     # coupling: we try to print all the same details as
                     # semgrep-core/osemgrep.
                     msg = (
-                        f"This rule requires upgrading Semgrep from version "
-                        f"{__VERSION__} to at least {min_version.value}"
+                        f"This rule requires upgrading Opengrep from version "
+                        f"{__VERSION__} (Semgrep {__SEMGREP_VERSION__}) to "
+                        f"a version compatible with "
+                        f"Semgrep {min_version.value} or higher"
                     )
                     errors.append(
                         SemgrepCoreError(
@@ -498,11 +500,11 @@ def remove_incompatible_rules_based_on_version(
             if "max-version" in rule_value:
                 max_version = rule_value["max-version"]
                 max_version_value = max_version.value
-                if Version(__VERSION__) > Version(max_version_value):
+                if Version(__SEMGREP_VERSION__) > Version(max_version_value):
                     msg = (
-                        f"This rule is no longer supported by Semgrep. "
-                        f"The last compatible version was {max_version_value}. "
-                        f"This version of Semgrep is {__VERSION__}"
+                        f"This rule is not supported by Opengrep. "
+                        f"The last compatible Semgrep version was {max_version_value}. "
+                        f"This version of Opengrep is compatible with Semgrep {__SEMGREP_VERSION__}"
                     )
                     # coupling: almost the same code as above for min-version
                     errors.append(

@@ -934,14 +934,14 @@ let incompatible_version ?min_version ?max_version rule_id tok =
   Error
     (Rule_error.mk_error ~rule_id
        (InvalidRule
-          ( IncompatibleRule (Version_info.version, (min_version, max_version)),
+          ( IncompatibleRule (Version_info.version_semgrep, (min_version, max_version)),
             rule_id,
             tok )))
 
 let check_version_compatibility rule_id ~min_version ~max_version =
   let/ () =
     match min_version with
-    | Some (mini, tok) when not (Semver.compare mini Version_info.version <= 0)
+    | Some (mini, tok) when not (Semver.compare mini Version_info.version_semgrep <= 0)
       ->
         incompatible_version ?min_version:(Some mini) rule_id tok
     | Some _
@@ -950,7 +950,7 @@ let check_version_compatibility rule_id ~min_version ~max_version =
   in
   let/ () =
     match max_version with
-    | Some (maxi, tok) when not (Semver.compare Version_info.version maxi <= 0)
+    | Some (maxi, tok) when not (Semver.compare Version_info.version_semgrep maxi <= 0)
       ->
         incompatible_version ?max_version:(Some maxi) rule_id tok
     | Some _

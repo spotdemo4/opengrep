@@ -1201,22 +1201,7 @@ type bool3 = True3 | False3 | TrueFalsePb3 of string
 
 (* put before String section because String section use some =~ *)
 
-(* let gsubst = global_replace *)
-
-(* These hashtables are used concurrently. *)
 let ( ==~ ) s re = Str.string_match re s 0
-let _memo_compiled_regexp = Kcas_data.Hashtbl.create () (* 101 *)
-
-let candidate_match_func s re =
-  (* old: Str.string_match (Str.regexp re) s 0 *)
-  let compile_re =
-    (* TODO: Use PCRE2? *)
-    memoized _memo_compiled_regexp re (fun () -> Str.regexp re)
-  in
-  Str.string_match compile_re s 0
-
-let match_func s re = candidate_match_func s re
-let ( =~ ) s re = match_func s re
 
 let string_match_substring re s =
   try

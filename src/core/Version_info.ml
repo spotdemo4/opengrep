@@ -11,7 +11,18 @@ let version =
   | Some x -> x
   | None ->
       failwith
-        ("Cannot parse the Semgrep version string found in the Version module: "
+        ("Cannot parse the Opengrep version string found in the Version module: "
        ^ Version.version)
 
 let major, minor, patch = version
+
+let version_semgrep =
+  match Semver.of_string Version.version_semgrep with
+  | Some x -> x
+  | None ->
+      failwith
+        ("Cannot parse the Opengrep's compatibility version string \
+          found in the Version module: "
+       ^ Version.version_semgrep)
+
+let major_semgrep, minor_semgrep, patch_semgrep = version_semgrep

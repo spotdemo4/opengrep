@@ -857,22 +857,18 @@ let semgrep_rules_repo_tests () : Testo.t list =
                     (* Apex requires Pro *)
                     || s =~ ".*/apex/lang/.*"
                        (* but the following are generic rules ... *)
-                       (* TODO[Issue #101]: Commented out because they come from semgrep-rules
-                        * which we don't want to fork at this stage, and they have a minimum
-                        * version of 1.44.0 which now is lower than our version. They should be
-                        * activated again once Apex is restored. *)
-                       (* && s
-                             <> "tests/semgrep-rules/apex/lang/best-practice/ncino/tests/UseAssertClass.yaml"
-                          && s
-                             <> "tests/semgrep-rules/apex/lang/performance/ncino/operationsInLoops/AvoidNativeDmlInLoops.yaml"
-                          && s
-                             <> "tests/semgrep-rules/apex/lang/performance/ncino/operationsInLoops/AvoidSoqlInLoops.yaml"
-                          && s
-                             <> "tests/semgrep-rules/apex/lang/performance/ncino/operationsInLoops/AvoidSoslInLoops.yaml"
-                          && s
-                             <> "tests/semgrep-rules/apex/lang/performance/ncino/operationsInLoops/AvoidOperationsWithLimitsInLoops.yaml"
-                          && s
-                             <> "tests/semgrep-rules/apex/lang/security/ncino/dml/ApexCSRFStaticConstructor.yaml" *)
+                       && s
+                          <> "tests/semgrep-rules/apex/lang/best-practice/ncino/tests/UseAssertClass.yaml"
+                       && s
+                          <> "tests/semgrep-rules/apex/lang/performance/ncino/operationsInLoops/AvoidNativeDmlInLoops.yaml"
+                       && s
+                          <> "tests/semgrep-rules/apex/lang/performance/ncino/operationsInLoops/AvoidSoqlInLoops.yaml"
+                       && s
+                          <> "tests/semgrep-rules/apex/lang/performance/ncino/operationsInLoops/AvoidSoslInLoops.yaml"
+                       && s
+                          <> "tests/semgrep-rules/apex/lang/performance/ncino/operationsInLoops/AvoidOperationsWithLimitsInLoops.yaml"
+                       && s
+                          <> "tests/semgrep-rules/apex/lang/security/ncino/dml/ApexCSRFStaticConstructor.yaml"
                     (* ?? *)
                     || s =~ ".*/yaml/semgrep/consistency/.*" ->
                  Some "XFAIL"

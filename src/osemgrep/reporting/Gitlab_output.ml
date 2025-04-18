@@ -199,11 +199,11 @@ let output f (matches : Out.cli_match list) : JSON.yojson =
   let tool =
     `Assoc
       [
-        ("id", `String "semgrep");
-        ("name", `String "Semgrep");
-        ("url", `String "https://semgrep.dev");
+        ("id", `String "opengrep");
+        ("name", `String "Opengrep");
+        ("url", `String "https://opengrep.dev");
         ("version", `String Version.version);
-        ("vendor", `Assoc [ ("name", `String "Semgrep") ]);
+        ("vendor", `Assoc [ ("name", `String "Opengrep") ]);
       ]
   in
   let start_time = Metrics_.g.payload.started_at in

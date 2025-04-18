@@ -123,19 +123,22 @@ let string_of_invalid_rule_kind = function
       "you need at least one positive term (not just negations or conditions)"
   | DeprecatedFeature s -> spf "deprecated feature: %s" s
   | IncompatibleRule (cur, (Some min_version, None)) ->
-      spf "This rule requires upgrading Semgrep from version %s to at least %s"
-        (Semver.to_string cur)
+      spf "This rule requires upgrading Opengrep to a version compatible with \
+           Semgrep version %s (current version is compatible with Semgrep %s)"
         (Semver.to_string min_version)
+        (Semver.to_string cur)
   | IncompatibleRule (cur, (None, Some max_version)) ->
       spf
-        "This rule is no longer supported by Semgrep. The last compatible \
-         version was %s. This version of Semgrep is %s"
+        "This rule is no longer supported by Opengrep. The last compatible \
+         version was compatible with Semgrep %s. This version of Opengrep is \
+         compatible with Semgrep %s"
         (Semver.to_string max_version)
         (Semver.to_string cur)
   | IncompatibleRule (cur, (Some min_version, Some max_version)) ->
       spf
-        "This rule requires a version of Semgrep within [%s, %s] but we're \
-         using version %s"
+        "This rule requires a version of Opengrep compatible with Semgrep \
+         versions within [%s, %s] but we're using a version compatible with \
+         Semgrep %s"
         (Semver.to_string min_version)
         (Semver.to_string max_version)
         (Semver.to_string cur)
