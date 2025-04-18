@@ -180,6 +180,8 @@ let memoized ?(use_cache = true) h k f =
         Kcas_data.Hashtbl.replace h k v;
         v
 
+(* Because memoize does not create the hashtable itself, but uses an existing one,
+ * when we have a domain-local hashtable, it will be safe to use in parallel. *)
 let memoized_not_thread_safe ?(use_cache = true) h k f =
   if not use_cache then f ()
   else
