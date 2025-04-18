@@ -448,7 +448,7 @@ let run_rules_against_targets_for_engine caps (env : env) (rules : Rule.t list)
     (targets : Target.t list) : Core_result.t =
   (* old:
    * let xtarget = Test_engine.xtarget_of_file xlang target in
-   * let xconf = { Match_env.default_xconfig with matching_explanations = true}in
+   * let xconf = { Match_env.default_xconfig with matching_explanations = true} in
    * Match_rules.check ~match_hook:(fun _ ->()) ~timeout:None xconf rules xtarget
    *)
   let config = core_scan_config env.conf rules targets in

@@ -578,7 +578,7 @@ let run_cnf_step2 cnf big_str =
 type prefilter = Semgrep_prefilter_t.formula * (string -> bool)
 
 (* see mli *)
-type prefilter_cache = (Rule_ID.t, prefilter option) Kcas_data.Hashtbl.t
+type prefilter_cache = (Rule_ID.t, prefilter option) Hashtbl.t Domain.DLS.key
 
 let prefilter_formula_of_prefilter (pre : prefilter) :
     Semgrep_prefilter_t.formula =
@@ -682,5 +682,7 @@ let regexp_prefilter_of_rule ~cache (r : R.rule) =
   in
   match cache with
   | None -> regex_prefilter_fun ()
-  (* Race, hence Kcas Hashtbl. From [is_relevant_rule_from_xtarget]. *)
-  | Some cache -> Common.memoized cache key regex_prefilter_fun
+  (* See [is_relevant_rule_from_xtarget]. Safe as long as we process 1 target per domain
+   * at all times, and no other thread in the same domain can access the cache value. *)
+  | Some cache ->
+    Common.memoized_not_thread_safe (Domain.DLS.get cache) key regex_prefilter_fun

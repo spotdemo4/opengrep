@@ -863,6 +863,8 @@ let mk_target_handler (caps : < Cap.time_limit >) (config : Core_scan_config.t)
       print_cli_progress config;
       (matches, was_scanned)
 
+module DLS = Domain.DLS
+
 (* coupling: with Deep_scan.scan_aux() *)
 let scan_exn (caps : < caps ; .. >) (config : Core_scan_config.t)
     (rules : Rule_error.rules_and_invalid * float) : Core_result.t =
@@ -884,8 +886,14 @@ let scan_exn (caps : < caps ; .. >) (config : Core_scan_config.t)
   let prefilter_cache_opt =
     if config.filter_irrelevant_rules then
       (* NOTE: In the fork based Parmap model, this is not really shared between
-       * cores, but is shared on a per-core basis. Now it's shared between all cores. *)
-      Match_env.PrefilterWithCache (Kcas_data.Hashtbl.create () (* (List.length valid_rules) *))
+       * cores, but is shared on a per-core basis. Now it's shared between all cores,
+       * but it's a DLS key, so each core will get another value for the cache. *)
+      begin
+        (* NOTE: This DLS key is created once, before we enter the parallel map path. *)
+        let cache_dls = DLS.new_key (fun () -> Hashtbl.create (List.length valid_rules))
+        in
+        Match_env.PrefilterWithCache cache_dls
+      end
     else NoPrefiltering
   in
   let file_results, scanned_targets =

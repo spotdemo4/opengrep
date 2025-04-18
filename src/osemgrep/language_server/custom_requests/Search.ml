@@ -523,6 +523,15 @@ let rec search_single_target (session : Session.t) =
 (** on a semgrep/search request, get the pattern and (optional) language params.
     We then try and parse the pattern in every language (or specified lang), and
     scan like normal, only returning the match ranges per file *)
+
+let cache = Domain.DLS.new_key (fun () -> Hashtbl.create 10)
+let xconf =
+  {
+    Match_env.default_xconfig with
+    filter_irrelevant_rules =
+      PrefilterWithCache cache;
+  }
+
 let start_search (session : Session.t) (params : Jsonrpc.Structured.t option) =
   match Request_params.of_jsonrpc_params params with
   | None ->
@@ -537,13 +546,9 @@ let start_search (session : Session.t) (params : Jsonrpc.Structured.t option) =
                 (Rule_error.string_of_error e));
           (session, None)
       | Ok rules ->
-          let xconf =
-            {
-              Match_env.default_xconfig with
-              filter_irrelevant_rules = PrefilterWithCache (Kcas_data.Hashtbl.create () (* 10 *));
-            }
-          in
           (* !!calling the engine!! *)
+          (* Reset cache. *)
+          Domain.DLS.set cache (Hashtbl.create 10);
           search_single_target
             {
               session with

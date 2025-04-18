@@ -377,11 +377,20 @@ let lambdas_in_expr e =
  * huge expressions still takes some time). It would be better to
  * return a unique identifier to each expression to remove the hashing cost.
  *)
-let hmemo = Kcas_data.Hashtbl.create () (* 101 *)
+let hmemo : (expr, function_definition list) Hashtbl.t Domain.DLS.key =
+  Domain.DLS.new_key (fun () -> Hashtbl.create 101) 
 
-let lambdas_in_expr_memo a =
-  Common.memoized hmemo a (fun () -> lambdas_in_expr a)
+(* NOT USED for now, see below. *)
+let _lambdas_in_expr_memo a =
+  Common.memoized_not_thread_safe
+    ~use_cache:false (* [true] makes it much slower. *)
+    (Domain.DLS.get hmemo) (* perf: use a dummy, constant hashtable if above is [false]. *)
+    a
+    (fun () -> lambdas_in_expr a)
 [@@profiling]
+
+(* XXX: Shortcut, because we don't use the cache due to performance degradation. *)
+let lambdas_in_expr_memo = lambdas_in_expr
 
 (*****************************************************************************)
 (* Really substmts_of_stmts *)

@@ -13,7 +13,7 @@ type prefilter = Semgrep_prefilter_t.formula * (string -> bool)
       confusing to debug. To prevent that from happening again, the table is
       now passed to this function. For convenience you can also choose not to
        memoize. *)
-type prefilter_cache = (Rule_ID.t, prefilter option) Kcas_data.Hashtbl.t
+type prefilter_cache = (Rule_ID.t, prefilter option) Hashtbl.t Domain.DLS.key
 
 (* This function analyzes a rule and returns optionaly a prefilter.
  *
