@@ -121,7 +121,7 @@ let on_request server (params : InitializeParams.t) =
     InitializeResult.
       {
         capabilities = server.session.capabilities;
-        serverInfo = Some { name = "Semgrep"; version = Some Version.version };
+        serverInfo = Some { name = "Opengrep"; version = Some Version.version };
       }
   in
   let server = initialize_server server params in
