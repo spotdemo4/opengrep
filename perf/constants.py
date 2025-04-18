@@ -1,10 +1,10 @@
 from pathlib import Path
 
-DASHBOARD_URL = "https://dashboard.semgrep.dev"
-STATS_URL = "https://stats.semgrep.dev"
-SEMGREP_URL = "https://semgrep.dev"
-BPS_ENDPOINT = "semgrep.perf.bps"
-LPS_ENDPOINT = "semgrep.perf.lps"
+DASHBOARD_URL = "" # https://dashboard.semgrep.dev"
+STATS_URL = "" # "https://stats.semgrep.dev"
+SEMGREP_URL = "" # "https://semgrep.dev"
+BPS_ENDPOINT = "" # "semgrep.perf.bps"
+LPS_ENDPOINT = "" # "semgrep.perf.lps"
 
 STD = "std"
 
@@ -18,7 +18,7 @@ PREP_FILE_TEMPLATE = """#! /bin/sh
 # target_dir: input/socket.io
 #
 # See ../r2c-rules for centralized copy of the rule
-# Uses sh because bash is not installed within the semgrep docker container.
+# Uses sh because bash is not installed within the opengrep docker container.
 #
 set -eu
 

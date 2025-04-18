@@ -261,7 +261,7 @@ def run_semgrep(
             # some containers use /bin/bash as the entrypoint,
             # so we override it here
             "--entrypoint",
-            "semgrep",
+            "opengrep",
             docker,
             "--quiet",
             "--config",
@@ -272,7 +272,7 @@ def run_semgrep(
         # Absolute paths for rules and targets are required by semgrep
         # when running within the semgrep docker container.
         args = [
-            "semgrep",
+            "opengrep",
             "--config",
             os.path.abspath(corpus.rule_dir),
         ]
@@ -293,9 +293,9 @@ def run_semgrep(
         args.append(os.path.abspath(corpus.target_dir))
 
     print(f"current directory: {os.getcwd()}")
-    print("semgrep command: {}".format(" ".join(args)))
+    print("opengrep command: {}".format(" ".join(args)))
     os.environ["SEMGREP_CORE_EXTRA"] = variant.semgrep_core_extra
-    print(f"extra arguments for semgrep-core: '{variant.semgrep_core_extra}'")
+    print(f"extra arguments for opengrep-core: '{variant.semgrep_core_extra}'")
 
     t1 = time.time()
     res = subprocess.run(  # nosem
@@ -304,15 +304,15 @@ def run_semgrep(
     t2 = time.time()
 
     status = res.returncode
-    print(f"semgrep exit status: {status}")
+    print(f"opengrep exit status: {status}")
     if status == 0:
         print("success")
     elif status == 3:
         print("warning: some files couldn't be parsed")
     else:
-        print("************* Semgrep stdout *************")
+        print("************* Opengrep stdout *************")
         print(res.stdout)
-        print("************* Semgrep stderr *************")
+        print("************* Opengrep stderr *************")
         print(res.stderr)
         res.check_returncode()
 
@@ -321,7 +321,7 @@ def run_semgrep(
         semgrep_results = json.loads(stdout_decoded)
     except (ValueError, json.JSONDecodeError):
         logger.error(
-            f"Unable to decode the Semgrep result as JSON. Exiting.\n******\n{res.stdout}"
+            f"Unable to decode the Opengrep result as JSON. Exiting.\n******\n{res.stdout}"
         )
         sys.exit(1)
 
@@ -417,7 +417,7 @@ def generate_prep_file(
 
 def get_semgrep_version():
     return (
-        subprocess.run(["semgrep", "--version"], capture_output=True)
+        subprocess.run(["opengrep", "--version"], capture_output=True)
         .stdout.decode("utf-8")
         .strip()
     )
@@ -506,7 +506,7 @@ def run_benchmarks(
             for variant in variants:
                 # Run variant
                 name = ".".join(
-                    ["semgrep"] + options + ["bench", corpus.name, variant.name]
+                    ["opengrep"] + options + ["bench", corpus.name, variant.name]
                 )
                 metric_name = ".".join([name, "duration"])
                 print(f"------ {name} ------")
@@ -548,8 +548,9 @@ def run_benchmarks(
                 )
                 results[variant.name].append(duration)
 
-                if upload:
-                    upload_result(variant.name, metric_name, duration, timings)
+                # OPENGREP: do not upload
+                # if upload:
+                #     upload_result(variant.name, metric_name, duration, timings)
 
                 # Check correctness
                 num_results = len(findings["results"])
@@ -570,7 +571,7 @@ def run_benchmarks(
 
             saved_findings.append(
                 {
-                    "name": ".".join(["semgrep", "bench", corpus.name]),
+                    "name": ".".join(["opengrep", "bench", corpus.name]),
                     "findings": jsonify_findings(std_findings),
                 }
             )
@@ -608,7 +609,7 @@ def main() -> None:
         "--docker",
         metavar="DOCKER_IMAGE",
         type=str,
-        help="use the specified docker image for semgrep, such as returntocorp/semgrep:develop",
+        help="use the specified docker image for opengrep",
     )
     parser.add_argument(
         "--dummy",
@@ -637,7 +638,7 @@ def main() -> None:
         help="run benchmarks according to a config file",
     )
     parser.add_argument(
-        "--std-only", help="only run the default semgrep", action="store_true"
+        "--std-only", help="only run the default opengrep", action="store_true"
     )
     parser.add_argument(
         "--filter-corpus",
@@ -650,9 +651,6 @@ def main() -> None:
         metavar="REGEXP",
         type=str,
         help="run the variant only if it satisfies the regexp (e.g., 'dr.*') ",
-    )
-    parser.add_argument(
-        "--upload", help="upload results to semgrep dashboard", action="store_true"
     )
     parser.add_argument(
         "--save-to",

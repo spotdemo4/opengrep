@@ -9,8 +9,8 @@ DOCKER_IMG = returntocorp/semgrep:develop
 .PHONY: run
 run:
 	@set -e; \
-	if ! semgrep --version > /dev/null; then \
-	  echo "Missing 'semgrep' executable. Consider using 'make docker'."; \
+	if ! opengrep --version > /dev/null; then \
+	  echo "Missing 'opengrep' executable."; \
 	  exit 1; \
 	fi
 	./run-benchmarks
