@@ -10,3 +10,8 @@ val version : Semver.t
 val major : int
 val minor : int
 val patch : int
+
+val version_semgrep : Semver.t
+val major_semgrep : int
+val minor_semgrep : int
+val patch_semgrep : int
