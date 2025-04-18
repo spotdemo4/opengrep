@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.5](https://github.com/opengrep/opengrep/releases/tag/v1.1.5) - 18-04-2025
+
+### Improvements
+
+* Performance improvements by @maciejpirog and @dimitris-m in #221
+* Add workflows for Intel Mac by @dimitris-m in #219
+
+### Bug fixes
+
+* Ensure that `min-version:` in rules is respected by @dimitris-m in #220
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.1.4...v1.1.5
+
+
 ## [1.1.4](https://github.com/opengrep/opengrep/releases/tag/v1.1.4) - 14-04-2025
 
 ### Improvements
