@@ -137,7 +137,7 @@ type 'a comb_matcher = 'a -> 'a list -> 'a list comb_result
 (*****************************************************************************)
 (* Monadic operators *)
 (*****************************************************************************)
-(* The >>= combinator below allow you to configure the matching process
+(* The >>= combinator below allows you to configure the matching process
  * anyway you want. Essentially this combinator takes a matcher,
  * another matcher, and returns a matcher that combines the 2
  * matcher arguments.
@@ -160,10 +160,7 @@ let (( >>= ) : (tin -> tout) -> (unit -> tin -> tout) -> tin -> tout) =
    * the empty list when it didn't match, playing the role None
    * had before)
    *)
-  let xs = m1 tin in
-  (* try m2 on each possible returned bindings *)
-  let xxs = xs |> List_.map (fun binding -> m2 () binding) in
-  List_.flatten xxs
+  m1 tin |> List.concat_map (fun binding -> m2 () binding)
 
 (* the disjunctive combinator *)
 let (( >||> ) : (tin -> tout) -> (tin -> tout) -> tin -> tout) =
