@@ -60,32 +60,37 @@ type exclusion_mechanism = {
 *)
 let default_semgrepignore_for_semgrep_scan =
   {|
-# Git administrative folder or file
+# Administrative folder or file used by popular version control systems
 .git
+.svn
+.hg
+_darcs
+CVS
 
-# Common large paths
-node_modules/
+# Paths to files and folders that are typically large and ignorable
 build/
-dist/
 vendor/
-.env/
-.venv/
-.tox/
+dist/
 *.min.js
+.env/
+.tox/
+
+# Package managers
+node_modules/
 .npm/
 .yarn/
+.venv/
+_opam/
+_build/
+_cargo/
+# Note that PHP composer uses vendor/ and C++ conan uses build/
+# .venv is used both by Go and Python.
 
 # Common test paths
 test/
 tests/
 testsuite/
 *_test.go
-
-# Semgrep rules folder
-.semgrep
-
-# Semgrep-action log folder
-.semgrep_logs/
 |}
 
 let gitignore_files = Gitignore.default_gitignore_filename

@@ -305,11 +305,11 @@ let spf = Printf.sprintf
 
 (* ---------------------------------------------------------------------- *)
 
-let _chan = ref UStdlib.stderr
+let _chan = UStdlib.stderr
 
 let dolog s =
-  output_string !_chan (s ^ "\n");
-  flush !_chan
+  output_string _chan (s ^ "\n");
+  flush _chan
 
 let verbose_level = ref 1
 let log s = if !verbose_level >= 1 then dolog s
@@ -719,8 +719,6 @@ let mk_str_func_of_assoc_conv xs =
 let ( $ ) f g x = g (f x)
 
 (* TODO: Check non thread-safe use of references below. *)
-
-let memoized = Common.memoized
 
 (* finalize, cf prelude *)
 
@@ -2247,51 +2245,8 @@ let y_or_no msg =
     in
     aux ()
 
-let mkdir ?(mode = 0o770) file = UUnix.mkdir file mode
-
 (* opti? use wc -l ? *)
 let nblines_file file = cat file |> List.length
-
-(* ---------------------------------------------------------------------- *)
-(* _eff variant *)
-(* ---------------------------------------------------------------------- *)
-let _hmemo_unix_lstat_eff = Kcas_data.Hashtbl.create () (* 101 *)
-let _hmemo_unix_stat_eff = Kcas_data.Hashtbl.create () (* 101 *)
-
-let unix_lstat_eff file =
-  if is_absolute file then
-    memoized _hmemo_unix_lstat_eff file (fun () -> UUnix.lstat file)
-  else
-    (* this is for efficieny reason to be able to memoize the stats *)
-    failwith "must pass absolute path to unix_lstat_eff"
-
-let unix_stat_eff file =
-  if is_absolute file then
-    memoized _hmemo_unix_stat_eff file (fun () -> UUnix.stat file)
-  else
-    (* this is for efficieny reason to be able to memoize the stats *)
-    failwith "must pass absolute path to unix_stat_eff"
-
-let filesize_eff file = (unix_lstat_eff file).st_size
-let filemtime_eff file = (unix_lstat_eff file).st_mtime
-
-let lfile_exists_eff filename =
-  try
-    match (unix_lstat_eff filename).st_kind with
-    | Unix.S_REG
-    | Unix.S_LNK ->
-        true
-    | _ -> false
-  with
-  | UUnix.Unix_error (Unix.ENOENT, _, _) -> false
-
-let is_directory_eff file = (unix_lstat_eff file).st_kind =*= Unix.S_DIR
-let is_file_eff file = (unix_lstat_eff file).st_kind =*= Unix.S_REG
-
-let is_executable_eff file =
-  let stat = unix_lstat_eff file in
-  let perms = stat.st_perm in
-  stat.st_kind =*= Unix.S_REG && perms land 0o011 <> 0
 
 (* ---------------------------------------------------------------------- *)
 

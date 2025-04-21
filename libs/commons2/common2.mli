@@ -78,7 +78,7 @@ val redirect_stdin_opt : filename option -> (unit -> unit) -> unit
 val with_pr2_to_string : Cap.FS.tmp -> (unit -> unit) -> string list
 
 (* default = stderr *)
-val _chan : out_channel ref
+(* val _chan : out_channel ref *)
 
 (* generate & use a /tmp/debugml-xxx file *)
 (* val start_log_file : unit -> unit *)
@@ -633,18 +633,7 @@ val echo : string -> string
 val usleep : int -> unit
 val _batch_mode : bool ref
 val y_or_no : string -> bool
-val mkdir : ?mode:Unix.file_perm -> string -> unit
 val nblines_file : filename -> int
-val unix_lstat_eff : filename -> Unix.stats
-val unix_stat_eff : filename -> Unix.stats
-
-(* require to pass absolute paths, and use internally a memoized lstat *)
-val filesize_eff : filename -> int
-val filemtime_eff : filename -> float
-val lfile_exists_eff : filename -> bool
-val is_directory_eff : path -> bool
-val is_file_eff : path -> bool
-val is_executable_eff : filename -> bool
 val capsule_unix : ('a -> unit) -> 'a -> unit
 val readdir_to_kind_list : string -> Unix.file_kind -> string list
 val readdir_to_dir_list : string -> dirname list
