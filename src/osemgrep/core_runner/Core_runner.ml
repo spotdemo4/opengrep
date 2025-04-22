@@ -43,6 +43,8 @@ type conf = {
    * even if it was not requested by the CLI
    *)
   dataflow_traces : bool;
+  (* Engine configuration for various features *)
+  engine_config : Engine_config.t;
 }
 [@@deriving show]
 
@@ -114,6 +116,7 @@ let default_conf : conf =
     time_flag = false;
     nosem = true;
     strict = false;
+    engine_config = Engine_config.default;
   }
 
 (*****************************************************************************)
@@ -354,6 +357,7 @@ let core_scan_config_of_conf (conf : conf) : Core_scan_config.t =
    nosem = _TODO;
    strict;
    time_flag;
+   engine_config;
    (* TODO *)
    dataflow_traces = _;
   } ->
@@ -375,6 +379,7 @@ let core_scan_config_of_conf (conf : conf) : Core_scan_config.t =
         target_source = Targets [];
         rule_source = Rules [];
         file_match_hook = None;
+        engine_config = Some engine_config;
         (* same than in Core_scan_config.default
          * alt: we could use a 'Core_scan_config.default with ...' but better
          * to list all the fields.

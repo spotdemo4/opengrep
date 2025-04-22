@@ -54,24 +54,19 @@ let rule_id_re_str = {|(?:[:=][\s]?(?P<ids>([^,\s](?:[,\s]+)?)+))?|}
    * nosem and nosemgrep should be interchangeable
 *)
 
-let get_nosem_pattern_choices () =
-  let patterns =
-    match !Flag_semgrep.custom_ignore_pattern with
-    | None -> ["nosem"; "nosemgrep"]
-    | Some pattern -> [pattern]  (* Now only using the custom pattern *)
-  in
-  let pattern_str = patterns
+let get_nosem_pattern_choices ?(config=Engine_config.default) () =
+  let pattern_str = Engine_config.get_ignore_patterns config
     |> List.map (fun p -> "\\b" ^ p ^ "\\b")
     |> String.concat "|"
   in
   (* nosemgrep: no-logs-in-library *)
   Logs.debug (fun m -> m "Using dynamic patterns: %s (custom pattern: %s)"
     pattern_str
-    (match !Flag_semgrep.custom_ignore_pattern with None -> "None" | Some p -> p));
+    (match config.custom_ignore_pattern with None -> "None" | Some p -> p));
   pattern_str
 
-let get_nosem_inline_re () =
-  let pattern_str = {| |} ^ "(?:" ^ get_nosem_pattern_choices () ^ ")" ^ rule_id_re_str in
+let get_nosem_inline_re ?(config=Engine_config.default) () =
+  let pattern_str = {| |} ^ "(?:" ^ get_nosem_pattern_choices ~config () ^ ")" ^ rule_id_re_str in
   Pcre2_.regexp pattern_str ~flags:[ `CASELESS ]
 
 (*
@@ -86,8 +81,8 @@ let get_nosem_inline_re () =
      # nosemgrep
      print('nosemgrep');
 *)
-let get_nosem_previous_line_re () =
-  let pattern_str = {|^[^a-zA-Z0-9]*\s*|} ^ "(?:" ^ get_nosem_pattern_choices () ^ ")" in
+let get_nosem_previous_line_re ?(config=Engine_config.default) () =
+  let pattern_str = {|^[^a-zA-Z0-9]*\s*|} ^ "(?:" ^ get_nosem_pattern_choices ~config () ^ ")" in
   Pcre2_.regexp (pattern_str ^ rule_id_re_str) ~flags:[ `CASELESS ]
 
 (*****************************************************************************)
@@ -128,7 +123,7 @@ let recognise_and_collect ~rex (line_num, line) =
    If [strict:true], we return possible errors when [nosem] is used with an
    ID which is not equal to the rule's ID.
 *)
-let rule_match_nosem (pm : Core_match.t) : bool * Core_error.t list =
+let rule_match_nosem ?(config=Engine_config.default) (pm : Core_match.t) : bool * Core_error.t list =
   let path = pm.path.internal_path_to_content in
   let lines =
     (* Minus one, because we need the preceding line. *)
@@ -157,8 +152,8 @@ let rule_match_nosem (pm : Core_match.t) : bool * Core_error.t list =
   let no_ids = List.for_all Option.is_none in
 
   (* Get the regexes fresh each time to ensure we use the latest custom pattern *)
-  let nosem_inline_re = get_nosem_inline_re () in
-  let nosem_previous_line_re = get_nosem_previous_line_re () in
+  let nosem_inline_re = get_nosem_inline_re ~config () in
+  let nosem_previous_line_re = get_nosem_previous_line_re ~config () in
 
   let ids_line =
     match line with
@@ -277,14 +272,14 @@ let rule_match_nosem (pm : Core_match.t) : bool * Core_error.t list =
 (* Entry points *)
 (*****************************************************************************)
 
-let produce_ignored (matches : Core_result.processed_match list) :
+let produce_ignored ?(config=Engine_config.default) (matches : Core_result.processed_match list) :
     Core_result.processed_match list * Core_error.t list =
   (* filters [rule_match]s by the [nosemgrep] tag. *)
   let matches, wide_errors =
     matches
     |> List_.map (fun (pm : Core_result.processed_match) ->
            try
-             let is_ignored, errors = rule_match_nosem pm.pm in
+             let is_ignored, errors = rule_match_nosem ~config pm.pm in
              ({ pm with is_ignored }, errors)
            with
            | (Time_limit.Timeout _ | Common.ErrorOnFile _) as exn ->

@@ -242,6 +242,7 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
         strict = false;
         time_flag = false;
         matching_explanations;
+        engine_config = Engine_config.default;
       }
     in
     let include_ =

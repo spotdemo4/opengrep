@@ -1,11 +1,12 @@
 val rule_id_re_str : string
-val get_nosem_inline_re : unit -> Pcre2_.t
-val get_nosem_previous_line_re : unit -> Pcre2_.t
+val get_nosem_inline_re : ?config:Engine_config.t -> unit -> Pcre2_.t
+val get_nosem_previous_line_re : ?config:Engine_config.t -> unit -> Pcre2_.t
 
 (* produce the `is_ignored` fields for the processed match, without filtering
    them out
 *)
 val produce_ignored :
+  ?config:Engine_config.t ->
   Core_result.processed_match list ->
   Core_result.processed_match list * Core_error.t list
 

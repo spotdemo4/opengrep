@@ -76,6 +76,8 @@ type t = {
   ncores : int;
   (* a.k.a -fast (on by default) *)
   filter_irrelevant_rules : bool;
+  (* Engine configuration for various features *)
+  engine_config : Engine_config.t option;
   (* telemetry *)
   tracing : Tracing.config option;
 }
@@ -116,6 +118,8 @@ let default =
     ncores = 1;
     (* a.k.a -fast, on by default *)
     filter_irrelevant_rules = true;
+    (* Engine configuration *)
+    engine_config = None;
     (* debugging and telemetry flags *)
     tracing = None;
   }

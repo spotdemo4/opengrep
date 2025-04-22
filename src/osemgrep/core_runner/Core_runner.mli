@@ -19,6 +19,8 @@ type conf = {
   time_flag : bool;
   matching_explanations : bool;
   dataflow_traces : bool;
+  (* Engine configuration for various features *)
+  engine_config : Engine_config.t;
 }
 [@@deriving show]
 

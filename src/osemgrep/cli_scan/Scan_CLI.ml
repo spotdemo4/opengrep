@@ -1326,9 +1326,11 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
             "!!! You're using one or more options starting with '--x-'. These \
              options are not part of the opengrep API. They will change or will \
              be removed without notice !!! ");
-
-    (* Set the custom ignore pattern if specified *)
-    Flag_semgrep.custom_ignore_pattern := opengrep_ignore_pattern;
+    
+    (* Create engine configuration *)
+    let engine_config = {
+      Engine_config.custom_ignore_pattern = opengrep_ignore_pattern;
+    } in
 
     if output_enclosing_context && not json then
       Logs.warn (fun m ->
@@ -1408,6 +1410,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
         strict;
         time_flag;
         matching_explanations;
+        engine_config; (* Pass the engine configuration to the core runner *)
       }
     in
     let include_ =
