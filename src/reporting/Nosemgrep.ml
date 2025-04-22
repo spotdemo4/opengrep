@@ -60,7 +60,7 @@ let get_nosem_pattern_choices ?(config=Engine_config.default) () =
     |> String.concat "|"
   in
   (* nosemgrep: no-logs-in-library *)
-  Logs.debug (fun m -> m "Using dynamic patterns: %s (custom pattern: %s)"
+  Logs.debug (fun m -> m "Using ignore patterns: %s (custom pattern: %s)"
     pattern_str
     (match config.custom_ignore_pattern with None -> "None" | Some p -> p));
   pattern_str
@@ -151,7 +151,6 @@ let rule_match_nosem ?(config=Engine_config.default) (pm : Core_match.t) : bool 
 
   let no_ids = List.for_all Option.is_none in
 
-  (* Get the regexes fresh each time to ensure we use the latest custom pattern *)
   let nosem_inline_re = get_nosem_inline_re ~config () in
   let nosem_previous_line_re = get_nosem_previous_line_re ~config () in
 
