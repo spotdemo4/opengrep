@@ -2,7 +2,7 @@
 
 ## `bench.py`
 
-Run a quick comparison of performance between two commits or a commit and the current state of the world (current commit + uncommited changes). Usage:
+Run a quick comparison of performance between two commits or a commit and the current state of the world (current commit + uncommitted changes). Usage:
 
 ```
 bench <sha1> <sha2>  # compare two commits

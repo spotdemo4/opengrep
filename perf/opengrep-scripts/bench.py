@@ -44,7 +44,7 @@ def python_cmd(repo):
 
 repeat_each_test_n_times = 5
 
-# Impemetation
+# Implementation
 
 ts = datetime.now().strftime('%Y%m%d-%H%M%S')
 
