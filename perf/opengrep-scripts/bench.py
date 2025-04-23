@@ -25,7 +25,6 @@ repositories = [ ("https://github.com/jellyfin/jellyfin","a0931baa8eb879898f4bc4
                , ("https://github.com/square/leakcanary", "bf5086da26952e3627f18865bb232963e4d019c5")
                ]
 
-# -j 8 to leave some cores free in case of a random OS heave job in the background
 def regular_cmd(repo):
     return ["opengrep", "scan",
             "-c", "rules",
