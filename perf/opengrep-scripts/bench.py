@@ -36,8 +36,8 @@ def regular_cmd(repo):
             "--max-target-bytes", "200000",
             "--quiet"]
 
-# not used ATM
-def python_cmd(repo):
+# Not used ATM
+def _python_cmd(repo):
     return ["pipenv", "run", "opengrep",
             "scan", "-c", "rules", repo, "-j", num_cpus]
 
