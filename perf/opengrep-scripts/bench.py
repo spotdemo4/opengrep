@@ -66,25 +66,25 @@ repos = [{"url": url, "sha": sha, "name": get_repo_name(url)}
 def run(cmd, cwd=None):
     # my_env = os.environ.copy()
     # my_env["PIPENV_PIPFILE"] = "../opengrep/cli/Pipfile"
-    print(f"▶ Running: {' '.join(cmd)}")
+    print(f"Running: {' '.join(cmd)}")
     sys.stdout.flush()
     subprocess.run(cmd, cwd=cwd, check=True)
 
 def clone_specific_commit(repo_url, commit_hash, name):
     if os.path.exists(name):
-        print(f"✅ Repository '{name}' present.")
+        print(f"Repository '{name}' present.")
 
     else:
-        print(f"📦 Cloning {repo_url} into {name} (shallow)...")
+        print(f"Cloning {repo_url} into {name} (shallow)...")
         run(["git", "clone", "--no-checkout", "--depth", "1", repo_url, name])
 
-        print(f"📥 Fetching commit {commit_hash}...")
+        print(f"Fetching commit {commit_hash}...")
         run(["git", "fetch", "--depth", "1", "origin", commit_hash], cwd=name)
 
-        print(f"📌 Checking out commit {commit_hash}...")
+        print(f"Checking out commit {commit_hash}...")
         run(["git", "checkout", commit_hash], cwd=name)
 
-        print(f"✅ Done: {name} at commit {commit_hash}")
+        print(f"Done: {name} at commit {commit_hash}")
 
 def setup():
     os.makedirs("results", exist_ok=True)
