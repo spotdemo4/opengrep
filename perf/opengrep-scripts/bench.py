@@ -128,7 +128,7 @@ def run_opengrep(repo):
 
 def has_changes():
     result = subprocess.run(
-        ["git", "status", "--porcelain"],
+        ["git", "status", "--porcelain", "--untracked-files", "no"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
