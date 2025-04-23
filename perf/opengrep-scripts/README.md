@@ -39,4 +39,4 @@ When comparing a sha with the current state of the world
 
 So, the script leaves the world in the original state without having to commit changes or run `make setup` in a fresh clone, which takes forever. However, if script fails for some reason, we need to manually checkout the original branch, **pop the stash** and recompile.
 
-Results printed to std out and are stored in `opengrep/perf/opengrep-scripts/results` as a csv file
+Results printed to std out and are stored in `opengrep/perf/opengrep-scripts/results` as a csv file.
