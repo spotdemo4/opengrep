@@ -206,6 +206,10 @@ perf/bench
 # Local actions testing
 act/
 
+perf/opengrep-scripts/repos
+perf/opengrep-scripts/results
+perf/opengrep-scripts/rules
+
 # editor
 *.code-workspace
 .vscode
