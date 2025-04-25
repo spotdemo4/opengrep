@@ -221,10 +221,4 @@ let just_parse_with_lang lang file : Parsing_result2.t =
    *)
   | Lang.Apex -> run_external_parser file Parsing_plugin.Apex.parse_target
   | Lang.Csharp ->
-      let parse_target =
-        (* Use the proprietary parser if available *)
-        if Parsing_plugin.Csharp.is_available () then
-          Parsing_plugin.Csharp.parse_target
-        else Parse_csharp_tree_sitter.parse
-      in
-      run file [ TreeSitter parse_target ] (fun x -> x)
+      run file [ TreeSitter Parse_csharp_tree_sitter.parse ] (fun x -> x)
