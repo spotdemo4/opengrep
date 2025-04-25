@@ -674,7 +674,8 @@ let literal (env : env) (x : CST.literal) : literal =
         List_.map
           (fun x ->
             match x with
-            | `Verb_str_lit_frag tok -> str env tok
+            | `Imm_tok_prec_p1_pat_98d585a tok -> str env tok
+            (* | `Verb_str_lit_frag tok -> str env tok *)
             | `DQUOTDQUOT tok -> str env tok)
           v2
       in
@@ -686,8 +687,10 @@ let literal (env : env) (x : CST.literal) : literal =
       let xs =
         List_.map
           (fun x ->
-            match x with
-            | `Raw_str_lit_frag tok -> str env tok)
+             str env x
+            (* match x with
+               | `Raw_str_lit_frag tok -> str env tok *)
+          )
           v2
       in
       let r = token env v3 in
@@ -2834,17 +2837,19 @@ and namespace_member_declaration (env : env)
 
 and compilation_unit (env : env) (xs : CST.compilation_unit) : any =
   match xs with
-  | `Rep_extern_alias_dire_rep_using_dire_rep_global_attr_list_choice_rep_global_stmt_rep_name_member_decl
+  | `Rep_extern_alias_dire_rep_using_dire_rep_global_attr_list_choice_rep_choice_global_stmt
       (v1, v2, v3, v4) ->
       let v1 = v1 |> List_.map (extern_alias_directive env) in
       let v2 = v2 |> List_.map (using_directive env) in
       let v3 = v3 |> List_.map (global_attribute_list env) in
       let v4 =
         match v4 with
-        | `Rep_global_stmt_rep_name_member_decl (v1, v2) ->
-            let v1 = v1 |> List_.map (global_statement env) in
-            let v2 = v2 |> List_.map (namespace_member_declaration env) in
-            v1 @ v2
+        | `Rep_choice_global_stmt xs ->
+            List.map
+              (function
+                | `Global_stmt x -> global_statement env x
+                | `Name_member_decl x -> namespace_member_declaration env x)
+              xs
         | `File_scoped_name_decl x -> file_scoped_namespace_declaration env x
       in
       G.Pr (List_.flatten [ v1; v2; v3; v4 ])
