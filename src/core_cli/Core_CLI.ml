@@ -332,7 +332,7 @@ let mk_config () : Core_scan_config.t =
     max_match_per_file = !max_match_per_file;
     ncores = !ncores;
     filter_irrelevant_rules = !filter_irrelevant_rules;
-    (* open telemetry *)
+    engine_config = None;
     tracing =
       (match (!trace, !trace_endpoint) with
       | true, Some url ->

@@ -79,8 +79,14 @@ module Nosemgrep_processor : Processor = struct
 
   let post_process (config : Core_scan_config.t) () (res : Core_result.t) =
     Logs_.with_debug_trace ~__FUNCTION__ (fun () ->
+        (* Extract engine_config from config if available, otherwise use default *)
+        let engine_config = 
+          match config.engine_config with
+          | Some config -> config
+          | None -> Engine_config.default
+        in
         let processed_matches_with_ignores, errors =
-          Nosemgrep.produce_ignored res.processed_matches
+          Nosemgrep.produce_ignored ~config:engine_config res.processed_matches
         in
         let errors =
           if config.strict then errors @ res.errors else res.errors
