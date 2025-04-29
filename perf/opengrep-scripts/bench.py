@@ -109,9 +109,11 @@ def single_run(repo):
     #run(regular_cmd(repo))
     #t2 = time.time()
     #return t2 - t1
+    time.sleep(5)
     usage_start = resource.getrusage(resource.RUSAGE_CHILDREN)
     run(regular_cmd(repo))
     usage_end = resource.getrusage(resource.RUSAGE_CHILDREN)
+    time.sleep(5)
     user_time = usage_end.ru_utime - usage_start.ru_utime
     system_time = usage_end.ru_stime - usage_start.ru_stime
     total_cpu_time = user_time + system_time
@@ -120,9 +122,9 @@ def single_run(repo):
 
 def run_opengrep(repo):
     durs = [single_run(repo) for x in range(0, repeat_each_test_n_times)]
-    if repeat_each_test_n_times >= 5:
-        durs.remove(max(durs))
-        durs.remove(max(durs))
+    #if repeat_each_test_n_times >= 5:
+    #    durs.remove(max(durs))
+    #    durs.remove(max(durs))
     return statistics.mean(durs)
 
 def has_changes():
