@@ -176,9 +176,9 @@ let rules_and_targets (kind : Test_CLI.target_kind) (errors : error list ref) :
                      m "found targets for %s: %s" !!rule_file
                        (xs |> List_.map Fpath.to_string |> String.concat ", "));
                  Some (rule_file, xs))
-  | Test_CLI.File (target, config_str) -> (
+  | Test_CLI.Files (targets, config_str) -> (
       match Rules_config.parse_config_string ~in_docker:false config_str with
-      | File rule_file -> [ (rule_file, [ target ]) ]
+      | File rule_file -> [ (rule_file, targets) ]
       | Dir _
       | URL _
       | R _

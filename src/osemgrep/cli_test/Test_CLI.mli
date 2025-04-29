@@ -23,7 +23,7 @@ type conf = {
 
 and target_kind =
   | Dir of Fpath.t * Rules_config.config_string option (* optional --config *)
-  | File of Fpath.t * Rules_config.config_string (* mandatory --config *)
+  | Files of Fpath.t list * Rules_config.config_string (* mandatory --config *)
 [@@deriving show]
 
 (*
