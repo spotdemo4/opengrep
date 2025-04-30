@@ -2837,30 +2837,28 @@ and namespace_member_declaration (env : env)
 
 and compilation_unit (env : env) (xs : CST.compilation_unit) : any =
   match xs with
-  | `Rep_extern_alias_dire_rep_using_dire_rep_global_attr_list_choice_rep_choice_global_stmt
-      (v1, v2, v3, v4) ->
+  | `Rep_extern_alias_dire_rep_using_dire_rep_global_attr_list_rep_choice_global_stmt_opt_file_scoped_name_decl      (v1, v2, v3, v4, v5) ->
       let v1 = v1 |> List_.map (extern_alias_directive env) in
       let v2 = v2 |> List_.map (using_directive env) in
       let v3 = v3 |> List_.map (global_attribute_list env) in
       let v4 =
-        match v4 with
-        | `Rep_choice_global_stmt xs ->
-            List.map
-              (function
-                | `Global_stmt x -> global_statement env x
-                | `Name_member_decl x -> namespace_member_declaration env x)
-              xs
-        | `File_scoped_name_decl x -> file_scoped_namespace_declaration env x
+        List.map
+          (function
+            | `Global_stmt x -> global_statement env x
+            | `Name_member_decl x -> namespace_member_declaration env x)
+          v4
       in
-      G.Pr (List_.flatten [ v1; v2; v3; v4 ])
+      let v5 = match v5 with
+        | Some x -> [file_scoped_namespace_declaration env x]
+        | None -> []
+      in
+      G.Pr (List_.flatten ([ v1; v2; v3; v4 ] @ v5))
   | `Semg_exp (_v1, v2) ->
       let v2 = expression env v2 in
       G.E v2
 
 and file_scoped_namespace_declaration (env : env)
-    ((v1, v2, v3, v4, v5, v6, v7, v8) : CST.file_scoped_namespace_declaration) =
-  let stmts = List_.map (global_statement env) v1 in
-  let nspace_decls = List_.map (namespace_member_declaration env) v2 in
+    ((v3, v4, v5, v6, v7, v8) : CST.file_scoped_namespace_declaration) =
   let tnamespace = (* "namespace" *) token env v3 in
   let n = name env v4 in
   let _tsemi = (* ";" *) token env v5 in
@@ -2870,7 +2868,7 @@ and file_scoped_namespace_declaration (env : env)
   let dotted_ident = H2.dotted_ident_of_name n in
   let namespace = G.Package (tnamespace, dotted_ident) |> G.d in
   List_.flatten
-    [ stmts; nspace_decls; [ G.DirectiveStmt namespace |> G.s ]; v6; v7; v8 ]
+    [[ G.DirectiveStmt namespace |> G.s ]; v6; v7; v8 ]
 
 and namespace_declaration (env : env)
     ((v1, v2, v3, _semi) : CST.namespace_declaration) =
