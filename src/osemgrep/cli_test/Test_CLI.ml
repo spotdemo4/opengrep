@@ -44,7 +44,7 @@ type conf = {
  *)
 and target_kind =
   | Dir of Fpath.t * Rules_config.config_string option (* optional --config *)
-  | File of Fpath.t * Rules_config.config_string (* mandatory --config *)
+  | Files of Fpath.t list * Rules_config.config_string (* mandatory --config *)
 [@@deriving show]
 
 (*************************************************************************)
@@ -128,19 +128,20 @@ let target_kind_of_roots_and_config target_roots config =
   | [ file ], [ config ] ->
       if Sys.file_exists !!file && Sys.is_directory !!file then
         Dir (file, Some config)
-      else File (file, config)
+      else Files ([file], config)
   | [ file ], [] ->
       if Sys.is_directory !!file then Dir (file, None)
       else
         (* was raise Exception but cleaner abort I think *)
         Error.abort "--config is required when running a test on single file"
-  | _ :: _ :: _, _ ->
-      (* stricter: better error message '(directory or file)' *)
-      Error.abort "only one target (directory or file) allowed for tests"
+  | [], _ -> Error.abort "at least one target required for tests"
+  | files, [ config ] ->
+      Files (files, config)
   | _, _ :: _ :: _ ->
       (* stricter: removed 'config directory' *)
       Error.abort "only one config allowed for tests"
-  | [], _ -> Error.abort "bug: no valid target roots"
+  | _ :: _, [] ->
+      Error.abort "--config required when running a test on multiple files"
 
 let cmdline_term : conf Term.t =
   (* !The parameters must be in alphabetic orders to match the order
