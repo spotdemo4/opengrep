@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.2.0](https://github.com/opengrep/opengrep/releases/tag/v1.2.0) - 01-05-2025
+
+### New features
+
+* Allow multiple targets in the test command by @maciejpirog in #238
+* Add custom ignore pattern support for code comments by @tom-paz in #216 with improvements by @maciejpirog in #232: this adds a new command-line flag `--opengrep-ignore-pattern=VAL` that lets users specify a custom ignore pattern that will override the default ones
+
+### Improvements
+
+* Update .semgrepignore with latest from Semgrep by @dimitris-m in #225
+* Adapt perf benchmarks in #223 and add new script to compare performance in #226 and #234 by @maciejpirog 
+
+### Bug fixes
+
+* Fix for issue #92: relax C# parser which previously led to some code not being scanned by @dimitris-m in #231 and #239
+* Windows: add two missing DLLs by @dimitris-m in #236
+* Show more enclosing context information when focusing on a metavar by @maciejpirog in #233
+
+## New Contributors
+
+* @tom-paz from Kodem Security made his first contribution in https://github.com/opengrep/opengrep/pull/216
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.1.5...v1.2.0
+
+
 ## [1.1.5](https://github.com/opengrep/opengrep/releases/tag/v1.1.5) - 18-04-2025
 
 ### Improvements
