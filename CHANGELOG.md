@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.1](https://github.com/opengrep/opengrep/releases/tag/v1.2.1) - 02-05-2025
+
+### Bug fixes
+
+* Fix #241: missing `opengrep_ignore_pattern` in CI command by @dimitris-m in #242
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.2.0...v1.2.1
+
+
 ## [1.2.0](https://github.com/opengrep/opengrep/releases/tag/v1.2.0) - 01-05-2025
 
 ### New features
