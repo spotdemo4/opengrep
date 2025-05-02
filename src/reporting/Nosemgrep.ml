@@ -66,7 +66,7 @@ let get_nosem_pattern_choices ?(config=Engine_config.default) () =
   pattern_str
 
 let get_nosem_inline_re ?(config=Engine_config.default) () =
-  let pattern_str = {| |} ^ "(?:" ^ get_nosem_pattern_choices ~config () ^ ")" ^ rule_id_re_str in
+  let pattern_str = "(?:" ^ get_nosem_pattern_choices ~config () ^ ")" ^ rule_id_re_str in
   Pcre2_.regexp pattern_str ~flags:[ `CASELESS ]
 
 (*

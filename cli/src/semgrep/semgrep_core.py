@@ -69,7 +69,7 @@ class SemgrepCore:
         # expected to not be a part of any critical path.
         ret = compute_executable_path("opengrep-core")
         if ret is None:
-            raise Exception("Could not locate semgrep-core binary")
+            raise Exception("Could not locate opengrep-core binary")
         return ret
 
     @classmethod

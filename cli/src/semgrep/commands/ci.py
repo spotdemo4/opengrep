@@ -27,7 +27,7 @@ from semgrep.app.project_config import ProjectConfig
 from semgrep.app.scans import ScanCompleteResult
 from semgrep.app.scans import ScanHandler
 # from semgrep.commands.install import run_install_semgrep_pro
-from semgrep.commands.scan import collect_additional_outputs
+from semgrep.commands.scan import collect_additional_outputs, update_ignore_pattern
 from semgrep.commands.scan import scan_options
 from semgrep.commands.wrapper import handle_command_errors
 from semgrep.console import console
@@ -271,6 +271,7 @@ def ci(
     dump_rule_partitions_dir: Optional[Path],
     partial_config: Optional[Path],
     partial_output: Optional[Path],
+    opengrep_ignore_pattern: Optional[str]
 ) -> None:
     state = get_state()
 
@@ -288,6 +289,10 @@ def ci(
     state.error_handler.configure(suppress_errors)
     scan_handler = None
     capture_core_stderr = not debug
+
+    # Set the custom ignore pattern if specified
+    if opengrep_ignore_pattern:
+        update_ignore_pattern(opengrep_ignore_pattern)
 
     if subdir:
         subdir = subdir.resolve()  # normalize path & resolve symlinks
