@@ -1495,10 +1495,10 @@ and template_string (env : env) ((v1, v2, v3) : CST.template_string) :
 
 and template_substitution (env : env) ((v1, v2, v3) : CST.template_substitution)
     : expr =
-  let _v1 = token env v1 (* "${" *) in
-  let v2 = expressions env v2 in
-  let _v3 = token env v3 (* "}" *) in
-  v2
+  let l = token env v1 (* "${" *) in
+  let e = expressions env v2 in
+  let r = token env v3 (* "}" *) in
+  ParenExpr (l, e, r)
 
 and map_template_literal_type (env : env)
     ((v1, v2, v3) : CST.template_literal_type) : type_ =
