@@ -1455,14 +1455,40 @@ and object_type (env : env) ((v1, v2, v3) : CST.object_type) =
 and template_string (env : env) ((v1, v2, v3) : CST.template_string) :
     expr list bracket =
   let v1 = token env v1 (* "`" *) in
+  (* Combine [`Temp_chars] and [`Esc_seq] sequences. *)
+  let merge_str = function
+    | [] -> assert false
+    | `Temp_subs _ :: _ -> assert false
+    | [`Temp_chars tok | `Esc_seq tok] -> str env tok
+    | vs ->
+      let strs_toks =
+        List.map
+          (function
+            | (`Temp_chars tok | `Esc_seq tok) -> str env tok
+            | _ -> assert false)
+          vs in
+      let toks = List.map snd strs_toks in
+      let combined_toks = Tok.combine_toks (List.hd toks) (List.tl toks) in
+      let combined_str = String.concat "" (List.map fst strs_toks) in
+      combined_str, combined_toks
+  in
+  let rec combine_str acc vs res =
+    match acc, vs with
+    | [], [] -> List.rev res
+    | _, [] -> List.rev @@ (List.rev acc) :: res
+    | [], x :: xs -> combine_str [x] xs res
+    | (`Temp_chars _ | `Esc_seq _) :: _, (`Temp_chars _ | `Esc_seq _ as x) :: xs ->
+      combine_str (x :: acc) xs res
+    | _, x :: xs -> combine_str [x] xs ((List.rev acc) :: res)
+  in
   let v2 =
     List_.map
       (fun x ->
         match x with
-        | `Temp_chars tok -> L (String (str env tok)) (* template_chars *)
-        | `Esc_seq tok -> L (String (str env tok)) (* escape_sequence *)
-        | `Temp_subs x -> template_substitution env x)
-      v2
+        | (`Temp_chars _ | `Esc_seq _) :: _ as xs -> L (String (merge_str xs))
+        | [ `Temp_subs x ] -> template_substitution env x
+        | _ -> assert false)
+      (combine_str [] v2 [])
   in
   let v3 = token env v3 (* "`" *) in
   (v1, v2, v3)
