@@ -111,7 +111,7 @@ if [[ "$cur_branch" = "$rel_branch" ]]; then
 else
   error <<EOF
 Please switch to a clean git branch named $rel_branch:
-- git checkout develop
+- git checkout main
 - git submodule update --init --recursive
 - git checkout -b $rel_branch
 EOF
