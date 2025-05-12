@@ -215,11 +215,11 @@ let output_and_exit_from_fatal_core_errors_exn ~exit_code
 (* Incremental display *)
 (*****************************************************************************)
 
-(* Note that this hook is run in parallel in Parmap at the end of processing
- * a file. Using Format.std_formatter in parallel requires some synchronization
+(* Note that this hook is run in parallel at the end of processing a file.
+ * Using Format.std_formatter in parallel requires some synchronization
  * to avoid having the output of multiple child processes interwinded, hence
- * the use of Unix.lockf below.
- *)
+ * the use of a mutex below. *)
+let file_match_hook_mutex = Mutex.create ()
 
 let mk_file_match_hook (conf : Scan_CLI.conf) (rules : Rule.rules)
     (printer : Scan_CLI.conf -> Out.cli_match list -> unit) (_file : Fpath.t)
@@ -245,13 +245,7 @@ let mk_file_match_hook (conf : Scan_CLI.conf) (rules : Rule.rules)
     |> List_.exclude (fun (m : Out.cli_match) -> m.extra.is_ignored ||| false)
   in
   if cli_matches <> [] then (
-    (* nosemgrep: forbid-console *)
-    Unix.lockf Unix.stdout Unix.F_LOCK 0;
-    Common.protect
-      (fun () -> printer conf cli_matches)
-      ~finally:(fun () ->
-        (* nosemgrep: forbid-console *)
-        Unix.lockf Unix.stdout Unix.F_ULOCK 0))
+    Mutex.protect file_match_hook_mutex (fun () -> printer conf cli_matches))
 
 (* coupling: similar to Output.dispatch_output_format for Text *)
 let incremental_text_printer (_caps : < Cap.stdout >) (conf : Scan_CLI.conf)
