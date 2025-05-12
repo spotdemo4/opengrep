@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.2](https://github.com/opengrep/opengrep/releases/tag/v1.2.2) - 12-05-2025
+
+### Bug fixes
+
+* Fix #112: combine consecutive strings in templates by @dimitris-m in #245
+* Fix #249: synchronised incremental outputs by @dimitris-m in #251
+
+### Improvements
+
+* Pull performance fixes from semgrep by @maciejpirog in #248
+* Add script to compare running time of two executables by @maciejpirog in #247
+* Remove search for proprietary binary by @dimitris-m in #252
+* Adapt version bump script by @dimitris-m in #253
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.2.1...v1.2.2
+
+
 ## [1.2.1](https://github.com/opengrep/opengrep/releases/tag/v1.2.1) - 02-05-2025
 
 ### Bug fixes
