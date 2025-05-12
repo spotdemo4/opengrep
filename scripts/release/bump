@@ -103,7 +103,7 @@ case "$release" in
     error "suspicious release ID"
 esac
 
-rel_branch=release-$release
+rel_branch=release-v$release
 cur_branch=$(git branch --show-current)
 
 if [[ "$cur_branch" = "$rel_branch" ]]; then
