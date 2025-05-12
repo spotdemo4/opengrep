@@ -15,7 +15,7 @@ case "$(uname -s)" in
 esac
 
 sed_in_place() {
-  if [[ "$os_type" = linux ]]; then
+  if [[ "$os_type" = linux ]] || sed --version 2>/dev/null | grep GNU >/dev/null 2>&1; then
     sed -i -e "$@"
   else
     sed -i '' "$@"
@@ -103,7 +103,7 @@ case "$release" in
     error "suspicious release ID"
 esac
 
-rel_branch=release-$release
+rel_branch=release-v$release
 cur_branch=$(git branch --show-current)
 
 if [[ "$cur_branch" = "$rel_branch" ]]; then
@@ -111,7 +111,7 @@ if [[ "$cur_branch" = "$rel_branch" ]]; then
 else
   error <<EOF
 Please switch to a clean git branch named $rel_branch:
-- git checkout develop
+- git checkout main
 - git submodule update --init --recursive
 - git checkout -b $rel_branch
 EOF
