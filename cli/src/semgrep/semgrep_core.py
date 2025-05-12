@@ -54,8 +54,6 @@ class SemgrepCore:
     # or have not looked yet.
     _SEMGREP_PATH_: Optional[str] = None
 
-    _PRO_PATH_: Optional[str] = None
-
     @classmethod
     def executable_path(cls) -> str:
         """
@@ -82,14 +80,3 @@ class SemgrepCore:
             cls._SEMGREP_PATH_ = cls.executable_path()
 
         return Path(cls._SEMGREP_PATH_)
-
-    @classmethod
-    def pro_path(cls) -> Optional[Path]:
-        if cls._PRO_PATH_ is None:
-            cls._PRO_PATH_ = compute_executable_path("semgrep-core-proprietary")
-
-        return Path(cls._PRO_PATH_) if cls._PRO_PATH_ is not None else None
-
-    @classmethod
-    def pro_version_stamp_path(cls) -> Path:
-        return cls.path().parent / VERSION_STAMP_FILENAME
