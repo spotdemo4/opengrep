@@ -150,27 +150,7 @@ class EngineType(Enum):
         return 0  # unlimited
 
     def get_binary_path(self) -> Optional[Path]:
-        if self.is_pro:
-            if self.check_is_correct_pro_version():
-                return SemgrepCore.pro_path()
-            else:
-                return None
-        else:
-            return SemgrepCore.path()
-
-    # Checks the version stamp that is installed alongside the
-    # semgrep-core-proprietary binary to ensure that semgrep-core-proprietary
-    # was installed by the current version of Semgrep.
-    #
-    # See also commands/install.py add_semgrep_pro_version_stamp.
-    def check_is_correct_pro_version(self) -> bool:
-        version_stamp_path = SemgrepCore.pro_version_stamp_path()
-        if version_stamp_path.is_file():
-            with version_stamp_path.open("r") as f:
-                version_at_install = f.readline().strip()
-                return version_at_install == __VERSION__
-        else:
-            return False
+        return SemgrepCore.path()
 
     def check_if_installed(self) -> bool:
         binary_path = self.get_binary_path()

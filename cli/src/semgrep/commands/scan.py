@@ -28,7 +28,6 @@ from semgrep import bytesize
 from semgrep.app.version import get_no_findings_msg
 from semgrep.app.version import get_too_many_findings_msg
 from semgrep.app.version import TOO_MANY_FINDINGS_THRESHOLD
-# from semgrep.commands.install import determine_semgrep_pro_path
 from semgrep.commands.wrapper import handle_command_errors
 from semgrep.constants import Colors
 from semgrep.constants import DEFAULT_DIFF_DEPTH
