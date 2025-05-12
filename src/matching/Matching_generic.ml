@@ -107,7 +107,7 @@ type tin = {
    * modified, so maybe we should split tin in two and have tout use only one
    * part of this new tin?
    * alt: use globals or have an another 'env' parameter in the matcher in
-   * additionto tin instead of passing them through tin (but that's maybe a big
+   * addition to tin instead of passing them through tin (but that's maybe a big
    * refactoring of Generic_vs_generic).
    *)
   lang : Lang.t;

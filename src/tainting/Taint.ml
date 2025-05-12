@@ -369,7 +369,7 @@ module Taint_set = struct
    *
    * Why not just 'Set.Make(...)' using `compare_taint`? If we did this, then
    * given two taints that we consider "the same", we would pick one arbitrarily.
-   * While we consider then _essentially_ "the same", there are deatils such as
+   * While we consider them _essentially_ "the same", there are details such as
    * the call trace or the precondition (for labeled taint) that may differ, and
    * we want to pick "the best". This is what this data structure is for, the
    * key functions are 'add' and 'pick_best_taint'.

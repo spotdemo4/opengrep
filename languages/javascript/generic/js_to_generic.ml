@@ -62,6 +62,7 @@ type special_result =
   | SR_Other of G.todo_kind
   | SR_Literal of G.literal
   | SR_NeedArgs of (G.expr list -> G.expr_kind)
+  | SR_NeedArgs_Brak of ((Tok.t * G.expr list * Tok.t) -> G.expr_kind)
   | SR_Expr of G.expr_kind
 
 let special (x, tok) =
@@ -119,20 +120,20 @@ let special (x, tok) =
           | _ -> error tok "Impossible: Too many arguments to Await")
   | Encaps has_tag_function ->
       if not has_tag_function then
-        SR_NeedArgs
-          (fun args ->
+        SR_NeedArgs_Brak
+          (fun (l, args, r) ->
             G.Call
               ( G.IdSpecial (G.ConcatString G.InterpolatedConcat, tok) |> G.e,
-                args |> List_.map (fun e -> G.Arg e) |> fb ))
+                (l, args |> List_.map (fun e -> G.Arg e), r)))
       else
-        SR_NeedArgs
-          (fun args ->
+        SR_NeedArgs_Brak
+          (fun (l, args, r) ->
             match args with
             | [] -> raise Impossible
             | tag :: rest ->
                 G.Call
                   ( tag,
-                    fb
+                    (l,
                       [
                         G.Arg
                           (G.Call
@@ -145,7 +146,8 @@ let special (x, tok) =
                                |> G.e,
                                rest |> List_.map (fun e -> G.Arg e) |> fb )
                           |> G.e);
-                      ] ))
+                      ],
+                     r) ))
   | ArithOp op -> SR_Special (G.Op op, tok)
   | IncrDecr v -> SR_Special (G.IncrDecr v, tok)
 
@@ -254,7 +256,7 @@ and expr (x : expr) =
       (let x = special v1 in
        match x with
        | SR_Special v -> G.IdSpecial v
-       | SR_NeedArgs _ ->
+       | SR_NeedArgs _ | SR_NeedArgs_Brak _ ->
            error (snd v1) "Impossible: should have been matched in Call first"
        | SR_Literal l -> G.L l
        | SR_Other categ -> G.OtherExpr (categ, [])
@@ -320,6 +322,7 @@ and expr (x : expr) =
           (* apparently there's code like (null)("fs"), no idea what that is *)
           G.Call (G.L l |> G.e, bracket (List_.map G.arg) v2)
       | SR_NeedArgs f -> f (Tok.unbracket v2)
+      | SR_NeedArgs_Brak f -> f v2
       | SR_Other categ ->
           (* ex: NewTarget *)
           G.Call
