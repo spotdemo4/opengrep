@@ -55,6 +55,25 @@ def foo(a, b):
     return a + b == a + b
 |}
 
+let java_arg_paren_yaml_content =
+  {|
+rules:
+  - id: function-param
+    patterns:
+      - pattern: foo($X);
+    message: "argument is: $X"
+    languages: [java]
+    severity: ERROR
+|}
+
+let java_arg_paren_java_content = {|
+public class A {
+  public void f() {
+    foo((2+3)*(3+4));
+  }
+}
+|}
+
 let dummy_app_token = "FAKETESTINGAUTHTOKEN"
 
 (* coupling: subset of cli/tests/conftest.py ALWAYS_MASK *)
@@ -108,12 +127,18 @@ let test_nosettings ~env_app_token_set () =
     "default settings loaded with app token and no env" true
     (settings_with_no_include_env =*= Semgrep_settings.default)
 
-let test_basic_output (caps : Scan_subcommand.caps) () =
+let test_basic_output
+    (caps : Scan_subcommand.caps)
+    ?(rules_file = "rules.yml")
+    ?(rules_content = eqeq_basic_content)
+    ?(code_file = "stupid.py")
+    ?(code_content = stupid_py_content)
+    () =
   with_env_app_token (fun () ->
       let repo_files =
         [
-          F.File ("rules.yml", eqeq_basic_content);
-          F.File ("stupid.py", stupid_py_content);
+          F.File (rules_file, rules_content);
+          F.File (code_file, code_content);
         ]
       in
       Testutil_git.with_git_repo ~verbose:true repo_files (fun _cwd ->
@@ -121,7 +146,7 @@ let test_basic_output (caps : Scan_subcommand.caps) () =
             without_settings (fun () ->
                 Scan_subcommand.main caps
                   [|
-                    "opengrep-scan"; "--experimental"; "--config"; "rules.yml";
+                    "opengrep-scan"; "--experimental"; "--config"; rules_file;
                   |])
           in
           Exit_code.Check.ok exit_code))
@@ -211,4 +236,10 @@ let tests (caps : < Scan_subcommand.caps >) =
         ~skipped:"captured output depends on which tests run before it"
         ~checked_output:(Testo.stdxxx ()) ~normalize
         (test_basic_verbose_output caps);
+      t "precise range for parenthesized expression" ~checked_output:(Testo.stdxxx ()) ~normalize
+        (test_basic_output caps
+           ~rules_file:"java_arg_paren.yaml"
+           ~rules_content:java_arg_paren_yaml_content
+           ~code_file:"java_arg_paren.java"
+           ~code_content:java_arg_paren_java_content);
     ]
