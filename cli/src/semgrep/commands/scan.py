@@ -554,11 +554,6 @@ def update_ignore_pattern(pattern: str) -> None:
     "run_secrets_flag",
     is_flag=True,
 )
-@click.option(
-    "--opengrep-ignore-pattern",
-    envvar="SEMGREP_OPENGREP_IGNORE_PATTERN",
-    default=None,
-)
 @scan_options
 @handle_command_errors
 def scan(
