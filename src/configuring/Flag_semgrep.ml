@@ -43,6 +43,8 @@ let equivalence_mode = ref false
 
 let output_enclosing_context = ref false
 
+let opengrep_ignore_pattern : string option ref = ref None
+
 (* Note that an important flag used during parsing is actually in pfff in
  * Flag_parsing.sgrep_mode
  *)
