@@ -144,13 +144,12 @@ let () =
       (* TODO[Issue #125]: Why does invoking [opengrep-cli] has argv0 = 'opengrep-core'?
        * This happens if the experimental flag is not passed. *)
       (* opengrep-cli a.k.a. osemgrep *)
-      | "osemgrep" | "semgrep" | "opengrep-cli"
+      | "opengrep-cli"
       (* in the long term (and in the short term on windows) we want to ship
        * opengrep-cli as the default "opengrep" binary, without any
        * wrapper script such as cli/bin/semgrep around it.
        *)
       | "opengrep" ->
-          (* let _ = if Sys.win32 then eprint_experimental_windows caps#stderr in *)
           let exit_code =
             match argv0 with
             | "opengrep" ->

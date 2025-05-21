@@ -666,6 +666,10 @@ let options caps (actions : unit -> Arg_.cmdline_actions) =
       Arg.Set Flag.output_enclosing_context,
       "Include information about the syntactic context of the matched fragmetns of\
        code, such as the function or the class in which the match is defined."
+    );
+    ( "-ignore_pattern",
+      Arg.String (fun pat -> Flag.opengrep_ignore_pattern := Some pat),
+      "Replace the standard 'nosem(grep)' pattern with a custom value"
     )
   ]
   @ Flag_parsing_cpp.cmdline_flags_macrofile ()
@@ -864,7 +868,11 @@ let main_exn (caps : Cap.all_caps) (argv : string array) : unit =
                    and a single target file; if you need more complex file \
                    targeting use semgrep"
           in
-          let config = { config with target_source; ncores } in
+          let engine_config = Option.bind !Flag.opengrep_ignore_pattern
+              (fun pat ->
+                Some { Engine_config.custom_ignore_pattern = Some pat })
+          in
+          let config = { config with target_source; ncores; engine_config } in
 
           (* Set up tracing and run it for the duration of scanning. Note that
              this will only trace `Core_command.run_conf` and the functions it

@@ -55,6 +55,12 @@ def foo(a, b):
     return a + b == a + b
 |}
 
+let stupid_py_content_ignore_pat = {|
+def foo(a, b):
+    # noopengrep
+    return a + b == a + b
+|}
+
 let java_arg_paren_yaml_content =
   {|
 rules:
@@ -171,6 +177,27 @@ let test_basic_output_enclosing_context (caps : Scan_subcommand.caps) () =
           in
           Exit_code.Check.ok exit_code))
 
+let test_basic_output_ignore_pattern (caps : Scan_subcommand.caps) () =
+  with_env_app_token (fun () ->
+      let repo_files =
+        [
+          F.File ("rules.yml", eqeq_basic_content);
+          F.File ("stupid.py", stupid_py_content_ignore_pat);
+        ]
+      in
+      Testutil_git.with_git_repo ~verbose:true repo_files (fun _cwd ->
+          let exit_code =
+            without_settings (fun () ->
+                Scan_subcommand.main caps
+                  [|
+                    "opengrep-scan"; "--experimental"; "--config"; "rules.yml";
+                    "--opengrep-ignore-pattern"; "noopengrep";
+                    "--json"
+                  |])
+          in
+          Exit_code.Check.ok exit_code))
+
+
 (* This test fails for me (Martin) when run alone with e.g.
 
      ./test -s "basic verbose output"
@@ -232,6 +259,8 @@ let tests (caps : < Scan_subcommand.caps >) =
         (test_basic_output caps);
       t "basic output with --output-enclosing-context" ~checked_output:(Testo.stdxxx ()) ~normalize
         (test_basic_output_enclosing_context caps);
+      t "basic output with --opengrep-ignore-pattern" ~checked_output:(Testo.stdxxx ()) ~normalize
+        (test_basic_output_ignore_pattern caps);
       t "basic verbose output"
         ~skipped:"captured output depends on which tests run before it"
         ~checked_output:(Testo.stdxxx ()) ~normalize

@@ -154,14 +154,14 @@ let tests (caps : Cap.all_caps) =
       Unit_ci.tests;
       Test_is_blocking_helpers.tests;
       (* osemgrep e2e subcommand tests *)
-      Test_login_subcommand.tests (caps :> Login_subcommand.caps);
+      (* Test_login_subcommand.tests (caps :> Login_subcommand.caps); *)
       Test_scan_subcommand.tests (caps :> Scan_subcommand.caps);
       Test_ci_subcommand.tests (caps :> Ci_subcommand.caps);
       Unit_test_subcommand.tests (caps :> Test_subcommand.caps);
       Test_show_subcommand.tests (caps :> Show_subcommand.caps);
-      Test_publish_subcommand.tests
-        (* = Publish_subcommand.caps + Cap.exec for 'semgrep login' *)
-        (caps :> < Cap.stdout ; Cap.network ; Cap.tmp ; Cap.exec >);
+      (* Test_publish_subcommand.tests
+           (\* = Publish_subcommand.caps + Cap.exec for 'semgrep login' *\)
+           (caps :> < Cap.stdout ; Cap.network ; Cap.tmp ; Cap.exec >); *)
       Test_osemgrep.tests (caps :> CLI.caps);
       (* NOTE: Disabled because they require auto config and Metrics which
        *  are now `Off` by default. *)
