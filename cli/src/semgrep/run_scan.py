@@ -260,6 +260,7 @@ def run_rules(
     with_supply_chain: bool = False,
     allow_local_builds: bool = False,
     prioritize_dependency_graph_generation: bool = False,
+    opengrep_ignore_pattern: Optional[str] = None,
 ) -> Tuple[
     RuleMatchMap,
     List[SemgrepError],
@@ -358,6 +359,7 @@ def run_rules(
         disable_secrets_validation,
         target_mode_config,
         resolved_subprojects,
+        opengrep_ignore_pattern=opengrep_ignore_pattern,
     )
 
     if join_rules:
@@ -539,6 +541,7 @@ def run_scan(
     dump_n_rule_partitions: Optional[int] = None,
     dump_rule_partitions_dir: Optional[Path] = None,
     prioritize_dependency_graph_generation: bool = False,
+    opengrep_ignore_pattern: Optional[str] = None,
 ) -> Tuple[
     RuleMatchMap,
     List[SemgrepError],
@@ -814,6 +817,7 @@ def run_scan(
         with_supply_chain=with_supply_chain,
         allow_local_builds=allow_local_builds,
         prioritize_dependency_graph_generation=prioritize_dependency_graph_generation,
+        opengrep_ignore_pattern=opengrep_ignore_pattern,
     )
     profiler.save("core_time", core_start_time)
     semgrep_errors: List[SemgrepError] = config_errors + scan_errors

@@ -785,6 +785,7 @@ class CoreRunner:
         disable_secrets_validation: bool,
         target_mode_config: TargetModeConfig,
         sca_subprojects: Dict[out.Ecosystem, List[ResolvedSubproject]],
+        opengrep_ignore_pattern: Optional[str],
     ) -> Tuple[RuleMatchMap, List[SemgrepError], OutputExtra,]:
         state = get_state()
         logger.debug(f"Passing whole rules directly to semgrep_core")
@@ -1014,6 +1015,9 @@ Could not find the semgrep-core executable. Your Semgrep install is likely corru
                 print(" ".join(printed_cmd))
                 sys.exit(0)
 
+            if opengrep_ignore_pattern:
+                cmd += ["-ignore_pattern", opengrep_ignore_pattern]
+
             runner = StreamingSemgrepCore(
                 cmd,
                 total=total,
@@ -1093,6 +1097,7 @@ Could not find the semgrep-core executable. Your Semgrep install is likely corru
         disable_secrets_validation: bool,
         target_mode_config: TargetModeConfig,
         sca_subprojects: Dict[out.Ecosystem, List[ResolvedSubproject]],
+        opengrep_ignore_pattern: Optional[str] = None,
     ) -> Tuple[RuleMatchMap, List[SemgrepError], OutputExtra,]:
         """
         Sometimes we may run into synchronicity issues with the latest DeepSemgrep binary.
@@ -1115,6 +1120,7 @@ Could not find the semgrep-core executable. Your Semgrep install is likely corru
                 disable_secrets_validation,
                 target_mode_config,
                 sca_subprojects,
+                opengrep_ignore_pattern=opengrep_ignore_pattern,
             )
         except SemgrepError as e:
             # Handle Semgrep errors normally
@@ -1155,6 +1161,7 @@ Exception raised: `{e}`
         disable_secrets_validation: bool,
         target_mode_config: TargetModeConfig,
         sca_subprojects: Dict[out.Ecosystem, List[ResolvedSubproject]],
+        opengrep_ignore_pattern: Optional[str] = None,
     ) -> Tuple[RuleMatchMap, List[SemgrepError], OutputExtra,]:
         """
         Takes in rules and targets and returns object with findings
@@ -1177,6 +1184,7 @@ Exception raised: `{e}`
             disable_secrets_validation,
             target_mode_config,
             sca_subprojects,
+            opengrep_ignore_pattern=opengrep_ignore_pattern,
         )
 
         logger.debug(
