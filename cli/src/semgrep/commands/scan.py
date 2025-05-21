@@ -1,6 +1,5 @@
 # THIS FILE IS DEPRECATED! DO NOT MODIFY FLAGS HERE! INSTEAD MODIFY Scan_CLI.ml
 import os
-import re
 import tempfile
 from itertools import chain
 from pathlib import Path
@@ -19,7 +18,6 @@ from click_option_group import optgroup
 
 import semgrep.app.auth as auth
 import semgrep.config_resolver
-import semgrep.constants as constants
 import semgrep.run_scan
 import semgrep.test
 from semgrep import __VERSION__
@@ -37,12 +35,6 @@ from semgrep.constants import DEFAULT_MAX_LOG_LIST_ENTRIES
 from semgrep.constants import DEFAULT_MAX_TARGET_SIZE
 from semgrep.constants import DEFAULT_TIMEOUT
 from semgrep.constants import OutputFormat
-from semgrep.constants import RULE_ID_RE_STR
-from semgrep.constants import NOSEM_INLINE_RE_STR
-from semgrep.constants import NOSEM_INLINE_RE
-from semgrep.constants import NOSEM_INLINE_COMMENT_RE
-from semgrep.constants import NOSEM_PREVIOUS_LINE_RE
-from semgrep.constants import get_nosem_pattern_choices
 from semgrep.core_runner import CoreRunner
 from semgrep.engine import EngineType
 from semgrep.error import SemgrepError
@@ -392,6 +384,7 @@ _scan_options: List[Callable] = [
     ),
     optgroup.option(
         "--opengrep-ignore-pattern",
+        "opengrep_ignore_pattern",
         help="Set a custom pattern to replace the default 'nosem' and 'nosemgrep' prefixes for comments to be ignored by opengrep. For example, use '--opengrep-ignore-pattern=noopengrep' to make opengrep only recognize lines with 'noopengrep' comments instead of 'nosem' or 'nosemgrep'.",
     ),
 ]
@@ -438,41 +431,6 @@ def scan_options(func: Callable) -> Callable:
     for option in reversed(_scan_options):
         func = option(func)
     return func
-
-
-def update_ignore_pattern(pattern: str) -> None:
-    """
-    Update the ignore pattern used for nosem comments and recompile all related regexes.
-    
-    Args:
-        pattern: The new pattern to use for ignoring lines (replaces nosem/nosemgrep)
-    """
-    # Update the custom ignore pattern in the constants module
-    constants.CUSTOM_IGNORE_PATTERN = pattern
-    
-    # Get the new pattern choice and recompile all regexes
-    pattern_choice = constants.get_nosem_pattern_choices()
-    
-    # Update inline pattern
-    constants.NOSEM_INLINE_RE_STR = f" {pattern_choice}{constants.RULE_ID_RE_STR}"
-    constants.NOSEM_INLINE_RE = re.compile(
-        constants.NOSEM_INLINE_RE_STR, 
-        re.IGNORECASE
-    )
-    
-    # Update inline comment pattern
-    constants.NOSEM_INLINE_COMMENT_RE = re.compile(
-        f"[:#/]+{constants.NOSEM_INLINE_RE_STR}$",
-        re.IGNORECASE
-    )
-    
-    # Update previous line pattern
-    constants.NOSEM_PREVIOUS_LINE_RE = re.compile(
-        f"^[^a-zA-Z0-9]* {pattern_choice}{constants.RULE_ID_RE_STR}",
-        re.IGNORECASE
-    )
-    
-    logger.debug(f"Using custom ignore pattern: {pattern}")
 
 
 # Those are the scan-only options (not reused in ci.py)
@@ -719,10 +677,6 @@ def scan(
     # Note this must be after the call to `terminal.configure` so that verbosity is respected
     possibly_notify_user()
 
-    # Set the custom ignore pattern if specified
-    if opengrep_ignore_pattern:
-        update_ignore_pattern(opengrep_ignore_pattern)
-
     # change cwd if using docker
     if not targets:
         semgrep.config_resolver.adjust_for_docker()
@@ -902,6 +856,7 @@ def scan(
                     path_sensitive=path_sensitive,
                     capture_core_stderr=capture_core_stderr,
                     allow_local_builds=allow_local_builds,
+                    opengrep_ignore_pattern=opengrep_ignore_pattern,
                 )
             except SemgrepError as e:
                 output_handler.handle_semgrep_errors([e])
