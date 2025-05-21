@@ -102,7 +102,7 @@ let run_semgrep ?(targets : Fpath.t list option) ?rules ?git_ref
               (* TODO: maybe be smarter about this?*)
               (* if we've already called this function then we don't want extra *)
               (* languages as the parsers are already registered. This is a bit *)
-              (* of a hack*)
+              (* of a hack *)
               let extra_languages = Parsing_plugin.Apex.is_available () in
               (* For now, we're going to just hard-code it at a whole scan, and
                  using the intrafile pro engine.
