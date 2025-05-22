@@ -203,7 +203,7 @@ let rec lookup ?(class_attr = false) s xxs =
   | [] -> None
   | xs :: xxs -> (
       match List.assoc_opt s xs with
-      | None -> lookup s xxs
+      | None -> lookup ~class_attr s xxs
       | Some res when class_attr -> (
           match res.entname with
           | EnclosedVar, _ -> Some res
@@ -219,7 +219,7 @@ let rec lookup ?(class_attr = false) s xxs =
            *         }
            *     }
            *)
-          | __else__ -> lookup s xxs)
+          | __else__ -> lookup ~class_attr s xxs)
       | Some res -> Some res)
 
 (* for Python, PHP *)
