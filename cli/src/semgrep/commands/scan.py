@@ -121,6 +121,18 @@ _scan_options: List[Callable] = [
         multiple=True,
         default=[],
     ),
+    # When this flag is added, the bypass that happens by default for files is disabled,
+    # and as a result even targets that are files are processed with the include/exclude
+    # filters.
+    # Note that this flag is sent back by the OCaml CLI, when falling back to python.
+    optgroup.option(
+        "--force-exclude",
+        "bypass_includes_excludes_for_files",
+        is_flag=True,
+        flag_value=False,
+        default=True,
+        help="Apply include and exclude filters also to TARGETs that are files, not only folders.",
+    ),
     optgroup.option(
         "--max-target-bytes",
         type=bytesize.ByteSizeType(),
@@ -583,6 +595,7 @@ def scan(
     path_sensitive: bool,
     allow_local_builds: bool,
     opengrep_ignore_pattern: Optional[str],
+    bypass_includes_excludes_for_files: bool = True
 ) -> Optional[Tuple[RuleMatchMap, List[SemgrepError], List[Rule], Set[Path]]]:
     if version:
         print(__VERSION__)
@@ -857,6 +870,7 @@ def scan(
                     capture_core_stderr=capture_core_stderr,
                     allow_local_builds=allow_local_builds,
                     opengrep_ignore_pattern=opengrep_ignore_pattern,
+                    bypass_includes_excludes_for_files=bypass_includes_excludes_for_files,
                 )
             except SemgrepError as e:
                 output_handler.handle_semgrep_errors([e])

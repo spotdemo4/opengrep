@@ -298,6 +298,7 @@ def print_scan_status(
     # TODO: Use an array of semgrep_output_v1.Product instead of booleans flags for secrets, code, and supply chain
     with_code_rules: bool = True,
     with_supply_chain: bool = False,
+    bypass_includes_excludes_for_files: bool = True
 ) -> List[Plan]:
     """
     Prints the scan status and returns the plans
@@ -328,6 +329,7 @@ def print_scan_status(
             out.SAST()
         ),  # code-smell since secrets and sast are within the same plan
         sca_subprojects=sca_subprojects,
+        bypass_includes_excludes_for_files=bypass_includes_excludes_for_files,
     )
 
     sca_plan = CoreRunner.plan_core_run(
@@ -343,6 +345,7 @@ def print_scan_status(
         target_manager,
         product=out.Product(out.SCA()),
         sca_subprojects=sca_subprojects,
+        bypass_includes_excludes_for_files=bypass_includes_excludes_for_files,
     )
 
     plans = [sast_plan, sca_plan]
