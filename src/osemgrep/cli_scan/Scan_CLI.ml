@@ -1579,7 +1579,7 @@ let man : Cmdliner.Manpage.block list =
     `P "To get started quickly, run";
     `Pre "opengrep --config auto .";
     `P
-      "This will automatically fetch rules for your project from the Opengrep \
+      "This will automatically fetch rules for your project from the Semgrep \
        Registry.";
     `P "For more information about Opengrep, go to https://opengrep.dev.";
   ]

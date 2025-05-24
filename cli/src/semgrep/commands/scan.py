@@ -667,7 +667,7 @@ def scan(
         logger.warning(
             with_color(
                 Colors.yellow,
-                "Paths that match both --include and --exclude will be skipped by Semgrep.",
+                "Paths that match both --include and --exclude will be skipped by Opengrep.",
             )
         )
 
