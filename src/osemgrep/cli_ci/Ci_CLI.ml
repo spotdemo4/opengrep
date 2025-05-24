@@ -256,6 +256,7 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
         force_novcs_project = false;
         exclude = exclude_;
         include_;
+        apply_includes_excludes_to_file_targets = false; (* no explicit targets anyway *)
         baseline_commit;
         diff_depth;
         max_target_bytes;

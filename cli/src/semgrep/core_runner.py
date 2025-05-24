@@ -714,6 +714,7 @@ class CoreRunner:
         *,
         all_targets: Optional[Set[Path]] = None,
         product: Optional[out.Product] = None,
+        bypass_includes_excludes_for_files: bool = True
     ) -> Plan:
         """
         Gets the targets to run for each rule
@@ -739,7 +740,8 @@ class CoreRunner:
             for language in rule.languages:
                 targets = list(
                     target_manager.get_files_for_rule(
-                        language, rule.includes, rule.excludes, rule.id, rule.product
+                        language, rule.includes, rule.excludes, rule.id, rule.product,
+                        bypass_includes_excludes_for_files=bypass_includes_excludes_for_files,
                     )
                 )
                 any_target = any_target or len(targets) > 0
@@ -786,6 +788,7 @@ class CoreRunner:
         target_mode_config: TargetModeConfig,
         sca_subprojects: Dict[out.Ecosystem, List[ResolvedSubproject]],
         opengrep_ignore_pattern: Optional[str],
+        bypass_includes_excludes_for_files: bool = True
     ) -> Tuple[RuleMatchMap, List[SemgrepError], OutputExtra,]:
         state = get_state()
         logger.debug(f"Passing whole rules directly to semgrep_core")
@@ -891,6 +894,7 @@ Could not find the semgrep-core executable. Your Semgrep install is likely corru
                     evolve(target_manager, baseline_handler=None),
                     all_targets=all_targets,
                     sca_subprojects=sca_subprojects,
+                    bypass_includes_excludes_for_files=bypass_includes_excludes_for_files
                 )
 
             else:
@@ -899,6 +903,7 @@ Could not find the semgrep-core executable. Your Semgrep install is likely corru
                     target_manager,
                     all_targets=all_targets,
                     sca_subprojects=sca_subprojects,
+                    bypass_includes_excludes_for_files=bypass_includes_excludes_for_files
                 )
 
             plan.record_metrics()
@@ -1098,6 +1103,7 @@ Could not find the semgrep-core executable. Your Semgrep install is likely corru
         target_mode_config: TargetModeConfig,
         sca_subprojects: Dict[out.Ecosystem, List[ResolvedSubproject]],
         opengrep_ignore_pattern: Optional[str] = None,
+        bypass_includes_excludes_for_files: bool = True
     ) -> Tuple[RuleMatchMap, List[SemgrepError], OutputExtra,]:
         """
         Sometimes we may run into synchronicity issues with the latest DeepSemgrep binary.
@@ -1121,6 +1127,7 @@ Could not find the semgrep-core executable. Your Semgrep install is likely corru
                 target_mode_config,
                 sca_subprojects,
                 opengrep_ignore_pattern=opengrep_ignore_pattern,
+                bypass_includes_excludes_for_files=bypass_includes_excludes_for_files,
             )
         except SemgrepError as e:
             # Handle Semgrep errors normally
@@ -1162,6 +1169,7 @@ Exception raised: `{e}`
         target_mode_config: TargetModeConfig,
         sca_subprojects: Dict[out.Ecosystem, List[ResolvedSubproject]],
         opengrep_ignore_pattern: Optional[str] = None,
+        bypass_includes_excludes_for_files: bool = True
     ) -> Tuple[RuleMatchMap, List[SemgrepError], OutputExtra,]:
         """
         Takes in rules and targets and returns object with findings
@@ -1185,6 +1193,7 @@ Exception raised: `{e}`
             target_mode_config,
             sca_subprojects,
             opengrep_ignore_pattern=opengrep_ignore_pattern,
+            bypass_includes_excludes_for_files=bypass_includes_excludes_for_files,
         )
 
         logger.debug(

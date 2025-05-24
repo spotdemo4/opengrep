@@ -198,6 +198,11 @@ type conf = {
       use the '--exclude' and '--include' names).
   *)
   include_ : string list option;
+  (* This can be set to [true] in order for files passed as targets to
+   * be filtered according to the exclude / include filters; by default
+   * this filtering only happens on files found under directories passed
+   * as scan targets. See #264. *)
+  apply_includes_excludes_to_file_targets: bool;
   max_target_bytes : int;
   respect_gitignore : bool;
   respect_semgrepignore_files : bool;
@@ -225,6 +230,7 @@ let default_conf : conf =
     force_novcs_project = false;
     exclude = [];
     include_ = None;
+    apply_includes_excludes_to_file_targets = false; (* default behaviour *)
     (* Must be kept in sync w/ pysemgrep.
        coupling: cli/src/semgrep/constants.py DEFAULT_MAX_TARGET_SIZE
     *)
@@ -757,7 +763,11 @@ let get_targets_from_filesystem conf (project_roots : Project.roots) =
       let selected2, skipped2 =
         match (Unix.stat !!(scan_root.fpath)).st_kind with
         (* TOPORT? make sure has right permissions (readable) *)
-        | S_REG -> ([ scan_root ], [])
+        | S_REG ->
+          if not conf.apply_includes_excludes_to_file_targets then
+            ([ scan_root ], [])
+          else
+            walk_skip_and_collect ign include_filter scan_root
         | S_DIR -> walk_skip_and_collect ign include_filter scan_root
         | S_LNK ->
             (* already dereferenced by Unix.stat *)
@@ -780,14 +790,19 @@ let get_targets_from_filesystem conf (project_roots : Project.roots) =
    --exclude, ...).
    If they already occur in the list of skipped targets, they will be removed.
 *)
-let force_select_scanning_roots (project_roots : Project.roots)
+let force_select_scanning_roots
+    ?(apply_includes_excludes_to_files = false)
+    (project_roots : Project.roots)
     (selected_targets : Fppath_set.t)
     (skipped_targets : Out.skipped_target list) :
     Fppath_set.t * Out.skipped_target list =
   let regular_files_to_add =
-    project_roots.scanning_roots
-    |> List.filter (fun (sc_root : Fppath.t) ->
-           UFile.is_reg ~follow_symlinks:true sc_root.fpath)
+    if not apply_includes_excludes_to_files then
+      (* default behaviour: *)
+      project_roots.scanning_roots
+      |> List.filter (fun (sc_root : Fppath.t) ->
+          UFile.is_reg ~follow_symlinks:true sc_root.fpath)
+    else []
   in
   let skipped_targets =
     let regular_files_to_add =
@@ -848,7 +863,11 @@ let get_targets_for_project conf (project_roots : Project.roots) =
         get_targets_from_filesystem conf project_roots
   in
   let selected_targets, skipped_targets =
-    force_select_scanning_roots project_roots selected_targets skipped_targets
+    force_select_scanning_roots
+      ~apply_includes_excludes_to_files:conf.apply_includes_excludes_to_file_targets
+      project_roots
+      selected_targets
+      skipped_targets
   in
   (selected_targets, skipped_targets)
 

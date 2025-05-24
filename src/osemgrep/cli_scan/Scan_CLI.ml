@@ -182,6 +182,15 @@ https://git-scm.com/docs/gitignore#_pattern_format
   in
   Arg.value (Arg.opt_all Arg.string [] info)
 
+let o_apply_includes_excludes_to_files : bool Term.t =
+  let info =
+    Arg.info [ "force-exclude" ]
+      ~doc:
+        {|Apply the --include and --exclude options to files specified on the
+command line. By default, these options are only applied to files found in the directory trees scanned|}
+  in
+  Arg.value (Arg.flag info)
+
 let o_include : string list Term.t =
   let info =
     Arg.info [ "include" ] ~docv:"PATTERN"
@@ -1302,8 +1311,8 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
   (* !The parameters must be in alphabetic orders to match the order
      of the corresponding '$ o_xx $' further below!
   *)
-  let combine allow_local_builds allow_untrusted_validators autofix
-      baseline_commit common config dataflow_traces diff_depth dryrun dump_ast
+  let combine allow_local_builds allow_untrusted_validators apply_includes_excludes_to_files
+      autofix baseline_commit common config dataflow_traces diff_depth dryrun dump_ast
       dump_command_for_core dump_engine_path emacs emacs_outputs error exclude_
       exclude_minified_files exclude_rule_ids files_with_matches force_color
       gitlab_sast gitlab_sast_outputs gitlab_secrets gitlab_secrets_outputs
@@ -1426,6 +1435,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
         force_novcs_project;
         exclude = exclude_;
         include_;
+        apply_includes_excludes_to_file_targets = apply_includes_excludes_to_files;
         baseline_commit;
         diff_depth;
         max_target_bytes;
@@ -1499,7 +1509,8 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       else if x_ls then (true, Ls_subcommand.default_format)
       else (false, Ls_subcommand.default_format)
     in
-    let matching_conf = {Match_patterns.track_enclosing_context = output_enclosing_context} in
+    let matching_conf = {Match_patterns.track_enclosing_context = output_enclosing_context}
+    in
     {
       rules_source;
       target_roots;
@@ -1534,6 +1545,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
     (* !the o_xxx must be in alphabetic orders to match the parameters of
      * combine above! *)
     const combine $ o_allow_local_builds $ o_allow_untrusted_validators
+    $ o_apply_includes_excludes_to_files
     $ o_autofix $ o_baseline_commit $ CLI_common.o_common $ o_config
     $ o_dataflow_traces $ o_diff_depth $ o_dryrun $ o_dump_ast
     $ o_dump_command_for_core $ o_dump_engine_path $ o_emacs $ o_emacs_outputs
@@ -1567,7 +1579,7 @@ let man : Cmdliner.Manpage.block list =
     `P "To get started quickly, run";
     `Pre "opengrep --config auto .";
     `P
-      "This will automatically fetch rules for your project from the Opengrep \
+      "This will automatically fetch rules for your project from the Semgrep \
        Registry.";
     `P "For more information about Opengrep, go to https://opengrep.dev.";
   ]

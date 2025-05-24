@@ -271,7 +271,8 @@ def ci(
     dump_rule_partitions_dir: Optional[Path],
     partial_config: Optional[Path],
     partial_output: Optional[Path],
-    opengrep_ignore_pattern: Optional[str]
+    opengrep_ignore_pattern: Optional[str],
+    bypass_includes_excludes_for_files: bool = True
 ) -> None:
     state = get_state()
 
@@ -291,6 +292,14 @@ def ci(
         logger.info(
             "WARNING: --opengrep-ignore-pattern is set but will be ignored: "
             "all results are returned by the ci command"
+        )
+
+    # Maybe move this and the above to the scan-only params, since they are not
+    # needed here.
+    if bypass_includes_excludes_for_files:
+        logger.info(
+            "WARNING: --force-exclude is set but will be ignored: "
+            "no explicit targets are passed to the ci command"
         )
 
     state.metrics.configure(metrics)

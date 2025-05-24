@@ -34,6 +34,7 @@ type conf = {
    * Those are flags copied from grep (and ripgrep).
    *)
   include_ : string list option;
+  apply_includes_excludes_to_file_targets: bool;
   max_target_bytes : int;
   (* Whether to respect what is specified in the '.gitignore' files
      found in the project and extended by optional '.semgrepignore' files.

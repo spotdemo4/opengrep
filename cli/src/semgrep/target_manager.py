@@ -755,6 +755,7 @@ class TargetManager:
         lang: Union[None, Language, Literal["dependency_source_files"]],
         product: out.Product,
         ignore_baseline_handler: bool = False,
+        bypass_includes_excludes_for_files: bool = True
     ) -> FilteredFiles:
         """
         Return all files that are decendants of any directory in TARGET that have
@@ -822,10 +823,12 @@ class TargetManager:
         explicit_files = frozenset(
             t.path for t in self.targets if not t.path.is_dir() and t.path.is_file()
         )
-        explicit_files_for_lang = self.filter_by_language(
-            lang if isinstance(lang, Language) else None, candidates=explicit_files
-        )
-        kept_files |= explicit_files_for_lang.kept
+        if bypass_includes_excludes_for_files:
+            # This is the default behaviour of Opengrep, Semgrep:
+            explicit_files_for_lang = self.filter_by_language(
+                lang if isinstance(lang, Language) else None, candidates=explicit_files
+            )
+            kept_files |= explicit_files_for_lang.kept
         if self.allow_unknown_extensions and lang != "dependency_source_files":
             # add unknown extensions back in for languages. Don't do so when searching
             # for dependency source information
@@ -843,6 +846,7 @@ class TargetManager:
         rule_excludes: Sequence[str],
         rule_id: str,
         rule_product: out.Product,
+        bypass_includes_excludes_for_files: bool = True
     ) -> FrozenSet[Path]:
         """
         Returns list of files that should be analyzed for a LANG
@@ -855,7 +859,10 @@ class TargetManager:
         in TARGET will bypass this global INCLUDE/EXCLUDE filter. The local INCLUDE/EXCLUDE
         filter is then applied.
         """
-        paths = self.get_files_for_language(lang, rule_product)
+        paths = self.get_files_for_language(
+            lang,
+            rule_product,
+            bypass_includes_excludes_for_files=bypass_includes_excludes_for_files)
 
         if self.respect_rule_paths:
             paths = self.filter_includes(rule_includes, candidates=paths.kept)
