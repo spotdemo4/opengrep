@@ -37,8 +37,8 @@ module type Processor = sig
 end
 
 (* quite similar to Core_scan.core_scan_func *)
-type 'config core_scan_func_with_rules =
-  'config ->
+type core_scan_func_with_rules =
+  Core_scan_config.t ->
   Rule_error.rules_and_invalid * float (* rule parse time *) ->
   Core_result.t
 
@@ -79,14 +79,8 @@ module Nosemgrep_processor : Processor = struct
 
   let post_process (config : Core_scan_config.t) () (res : Core_result.t) =
     Logs_.with_debug_trace ~__FUNCTION__ (fun () ->
-        (* Extract engine_config from config if available, otherwise use default *)
-        let engine_config = 
-          match config.engine_config with
-          | Some config -> config
-          | None -> Engine_config.default
-        in
         let processed_matches_with_ignores, errors =
-          Nosemgrep.produce_ignored ~config:engine_config res.processed_matches
+          Nosemgrep.produce_ignored ~config:config.engine_config res.processed_matches
         in
         let errors =
           if config.strict then errors @ res.errors else res.errors
@@ -140,15 +134,15 @@ let push_processor (module P : Processor) =
 (* Written with scan_with_rules abstracted to allow reuse across
    semgrep and semgrep-pro
 *)
-let call_with_pre_and_post_processor fconfig
-    (scan_with_rules : 'config core_scan_func_with_rules) :
-    'config core_scan_func_with_rules =
+let call_with_pre_and_post_processor
+    (scan_with_rules : core_scan_func_with_rules) :
+    core_scan_func_with_rules =
  fun config ((rules, rule_errors), rules_parse_time) ->
   let module Processor = (val !hook_processor) in
   let rules', state =
     Logs_.with_debug_trace ~__FUNCTION__:"Pre_post_core_scan.pre_process"
       (fun () ->
-        try Processor.pre_process (fconfig config) rules with
+        try Processor.pre_process config rules with
         | (Time_limit.Timeout _ | Common.UnixExit _) as e ->
             Exception.catch_and_reraise e
         | exn ->
@@ -162,10 +156,11 @@ let call_with_pre_and_post_processor fconfig
   let (res : Core_result.t) =
     scan_with_rules config ((rules', rule_errors), rules_parse_time)
   in
+
   let (res : Core_result.t) =
     Logs_.with_debug_trace ~__FUNCTION__:"Pre_post_core_scan.post_process"
       (fun () ->
-        try Processor.post_process (fconfig config) state res with
+        try Processor.post_process config state res with
         | (Time_limit.Timeout _ | Common.UnixExit _) as e ->
             Exception.catch_and_reraise e
         | exn ->

@@ -51,6 +51,7 @@ type conf = {
   output : string option;
   output_conf : Output.conf;
   incremental_output : bool;
+  incremental_output_postprocess : bool;
   (* Networking options *)
   metrics : Metrics_.config;
   version_check : bool;
@@ -101,6 +102,7 @@ let default : conf =
     output = None;
     output_conf = Output.default;
     incremental_output = false;
+    incremental_output_postprocess = false;
     rewrite_rule_ids = true;
     matching_conf = Match_patterns.default_matching_conf;
     (* will send metrics only if the user uses the registry or the app *)
@@ -540,6 +542,13 @@ let o_incremental_output : bool Term.t =
   let info =
     Arg.info [ "incremental-output" ]
       ~doc:{|Output results incrementally. REQUIRES --experimental|}
+  in
+  Arg.value (Arg.flag info)
+
+let o_incremental_output_postprocess : bool Term.t =
+  let info =
+    Arg.info [ "incremental-output-postprocess" ]
+      ~doc:{|Apply post-processing in incremental outputs. REQUIRES --incremental-output|}
   in
   Arg.value (Arg.flag info)
 
@@ -1316,8 +1325,8 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       dump_command_for_core dump_engine_path emacs emacs_outputs error exclude_
       exclude_minified_files exclude_rule_ids files_with_matches force_color
       gitlab_sast gitlab_sast_outputs gitlab_secrets gitlab_secrets_outputs
-      _historical_secrets include_ incremental_output json json_outputs
-      junit_xml junit_xml_outputs lang matching_explanations max_chars_per_line
+      _historical_secrets include_ incremental_output incremental_output_postprocess
+      json json_outputs junit_xml junit_xml_outputs lang matching_explanations max_chars_per_line
       max_lines_per_finding max_log_list_entries max_memory_mb max_target_bytes
       metrics num_jobs no_secrets_validation nosem opengrep_ignore_pattern optimizations oss output output_enclosing_context
       pattern pro project_root pro_intrafile pro_lang pro_path_sensitive remote
@@ -1419,7 +1428,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
         strict;
         time_flag;
         matching_explanations;
-        engine_config; (* Pass the engine configuration to the core runner *)
+        engine_config;
       }
     in
     let include_ =
@@ -1524,6 +1533,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       output;
       output_conf;
       incremental_output;
+      incremental_output_postprocess;
       engine_type;
       rewrite_rule_ids;
       matching_conf;
@@ -1552,8 +1562,8 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
     $ o_error $ o_exclude $ o_exclude_minified_files $ o_exclude_rule_ids
     $ o_files_with_matches $ o_force_color $ o_gitlab_sast
     $ o_gitlab_sast_outputs $ o_gitlab_secrets $ o_gitlab_secrets_outputs
-    $ o_historical_secrets $ o_include $ o_incremental_output $ o_json
-    $ o_json_outputs $ o_junit_xml $ o_junit_xml_outputs $ o_lang
+    $ o_historical_secrets $ o_include $ o_incremental_output $ o_incremental_output_postprocess
+    $ o_json $ o_json_outputs $ o_junit_xml $ o_junit_xml_outputs $ o_lang
     $ o_matching_explanations $ o_max_chars_per_line $ o_max_lines_per_finding
     $ o_max_log_list_entries $ o_max_memory_mb $ o_max_target_bytes $ o_metrics
     $ o_num_jobs $ o_no_secrets_validation $ o_nosem $ o_opengrep_ignore_pattern $ o_optimizations $ o_oss

@@ -61,6 +61,15 @@ def foo(a, b):
     return a + b == a + b
 |}
 
+let py_content_nosem = {|
+def foo(a, b):
+    # nosem
+    return a + b == a + b
+
+def bar (a, b):
+    return a + b == a + b
+|}
+
 let java_arg_paren_yaml_content =
   {|
 rules:
@@ -197,6 +206,45 @@ let test_basic_output_ignore_pattern (caps : Scan_subcommand.caps) () =
           in
           Exit_code.Check.ok exit_code))
 
+let test_basic_output_nosem_incremental (caps : Scan_subcommand.caps) () =
+  with_env_app_token (fun () ->
+      let repo_files =
+        [
+          F.File ("rules.yml", eqeq_basic_content);
+          F.File ("stupid.py", py_content_nosem);
+        ]
+      in
+      Testutil_git.with_git_repo ~verbose:true repo_files (fun _cwd ->
+          let exit_code =
+            without_settings (fun () ->
+                Scan_subcommand.main caps
+                  [|
+                    "opengrep-scan"; "--experimental"; "--config"; "rules.yml";
+                    "--incremental-output"; "--incremental-output-postprocess";
+                    "--json"
+                  |])
+          in
+          Exit_code.Check.ok exit_code))
+
+let test_basic_output_nosem_incremental_disabled (caps : Scan_subcommand.caps) () =
+  with_env_app_token (fun () ->
+      let repo_files =
+        [
+          F.File ("rules.yml", eqeq_basic_content);
+          F.File ("stupid.py", py_content_nosem);
+        ]
+      in
+      Testutil_git.with_git_repo ~verbose:true repo_files (fun _cwd ->
+          let exit_code =
+            without_settings (fun () ->
+                Scan_subcommand.main caps
+                  [|
+                    "opengrep-scan"; "--experimental"; "--config"; "rules.yml";
+                    "--incremental-output"; "--incremental-output-postprocess";
+                    "--disable-nosem"; "--json"
+                  |])
+          in
+          Exit_code.Check.ok exit_code))
 
 (* This test fails for me (Martin) when run alone with e.g.
 
@@ -261,6 +309,12 @@ let tests (caps : < Scan_subcommand.caps >) =
         (test_basic_output_enclosing_context caps);
       t "basic output with --opengrep-ignore-pattern" ~checked_output:(Testo.stdxxx ()) ~normalize
         (test_basic_output_ignore_pattern caps);
+      t "incrememntal output with --incremental-output-postprocess"
+        ~checked_output:(Testo.stdxxx ()) ~normalize
+        (test_basic_output_nosem_incremental caps);
+      t "incrememntal output with --incremental-output-postprocess and --disable-nosem"
+        ~checked_output:(Testo.stdxxx ()) ~normalize
+        (test_basic_output_nosem_incremental_disabled caps);
       t "basic verbose output"
         ~skipped:"captured output depends on which tests run before it"
         ~checked_output:(Testo.stdxxx ()) ~normalize

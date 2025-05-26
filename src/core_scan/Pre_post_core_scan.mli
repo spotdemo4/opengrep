@@ -22,8 +22,8 @@ module No_Op_Processor : Processor
 val push_processor : (module Processor) -> unit
 
 (* quite similar to Core_scan.core_scan_func *)
-type 'config core_scan_func_with_rules =
-  'config ->
+type core_scan_func_with_rules =
+  Core_scan_config.t ->
   Rule_error.rules_and_invalid * float (* rule parse time *) ->
   Core_result.t
 
@@ -32,9 +32,8 @@ type 'config core_scan_func_with_rules =
  * hook_processor
  *)
 val call_with_pre_and_post_processor :
-  ('config -> Core_scan_config.t) ->
-  'config core_scan_func_with_rules ->
-  'config core_scan_func_with_rules
+  core_scan_func_with_rules ->
+  core_scan_func_with_rules
 
 (* Exposed only for testing purposes. These can be used to arbitrarily change
  * the set of pre and post processors. *)

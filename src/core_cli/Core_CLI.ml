@@ -332,7 +332,7 @@ let mk_config () : Core_scan_config.t =
     max_match_per_file = !max_match_per_file;
     ncores = !ncores;
     filter_irrelevant_rules = !filter_irrelevant_rules;
-    engine_config = None;
+    engine_config = Engine_config.default;
     tracing =
       (match (!trace, !trace_endpoint) with
       | true, Some url ->
@@ -868,9 +868,8 @@ let main_exn (caps : Cap.all_caps) (argv : string array) : unit =
                    and a single target file; if you need more complex file \
                    targeting use semgrep"
           in
-          let engine_config = Option.bind !Flag.opengrep_ignore_pattern
-              (fun pat ->
-                Some { Engine_config.custom_ignore_pattern = Some pat })
+          let engine_config =
+            Engine_config.{ custom_ignore_pattern = !Flag.opengrep_ignore_pattern }
           in
           let config = { config with target_source; ncores; engine_config } in
 
