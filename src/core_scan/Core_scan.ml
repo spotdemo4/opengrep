@@ -134,24 +134,6 @@ type target_handler = Target.t -> Core_result.matches_single_file * bool
 (* Helpers *)
 (*****************************************************************************)
 
-let set_matches_to_proprietary_origin_if_needed (xtarget : Xtarget.t)
-    (matches : Core_result.matches_single_file) :
-    Core_result.matches_single_file =
-  (* If our target is a proprietary language, or we've been using the
-   * proprietary engine, then label all the resulting matches with the Pro
-   * engine kind. This can't really be done any later, because we need the
-   * language that we're running on.
-   *
-   * If those hooks are set, it's probably a pretty good indication that
-   * we're using Pro features.
-   *)
-  if
-    Option.is_some !Match_tainting_mode.hook_setup_hook_function_taint_signature
-    || Option.is_some !Dataflow_tainting.hook_function_taint_signature
-    || Xlang.is_proprietary xtarget.xlang
-  then Report_pro_findings.annotate_pro_findings xtarget matches
-  else matches
-
 (*****************************************************************************)
 (* Pysemgrep progress bar *)
 (*****************************************************************************)
@@ -853,7 +835,6 @@ let mk_target_handler (caps : < Cap.time_limit >) (config : Core_scan_config.t)
         (* !!Calling Match_rules!! Calling the matching engine!! *)
         Match_rules.check ~match_hook ~timeout ~dependency_match_table xconf
           rules xtarget
-        |> set_matches_to_proprietary_origin_if_needed xtarget
       in
       (* So we can display matches incrementally in osemgrep!
           * Note that this is run in a child process of Parmap, so
