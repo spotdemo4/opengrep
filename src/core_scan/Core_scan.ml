@@ -837,8 +837,8 @@ let mk_target_handler (caps : < Cap.time_limit >) (config : Core_scan_config.t)
           rules xtarget
       in
       (* So we can display matches incrementally in osemgrep!
-          * Note that this is run in a child process of Parmap, so
-          * the hook should not rely on shared memory.
+       * Note that this is run in one of the domains, so the hook should
+       * not rely on shared memory unless if done in a thread-safe way.
       *)
       config.file_match_hook |> Option.iter (fun hook -> hook file matches);
       print_cli_progress config;
@@ -940,7 +940,7 @@ let scan (caps : < caps ; .. >) (config : Core_scan_config.t) :
        hook any pre or post processing step that needs to look at rules and
        results. *)
     Ok
-      (Pre_post_core_scan.call_with_pre_and_post_processor Fun.id
+      (Pre_post_core_scan.call_with_pre_and_post_processor
          (scan_exn caps) config timed_rules)
   with
   | exn when not !Flag_semgrep.fail_fast ->
