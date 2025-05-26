@@ -77,7 +77,7 @@ type t = {
   (* a.k.a -fast (on by default) *)
   filter_irrelevant_rules : bool;
   (* Engine configuration for various features *)
-  engine_config : Engine_config.t option;
+  engine_config : Engine_config.t;
   (* telemetry *)
   tracing : Tracing.config option;
 }
@@ -119,7 +119,7 @@ let default =
     (* a.k.a -fast, on by default *)
     filter_irrelevant_rules = true;
     (* Engine configuration *)
-    engine_config = None;
+    engine_config = Engine_config.default;
     (* debugging and telemetry flags *)
     tracing = None;
   }

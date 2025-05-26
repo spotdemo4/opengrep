@@ -1419,7 +1419,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
         strict;
         time_flag;
         matching_explanations;
-        engine_config; (* Pass the engine configuration to the core runner *)
+        engine_config;
       }
     in
     let include_ =

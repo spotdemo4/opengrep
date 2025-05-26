@@ -379,7 +379,7 @@ let core_scan_config_of_conf (conf : conf) : Core_scan_config.t =
         target_source = Targets [];
         rule_source = Rules [];
         file_match_hook = None;
-        engine_config = Some engine_config;
+        engine_config = engine_config;
         (* same than in Core_scan_config.default
          * alt: we could use a 'Core_scan_config.default with ...' but better
          * to list all the fields.
