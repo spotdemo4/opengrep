@@ -217,7 +217,7 @@ let output_and_exit_from_fatal_core_errors_exn ~exit_code
 
 (* Note that this hook is run in parallel at the end of processing a file.
  * Using Format.std_formatter in parallel requires some synchronization
- * to avoid having the output of multiple child processes interwinded, hence
+ * to avoid having the output of multiple threads interwinded, hence
  * the use of a mutex below. *)
 let file_match_hook_mutex = Mutex.create ()
 
@@ -229,10 +229,27 @@ let mk_file_match_hook (conf : Scan_CLI.conf) (rules : Rule.rules)
      * get something that Matches_report.pp_text_outputs can operate on
      *)
     let pms : Core_match.t list = match_results.matches in
+    let pps_autofix =
+      if not conf.incremental_output_postprocess then Fun.id
+      else Autofix.produce_autofixes
+    in
+    let pps_nosem =
+      if not (conf.incremental_output_postprocess && conf.core_runner_conf.nosem)
+      then Fun.id
+      else
+        fun pms ->
+          let pms', _err = Nosemgrep.produce_ignored
+              ~config:conf.core_runner_conf.engine_config
+              pms
+          in
+          pms'
+    in
     let core_matches : Out.core_match list =
       pms
-      (* OK, because we don't need the postprocessing to report the matches. *)
       |> List_.map Core_result.mk_processed_match
+      (* Apply postprocessing but only if asked. *)
+      |> pps_autofix
+      |> pps_nosem
       |> Result_.partition Core_json_output.match_to_match
       |> fst |> Core_json_output.dedup_and_sort
     in

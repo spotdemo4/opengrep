@@ -183,8 +183,8 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
       exclude_rule_ids files_with_matches force_color gitlab_sast
       gitlab_sast_outputs gitlab_secrets gitlab_secrets_outputs
       _historical_secrets ignore_semgrepignore_files include_ incremental_output
-      json json_outputs junit_xml junit_xml_outputs matching_explanations
-      max_chars_per_line max_lines_per_finding max_log_list_entries
+      incremental_output_postprocess json json_outputs junit_xml junit_xml_outputs
+      matching_explanations max_chars_per_line max_lines_per_finding max_log_list_entries
       max_memory_mb max_target_bytes metrics num_jobs no_secrets_validation
       nosem optimizations oss output output_enclosing_context pro pro_intrafile pro_lang
       pro_path_sensitive rewrite_rule_ids sarif sarif_outputs
@@ -303,6 +303,7 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
         output;
         output_conf;
         incremental_output;
+        incremental_output_postprocess;
         engine_type;
         rewrite_rule_ids;
         matching_conf;
@@ -331,7 +332,8 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
     $ SC.o_files_with_matches $ SC.o_force_color $ SC.o_gitlab_sast
     $ SC.o_gitlab_sast_outputs $ SC.o_gitlab_secrets
     $ SC.o_gitlab_secrets_outputs $ SC.o_historical_secrets
-    $ SC.o_ignore_semgrepignore_files $ SC.o_include $ SC.o_incremental_output
+    $ SC.o_ignore_semgrepignore_files $ SC.o_include
+    $ SC.o_incremental_output $ SC.o_incremental_output_postprocess
     $ SC.o_json $ SC.o_json_outputs $ SC.o_junit_xml $ SC.o_junit_xml_outputs
     $ SC.o_matching_explanations $ SC.o_max_chars_per_line
     $ SC.o_max_lines_per_finding $ SC.o_max_log_list_entries
