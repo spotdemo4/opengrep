@@ -440,8 +440,6 @@ let mk_core_run_for_osemgrep (core_scan_func : Core_scan.func) : func =
     let rule_errors : Core_error.t list =
       invalid_rules |> List_.map Core_error.error_of_invalid_rule
     in
-    let config : Core_scan_config.t = core_scan_config_of_conf conf in
-    let config = { config with file_match_hook } in
     (* LATER: Martin says there's no fundamental reason to split
        a scanning job by programming language. Several optimizations
        are possible based on target project structure, number and diversity
@@ -468,19 +466,15 @@ let mk_core_run_for_osemgrep (core_scan_func : Core_scan.func) : func =
           (List.length applicable_rules)
           (List.length valid_rules)
           (List.length invalid_rules));
-    let config =
+    let config : Core_scan_config.t =
       {
-        config with
+        (core_scan_config_of_conf conf) with
+        file_match_hook;
         target_source = Targets final_targets;
         rule_source = Rules applicable_rules;
+        matching_conf
       }
     in
-    let config =
-      {
-        config with matching_conf;
-      }
-    in
-
     (* !!!!Finally! this is where we branch to semgrep-core core scan fun!!! *)
     let/ res = core_scan_func config in
     let rules_with_targets =
