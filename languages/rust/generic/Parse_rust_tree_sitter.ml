@@ -1326,6 +1326,16 @@ and map_expression (env : env) (x : CST.expression) =
   | `Member_access_ellips_exp (e, _, dots) ->
       G.DotAccessEllipsis (map_expression env e, token env dots) |> G.e
 
+and adjust_range_of_parenthesized_expr (env : env)
+    (orig : CST.expression_except_range) (e : G.expr) : G.expr =
+  (match orig with
+   | `Paren_exp (v1, _, v3) ->
+       let lloc = Tok.unsafe_loc_of_tok (token env v1) in
+       let rloc = Tok.unsafe_loc_of_tok (token env v3) in
+       e.e_range <- Some (lloc, rloc);
+   | _ -> ());
+  e
+
 and map_expression_except_range (env : env) (x : CST.expression_except_range) =
   (match x with
   | `Un_exp (v1, v2) -> (
@@ -1543,6 +1553,7 @@ and map_expression_except_range (env : env) (x : CST.expression_except_range) =
       let l, fields, r = map_field_initializer_list env v2 in
       G.Constructor (name, (l, fields, r)))
   |> G.e
+  |> adjust_range_of_parenthesized_expr env x
 
 and map_expressions_with_attributes (env : env)
     (opt : CST.anon_opt_rep_attr_item_exp_rep_COMMA_rep_attr_item_exp_3d9e0d4) =
