@@ -723,16 +723,17 @@ and interpolation_alignment_clause (env : env)
   let v2 = expression env v2 in
   v2
 
+and adjust_range_of_parenthesized_expr (env : env)
+    (l : Tree_sitter_run.Token.t) (r : Tree_sitter_run.Token.t) (e : G.expr) : G.expr =
+  let lloc = Tok.unsafe_loc_of_tok (token env l) in
+  let rloc = Tok.unsafe_loc_of_tok (token env r) in
+  e.e_range <- Some (lloc, rloc);
+  e
+
 and parenthesized_expression (env : env)
-    ((_v1, v2, _v3) : CST.parenthesized_expression) =
-  (* Due to ignoring the parentheses, an expression matched
-     by Semgrep which translates to this tree-sitter construct
-     will not encompass the parentheses.
-     It seems this is standard practice though, as we also
-     ignore parentheses in our C, CPP, and Java parsers.
-     Possible TODO:
-  *)
+    ((v1, v2, v3) : CST.parenthesized_expression) =
   non_lvalue_expression env v2
+  |> adjust_range_of_parenthesized_expr env v1 v3
 
 and postfix_unary_expression (env : env) (x : CST.postfix_unary_expression) =
   match x with
