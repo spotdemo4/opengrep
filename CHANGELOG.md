@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.3.0](https://github.com/opengrep/opengrep/releases/tag/v1.3.0) - 27-05-2025
+
+### New features
+
+* New `--force-exclude` flag: apply `--exclude` on file targets by @dimitris-m in #270
+* New `--incremental-output-postprocess` flag: enable post-processing (autofix, nosem) for incremental output by @dimitris-m in #274
+
+### Bug fixes
+
+* Fix autofix in javascript template strings by @dimitris-m in #255
+* Fix: --opengrep-ignore-pattern declared twice in python cli by @maciejpirog in #260
+* Fix opengrep ignore pattern by @dimitris-m in #265
+* Bug: name resolution in blocks by @maciejpirog in #268
+* Adjust ranges of parenthesized expressions in Java by @maciejpirog in #258
+* Fix ranges of parenthesized expressions in C# by @maciejpirog in #271
+* Fix parenthesized expressions in Rust by @maciejpirog in #273
+* Fix ranges of of parenthesized expressions in Kotlin by @maciejpirog in #275
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.2.2...v1.3.0
+
+
 ## [1.2.2](https://github.com/opengrep/opengrep/releases/tag/v1.2.2) - 12-05-2025
 
 ### Bug fixes
