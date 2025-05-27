@@ -505,6 +505,11 @@ class ['self] propagate_basic_visitor lang stats =
                 add_constant_env id (sid, Sym e) env
             | None, _ -> ());
           super#visit_definition (env, ctx) x
+      | entity, ClassDef c ->
+          let x' = entity, ClassDef (H.reorder_fields_in_class_definition c) in
+          !hook_propagate_basic_visitor
+          |> Option.iter (fun v -> v.visit_definition (env, ctx) x');
+          super#visit_definition (env, ctx) x'
       | _ ->
           !hook_propagate_basic_visitor
           |> Option.iter (fun v -> v.visit_definition (env, ctx) x);

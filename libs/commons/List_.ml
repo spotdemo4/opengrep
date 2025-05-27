@@ -279,6 +279,12 @@ let enum x n =
   in
   List.rev (enum_aux [] x n)
 
+let[@tail_mod_cons] rec filter_append p xs ys =
+  match xs with
+  | [] -> ys
+  | (x :: xs') when p x -> x :: filter_append p xs' ys
+  | (_ :: xs') -> filter_append p xs' ys
+
 let exclude p xs = List.filter (fun x -> not (p x)) xs
 
 let span (p : 'a -> bool) xs =

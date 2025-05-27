@@ -87,6 +87,8 @@ val mapi : (int -> 'a -> 'b) -> 'a list -> 'b list
 val flatten : 'a list list -> 'a list
 (** Same as [List.flatten] but tail recursive. *)
 
+val filter_append : ('a -> bool) -> 'a list -> 'a list -> 'a list
+
 (* opposite of List.filter *)
 val exclude : ('a -> bool) -> 'a list -> 'a list
 

@@ -388,6 +388,24 @@ let ctype_of_literal = function
   | G.String _ -> G.Cstr
   | ___else___ -> G.Cany
 
+(* TODO: The order of fields declaration in a class matter only in
+ * some extremely rare cases. Since we need to deal with forward
+ * references, we first process fields, before we touch methods.
+ * It's a super-simple heuristic, a proper two-pass approach is
+ * yet to be implemented. *)
+let reorder_fields_in_class_definition (c : class_definition) : class_definition =
+  let is_def_var d =
+    match d with
+    | F { s = (DefStmt (_, VarDef _)); _ } -> true
+    | _ -> false
+  in
+  let (left_tok, body, right_tok) = c.cbody in
+  let new_body =
+    List_.exclude is_def_var body
+    |> List_.filter_append is_def_var body
+  in
+  {c with cbody = (left_tok, new_body, right_tok)}
+
 (*****************************************************************************)
 (* Abstract position and svalue for comparison *)
 (*****************************************************************************)
