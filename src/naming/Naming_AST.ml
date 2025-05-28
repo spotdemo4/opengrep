@@ -538,10 +538,7 @@ class ['self] resolve_visitor env lang =
 
     method! visit_definition venv x =
       match x with
-      | { attrs; _ }, ClassDef c ->
-          (* todo: we should first process all fields in the class before
-             * processing the methods, as some languages may allow forward ref.
-          *)
+     | { attrs; _ } as entity, ClassDef c ->
           let class_params = params_of_parameters env c.cparams in
           with_new_context InClass env (fun () ->
               let special_class_params =
@@ -553,7 +550,9 @@ class ['self] resolve_visitor env lang =
               in
               (* TODO? Maybe we need a `with_new_class_scope`. For now, abusing `with_new_function_scope`. *)
               with_new_function_scope (special_class_params @ class_params)
-                env.names (fun () -> super#visit_definition venv x))
+                env.names (fun () ->
+                  self#visit_entity venv entity;
+                  self#visit_class_definition venv (H.reorder_fields_in_class_definition c)))
       (* `const x = require('y');` (or var, or let)
        *
        * JS: This is a CommonJS import, popularized before ES6 standardized

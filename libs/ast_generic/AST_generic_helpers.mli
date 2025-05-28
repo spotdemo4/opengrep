@@ -85,6 +85,9 @@ val parameter_to_catch_exn_opt :
 val ctype_of_literal : AST_generic.literal -> AST_generic.const_type
 val opt_to_label_ident : AST_generic.ident option -> AST_generic.label_ident
 
+val reorder_fields_in_class_definition :
+  AST_generic.class_definition -> AST_generic.class_definition
+
 val has_keyword_attr :
   AST_generic.keyword_attribute -> AST_generic.attribute list -> bool
 
