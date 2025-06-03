@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -e
+set -ex
 
 export OPAMROOT=/workspace/_opam
 export DUNE_CACHE_ROOT=/workspace/_dune
