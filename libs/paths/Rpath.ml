@@ -46,9 +46,20 @@ type t = Rpath of Fpath.t [@@unboxed] [@@deriving show, eq]
 (* Main functions *)
 (*****************************************************************************)
 
+let adjust_unc_on_windows (path : string) =
+  (* [Unix.realpath] returns a UNC\ prefixed string when accessing WSL paths from Windows,
+   * and such paths do not work when we pass them to [Sys] functions or when we try to access
+   * the files they map to. So we do this hack and obtain correct \\ prefixed paths in such cases. *)
+  if Sys.win32 && String.starts_with ~prefix:"UNC\\" path then 
+    "\\\\" ^ String.sub path 4 (String.length path - 4)
+  else
+    path
+
+let realpath (path : string) = Unix.realpath path |> adjust_unc_on_windows
+
 let of_string path =
   try
-    let rpath = Unix.realpath path in
+    let rpath = realpath path in
     Ok (Rpath (Fpath.v rpath))
   with
   | Unix.Unix_error (err, _, _) ->

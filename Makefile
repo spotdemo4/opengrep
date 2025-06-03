@@ -324,8 +324,11 @@ install-deps: install-deps-for-semgrep-core
 ALPINE_APK_DEPS_CORE=\
   pkgconf \
   pcre-dev \
+  pcre-static \
   pcre2-dev \
+  pcre2-static \
   gmp-dev \
+  gmp-static \
   libev-dev \
   curl-dev \
   openssl-libs-static \
