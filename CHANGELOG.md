@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.1](https://github.com/opengrep/opengrep/releases/tag/v1.3.1) - 03-06-2025
+
+### Bug fixes
+
+* Adjust paths on windows: ensure that tagets in WSL can be scanned by @dimitris-m in #280
+* Bump alpine image for aarch64 build by @dimitris-m in #281
+
+### Improvements
+
+* Reorder fields in classes for name resolution and constant propagation by @maciejpirog in #277
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.3.0...v1.3.1
+
+
 ## [1.3.0](https://github.com/opengrep/opengrep/releases/tag/v1.3.0) - 27-05-2025
 
 ### New features
