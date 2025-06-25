@@ -28,6 +28,14 @@ module Log = Log_reporting.Log
 (*****************************************************************************)
 (* Helpers *)
 (*****************************************************************************)
+let rec propagate  fn :J.t -> J.t  = function
+  | Object xs -> Object (xs |> List_.map (fun (s, t) -> (s, propagate fn t)))
+  | Array xs -> Array (xs |> List_.map (propagate fn))
+  | String s -> String (fn s)
+  | Int i -> Int i
+  | Bool b -> Bool b
+  | Float f -> Float f
+  | Null -> Null
 
 let range_of_any_opt startp_of_match_range any =
   let empty_range = (startp_of_match_range, startp_of_match_range) in
@@ -309,8 +317,12 @@ let unsafe_match_to_match
       x.taint_trace
   in
   let metavars = x.env |> List_.map (metavars startp) in
+  let replacement_fn st =   Metavar_replacement.interpolate_metavars st
+      (Metavar_replacement.of_bindings x.env) in
+
   let metadata =
-    let* json = x.rule_id.metadata in
+    let* json = x.rule_id.metadata  in
+    let json = json |> (propagate replacement_fn) in
     let rule_metadata = JSON.to_yojson json in
     match x.metadata_override with
     | Some metadata_override ->
