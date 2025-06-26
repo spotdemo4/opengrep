@@ -29,7 +29,6 @@ validate_version() {
     fi
 }
 
-
 main () {
     local VERSION="$1"
 
@@ -104,7 +103,7 @@ main () {
         fi
 
         echo
-        echo "Successfully installed Opengrep binary to ${INST}/opengrep"
+        echo "Successfully installed Opengrep binary at ${INST}/opengrep"
         
         rm -f "${LATEST}" || exit 1
         ln -s "${INST}" "${LATEST}" || exit 1
@@ -113,22 +112,30 @@ main () {
 
     LOCALBIN="${HOME}/.local/bin"
     
-    # only need create the symlink from .local/bin once if not created before
-    # for all subsequent installations, the ./local/bin symlink will still point to the updated symlink (created above)
+    # Only need to create the symlink from .local/bin once if not created before.
+    # For all subsequent installations, the ./local/bin symlink will still point
+    # to the updated symlink (created above).
     if [ -d "${LOCALBIN}" ] && [ -w "${LOCALBIN}" ]; then
         # Only create the symlink if it doesn't already exist
         if [ ! -f "${LOCALBIN}/opengrep" ]; then
             ln -s "${LATEST}/opengrep" "${LOCALBIN}/opengrep"
-            echo "Created symlink from ${LATEST}/opengrep to ${LOCALBIN}/opengrep"
+            echo "Created symlink from ${LOCALBIN}/opengrep to ${LATEST}/opengrep"
         fi
+
         echo
         echo "To launch Opengrep now, type:"
-        echo "opengrep"
-        echo
-        echo "To check Opengrep version, type:"
-        echo "opengrep --version"
+        # Do not assume that ~/.local/bin is in the PATH even if it exists,
+        # as it is not always the case.
+        if echo "$PATH" | tr ':' '\n' | grep -Fxq "$HOME/.local/bin" ; then
+            echo "opengrep"
+        else
+            echo "${LOCALBIN}/opengrep"
+        fi
         echo
     else
+        echo
+        echo "To launch Opengrep now, type:"
+        echo "${LATEST}/opengrep"
         echo
         echo "Hint: Append the following line to your shell profile:"
         echo "export PATH='${LATEST}':\$PATH"
