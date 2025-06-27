@@ -97,6 +97,7 @@ let equivalences_file = ref None
 (* timeout in seconds; 0 or less means no timeout *)
 let timeout = ref Core_scan_config.default.timeout
 let timeout_threshold = ref Core_scan_config.default.timeout_threshold
+let inline_metavariables = ref false
 let max_memory_mb = ref Core_scan_config.default.max_memory_mb (* in MiB *)
 
 (* arbitrary limit *)
@@ -248,7 +249,7 @@ let output_core_results (caps : < Cap.stdout ; Cap.stderr ; Cap.exit >)
       in
       let res =
         Logs_.with_debug_trace ~__FUNCTION__ (fun () ->
-            Core_json_output.core_output_of_matches_and_errors res)
+            Core_json_output.core_output_of_matches_and_errors ~inline:config.inline_metavariables res)
       in
       (*
         Not pretty-printing the json output (Yojson.Safe.prettify)
@@ -317,6 +318,7 @@ let mk_config () : Core_scan_config.t =
       | None -> Targets [] (* will be adjusted later in main_exn() *)
       | Some file -> Target_file file);
     output_format = !output_format;
+    inline_metavariables = !inline_metavariables;
     strict = !strict;
     matching_conf =
       {Match_patterns.track_enclosing_context = !Flag.output_enclosing_context};
@@ -587,6 +589,9 @@ let options caps (actions : unit -> Arg_.cmdline_actions) =
     ( "-json",
       Arg.Unit (fun () -> output_format := Json true),
       " output JSON format" );
+    ( "-inline-metavariables",
+      Arg.Unit (fun () -> inline_metavariables := true),
+      "inline metavaribales in metadata");
     ( "-json_nodots",
       Arg.Unit (fun () -> output_format := Json false),
       " output JSON format but without intermediate dots" );
@@ -801,6 +806,7 @@ let main_exn (caps : Cap.all_caps) (argv : string array) : unit =
     | Some s -> String_.split ~sep:"[ \t]+" s
     | None -> []
   in
+
 
   (* does side effect on many global flags *)
   let args =

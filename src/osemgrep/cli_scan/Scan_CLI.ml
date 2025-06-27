@@ -193,6 +193,15 @@ command line. By default, these options are only applied to files found in the d
   in
   Arg.value (Arg.flag info)
 
+let o_inline_metavariables : bool Term.t =
+  let info =
+    Arg.info ["inline-metavariables"]
+      ~doc:
+        {|Inlines metavarible references in metadata strings the same way it is done in message. 
+          This can be costly so use with care especially if the metadata is very deep.|}
+  in  
+  Arg.value (Arg.flag info)
+
 let o_include : string list Term.t =
   let info =
     Arg.info [ "include" ] ~docv:"PATTERN"
@@ -1329,7 +1338,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
   (* !The parameters must be in alphabetic orders to match the order
      of the corresponding '$ o_xx $' further below!
   *)
-  let combine allow_local_builds allow_untrusted_validators apply_includes_excludes_to_files
+  let combine allow_local_builds allow_untrusted_validators apply_includes_excludes_to_files inline_metavariables
       autofix baseline_commit common config dataflow_traces diff_depth dryrun dump_ast
       dump_command_for_core dump_engine_path emacs emacs_outputs error exclude_
       exclude_minified_files exclude_rule_ids files_with_matches force_color
@@ -1436,6 +1445,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
         nosem;
         strict;
         time_flag;
+        inline_metavariables;
         matching_explanations;
         engine_config;
       }
@@ -1566,6 +1576,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
      * combine above! *)
     const combine $ o_allow_local_builds $ o_allow_untrusted_validators
     $ o_apply_includes_excludes_to_files
+    $ o_inline_metavariables
     $ o_autofix $ o_baseline_commit $ CLI_common.o_common $ o_config
     $ o_dataflow_traces $ o_diff_depth $ o_dryrun $ o_dump_ast
     $ o_dump_command_for_core $ o_dump_engine_path $ o_emacs $ o_emacs_outputs

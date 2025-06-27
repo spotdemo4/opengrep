@@ -24,7 +24,7 @@ let key_not_equal = Alcotest.testable Core_json_output.pp_key ( <> )
 let make_core_result () : Core_result.processed_match =
   let file =
     Fpath.v
-      "/Users/corneliuhoffman/Documents/tests/php/rules/null-coallesce.php"
+      "tests/rules/null-coallesce.php"
   in
   let startloc = Tok.{ str = ""; pos = Pos.make ~line:1 ~column:1 file 0 } in
   let endloc = Tok.{ str = ""; pos = Pos.make ~line:2 ~column:3 file 5 } in
@@ -110,7 +110,7 @@ let make_core_match ?(check_id = "fake-rule-id") ?annotated_rule_id
 let make_json_test () =
   Testo.create "json_test" (fun () ->
       let result = make_core_result () in
-      let modified_result = Core_json_output.match_to_match result in
+      let modified_result = Core_json_output.match_to_match ~inline:true result in
       let json =
         match modified_result with
         | Ok z -> z.extra.metadata
