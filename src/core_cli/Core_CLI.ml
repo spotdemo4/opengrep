@@ -589,7 +589,7 @@ let options caps (actions : unit -> Arg_.cmdline_actions) =
     ( "-json",
       Arg.Unit (fun () -> output_format := Json true),
       " output JSON format" );
-    ( "-inline-metavariables",
+    ( "-inline_metavariables",
       Arg.Unit (fun () -> inline_metavariables := true),
       "inline metavaribales in metadata");
     ( "-json_nodots",
