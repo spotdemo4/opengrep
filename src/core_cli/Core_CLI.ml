@@ -807,7 +807,6 @@ let main_exn (caps : Cap.all_caps) (argv : string array) : unit =
     | None -> []
   in
 
-
   (* does side effect on many global flags *)
   let args =
     Arg_.parse_options

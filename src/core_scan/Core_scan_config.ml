@@ -52,7 +52,7 @@ type t = {
   equivalences_file : Fpath.t option;
   (* output and result tweaking *)
   output_format : output_format;
-  inline_metavariables :bool;
+  inline_metavariables : bool;
   report_time : bool;
   matching_explanations : bool;
   strict : bool;

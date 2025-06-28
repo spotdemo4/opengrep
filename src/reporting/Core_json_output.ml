@@ -28,7 +28,7 @@ module Log = Log_reporting.Log
 (*****************************************************************************)
 (* Helpers *)
 (*****************************************************************************)
-let rec propagate  fn :J.t -> J.t  = function
+let rec propagate fn : J.t -> J.t  = function
   | Object xs -> Object (xs |> List_.map (fun (s, t) -> (s, propagate fn t)))
   | Array xs -> Array (xs |> List_.map (propagate fn))
   | String s -> String (fn s)
@@ -317,12 +317,12 @@ let unsafe_match_to_match ?(inline = false)
       x.taint_trace
   in
   let metavars = x.env |> List_.map (metavars startp) in
-  let replacement_fn st =   Metavar_replacement.interpolate_metavars st
-      (Metavar_replacement.of_bindings x.env) in
-
+  let replacement_fn st =
+    Metavar_replacement.(interpolate_metavars st (of_bindings x.env))
+  in
   let metadata =
-    let* json = x.rule_id.metadata  in
-    let json = if inline  then json |> (propagate replacement_fn) else json in
+    let* json = x.rule_id.metadata in
+    let json = if inline then json |> (propagate replacement_fn) else json in
     let rule_metadata = JSON.to_yojson json in
     match x.metadata_override with
     | Some metadata_override ->
@@ -332,8 +332,7 @@ let unsafe_match_to_match ?(inline = false)
   (* message where the metavars have been interpolated *)
   (* TODO(secrets): apply masking logic here *)
   let message =
-    Metavar_replacement.interpolate_metavars x.rule_id.message
-      (Metavar_replacement.of_bindings x.env)
+    Metavar_replacement.(interpolate_metavars x.rule_id.message (of_bindings x.env))
   in
   let enclosing_context =
     x.enclosure |>
@@ -570,7 +569,7 @@ let profiling_to_profiling (profiling_data : Core_profiling.t) : Out.profile =
 (* Final semgrep-core output *)
 (*****************************************************************************)
 
-let core_output_of_matches_and_errors ?(inline = false )(res : Core_result.t) : Out.core_output =
+let core_output_of_matches_and_errors ?(inline = false) (res : Core_result.t) : Out.core_output =
   let matches, new_errs =
     Result_.partition (match_to_match ~inline) res.processed_matches
   in

@@ -238,7 +238,7 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
         max_memory_mb;
         dataflow_traces;
         nosem;
-       (* TODO: default value in semgrep ci? *)
+        (* TODO: default value in semgrep ci? *)
         strict = false;
         time_flag = false;
         inline_metavariables;
@@ -327,9 +327,9 @@ let scan_subset_cmdline_term : Scan_CLI.conf Term.t =
     (* !the o_xxx must be in alphabetic orders to match the parameters of
      * combine above! *)
     const combine $ SC.o_allow_local_builds $ SC.o_allow_untrusted_validators
-    $ SC.o_autofix $ SC.o_inline_metavariables  $ SC.o_baseline_commit $ CLI_common.o_common $ o_config
-    $ SC.o_dataflow_traces $ SC.o_diff_depth $ SC.o_dryrun
-    $ SC.o_dump_command_for_core $ SC.o_emacs $ SC.o_emacs_outputs
+    $ SC.o_autofix $ SC.o_inline_metavariables  $ SC.o_baseline_commit
+    $ CLI_common.o_common $ o_config $ SC.o_dataflow_traces $ SC.o_diff_depth
+    $ SC.o_dryrun $ SC.o_dump_command_for_core $ SC.o_emacs $ SC.o_emacs_outputs
     $ SC.o_exclude $ SC.o_exclude_minified_files $ SC.o_exclude_rule_ids
     $ SC.o_files_with_matches $ SC.o_force_color $ SC.o_gitlab_sast
     $ SC.o_gitlab_sast_outputs $ SC.o_gitlab_secrets

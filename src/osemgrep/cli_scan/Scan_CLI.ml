@@ -1338,19 +1338,19 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
   (* !The parameters must be in alphabetic orders to match the order
      of the corresponding '$ o_xx $' further below!
   *)
-  let combine allow_local_builds allow_untrusted_validators apply_includes_excludes_to_files inline_metavariables
-      autofix baseline_commit common config dataflow_traces diff_depth dryrun dump_ast
-      dump_command_for_core dump_engine_path emacs emacs_outputs error exclude_
-      exclude_minified_files exclude_rule_ids files_with_matches force_color
+  let combine allow_local_builds allow_untrusted_validators apply_includes_excludes_to_files
+      inline_metavariables autofix baseline_commit common config dataflow_traces diff_depth
+      dryrun dump_ast dump_command_for_core dump_engine_path emacs emacs_outputs error
+      exclude_ exclude_minified_files exclude_rule_ids files_with_matches force_color
       gitlab_sast gitlab_sast_outputs gitlab_secrets gitlab_secrets_outputs
       _historical_secrets include_ incremental_output incremental_output_postprocess
       json json_outputs junit_xml junit_xml_outputs lang matching_explanations max_chars_per_line
       max_lines_per_finding max_log_list_entries max_memory_mb max_target_bytes
-      metrics num_jobs no_secrets_validation nosem opengrep_ignore_pattern optimizations oss output output_enclosing_context
-      pattern pro project_root pro_intrafile pro_lang pro_path_sensitive remote
-      replacement rewrite_rule_ids sarif sarif_outputs scan_unknown_extensions
-      secrets semgrepignore_filename severity show_supported_languages strict target_roots test
-      test_ignore_todo text text_outputs time_flag timeout
+      metrics num_jobs no_secrets_validation nosem opengrep_ignore_pattern optimizations oss
+      output output_enclosing_context pattern pro project_root pro_intrafile pro_lang
+      pro_path_sensitive remote replacement rewrite_rule_ids sarif sarif_outputs
+      scan_unknown_extensions secrets semgrepignore_filename severity show_supported_languages
+      strict target_roots test test_ignore_todo text text_outputs time_flag timeout
       _timeout_interfileTODO timeout_threshold (*  trace trace_endpoint *) use_git
       validate version version_check vim vim_outputs
       x_ignore_semgrepignore_files x_ls x_ls_long =
@@ -1575,8 +1575,7 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
     (* !the o_xxx must be in alphabetic orders to match the parameters of
      * combine above! *)
     const combine $ o_allow_local_builds $ o_allow_untrusted_validators
-    $ o_apply_includes_excludes_to_files
-    $ o_inline_metavariables
+    $ o_apply_includes_excludes_to_files $ o_inline_metavariables
     $ o_autofix $ o_baseline_commit $ CLI_common.o_common $ o_config
     $ o_dataflow_traces $ o_diff_depth $ o_dryrun $ o_dump_ast
     $ o_dump_command_for_core $ o_dump_engine_path $ o_emacs $ o_emacs_outputs

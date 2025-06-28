@@ -39,7 +39,6 @@ type conf = {
   (* useful for debugging rules *)
   time_flag : bool;
   inline_metavariables : bool;
-
   matching_explanations : bool;
   (* TODO: actually seems like semgrep-core always return them,
    * even if it was not requested by the CLI
