@@ -52,6 +52,7 @@ type t = {
   equivalences_file : Fpath.t option;
   (* output and result tweaking *)
   output_format : output_format;
+  inline_metavariables : bool;
   report_time : bool;
   matching_explanations : bool;
   strict : bool;
@@ -102,6 +103,7 @@ let default =
     equivalences_file = None;
     (* alt: NoOutput but then would need a -text in Core_CLI.ml *)
     output_format = Text;
+    inline_metavariables = false;
     report_time = false;
     matching_explanations = false;
     strict = false;
