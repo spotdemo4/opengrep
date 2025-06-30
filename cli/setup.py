@@ -123,6 +123,8 @@ install_requires = [
     "typing-extensions~=4.2",
     "urllib3~=2.0",
     "wcmatch~=8.3",
+    "protobuf",
+    "jaraco.text"
 ]
 
 
