@@ -130,8 +130,6 @@ jobs:
         uses: sigstore/cosign-installer@v3
 
       - name: Sign all binaries in artifacts
-        env:
-          COSIGN_EXPERIMENTAL: "1"
         run: |
           files_to_sign=(
             artifacts/opengrep_manylinux_binary_x86_64/opengrep_manylinux_x86
