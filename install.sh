@@ -1,23 +1,49 @@
 #!/usr/bin/env bash 
-set -euo pipefail
 # Opengrep installation script
 
-print_usage() {
+set -euo pipefail
 
+if [[ "$0" == "bash" || "$0" == "-bash" ]]; then
+  SCRIPT_NAME="install.sh (via stdin)"
+else
+  SCRIPT_NAME="$0"
+fi
+
+print_usage() {
     echo "Usage:"
-    echo "install.sh  -v version   Specify version to install (optional, default: latest) warns if you cannot verify signatures"
-    echo "install.sh  -v version --verify-signatures   Specify version to install (optional, default: latest) failing if you cannot verify signatures "
-    echo "install.sh  -l    List available versions (latest 3)"
-    echo "install.sh  -h    Show this help message"
+    echo "  $SCRIPT_NAME [-v <version>] [--verify-signatures]"
+    echo "      Install the latest or specified version (default: latest)"
+    echo
+    echo "  $SCRIPT_NAME -l"
+    echo "      List the latest 3 available versions"
+    echo
+    echo "  $SCRIPT_NAME -h"
+    echo "      Show this help message"
+    echo
+    echo "Options:"
+    printf "  %-22s %s\n" "-v <version>" "Specify version to install (optional)"
+    printf "  %-22s %s\n" "--verify-signatures" "Require Cosign verification of signature"
+    printf "  %-22s %s\n" "-l" "List latest 3 versions (no install)"
+    printf "  %-22s %s\n" "-h" "Display help (no install)"
+    echo
+    echo "Notes:"
+    echo "  - '--verify-signatures' can be used with or without '-v'."
+    echo "  - '-l' and '-h' cannot be combined with other options."
 }
 
-# Function to get available versions - already checked when running main
-get_available_versions() {
+check_has_curl() {
     command -v curl > /dev/null 2>&1 || {
         echo >&2 "Required tool curl could not be found. Aborting."
         exit 1
     }
-    curl -s https://api.github.com/repos/opengrep/opengrep/releases | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'
+}
+
+# Function to get available versions - already checked when running main
+get_available_versions() {
+    check_has_curl
+    curl -s https://api.github.com/repos/opengrep/opengrep/releases |
+        grep '"tag_name":' |
+        sed -E 's/.*"([^"]+)".*/\1/'
 }
 
 # Function to validate version
@@ -34,10 +60,10 @@ validate_version() {
         exit 1
     fi
 }
+
 validate_signature() {
     local P="$1"
     if $HAS_COSIGN; then
-
         echo "Verifying signatures for ${P}/opengrep.cert"
         if cosign verify-blob \
             --cert "$P/opengrep.cert" \
@@ -49,16 +75,27 @@ validate_signature() {
             exit 0
         else
             if [[ "$VERIFY_SIGNATURES" == true ]]; then
-                echo "Error: Signature validation error. Deleting downloaded package"
-                rm -rf "${P}"
+                echo "Error: Signature validation error. Deleting downloaded package ${P}."
                 exit 1
             else
-                echo "Warning  Signature validation error; the package is still installed."
+                echo "Warning: Signature validation error; the package is still installed."
                 echo "If this was not intended, delete and rerun with --verify-signatures"
                 exit 0
             fi
         fi
     fi
+}
+
+# carefully cleanup the expected files; we don't want a programming error to run
+# rm -rf on any directory that is not intended...
+cleanup_on_failure() {
+    local P="$1"
+    echo "An error occurred during the installation. Cleaning up ${P}..."
+    rm -f "${P}/opengrep" || true
+    rm -f "${P}/opengrep.sig" || true
+    rm -f "${P}/opengrep.cert" || true
+    rmdir "${P}" || true
+    exit 1
 }
 
 main() {
@@ -72,10 +109,7 @@ main() {
     ARCH="${ARCH:-$(uname -m)}"
     DIST=""
 
-    command -v curl > /dev/null 2>&1 || {
-        echo >&2 "Required tool curl could not be found. Aborting."
-        exit 1
-    }
+    check_has_curl
 
     # check and set "os_arch"
     if [ "$OS" = "Linux" ]; then
@@ -106,14 +140,23 @@ main() {
     fi
 
     URL="https://github.com/opengrep/opengrep/releases/download/${VERSION}/${DIST}"
-    echo
-    echo "*** Installing Opengrep ${VERSION} for ${OS} (${ARCH}) ***"
-    
 
     # check if binary already exists
     if [ -f "${INST}/opengrep" ]; then
         echo "Destination binary ${INST}/opengrep already exists."
+        rm -f "${LATEST}" || exit 1
+        ln -s "${INST}" "${LATEST}" || exit 1
+        echo "Updated symlink from ${LATEST}/opengrep to point to ${INST}/opengrep."
+        if $VERIFY_SIGNATURES; then
+            echo "Signature verification skipped for existing installation."
+        fi
     else
+        echo
+        echo "*** Installing Opengrep ${VERSION} for ${OS} (${ARCH}) ***"
+
+        # cleanup on error
+        trap '[ "$?" -eq 0 ] || cleanup_on_failure $INST' EXIT
+
         mkdir -p "${INST}"
         if [ ! -d "${INST}" ]; then
             echo "Failed to create install directory ${INST}." 1>&2
@@ -121,12 +164,47 @@ main() {
         fi
 
         curl --fail --location --progress-bar "${URL}" > "${INST}/opengrep"
-        curl --fail --location --progress-bar "${URL}.cert" > "${INST}/opengrep.cert"
-        curl --fail --location --progress-bar "${URL}.sig" > "${INST}/opengrep.sig"
 
-        # check signature
+        local SIG_EXISTS=true
 
-        validate_signature "${INST}"
+        # Try downloading .cert
+        CERT_STATUS=$(curl --location --silent --show-error --write-out "%{http_code}" \
+            --output "${INST}/opengrep.cert" "${URL}.cert")
+
+        if [[ "$CERT_STATUS" == "404" ]]; then
+            SIG_EXISTS=false
+            rm -f "${INST}/opengrep.cert" # It's there but contains "Not found".
+            echo "Warning: Certificate file not found at ${URL}.cert"
+        elif [[ "$CERT_STATUS" != 200 ]]; then
+          echo "Error: Failed to download ${URL}.cert: HTTP status $CERT_STATUS."
+          exit 1
+        else
+            # Only attempt .sig if .cert was found
+            SIG_STATUS=$(curl --location --silent --show-error --write-out "%{http_code}" \
+                --output "${INST}/opengrep.sig" "${URL}.sig")
+
+            if [[ "$SIG_STATUS" == "404" ]]; then
+                SIG_EXISTS=false
+                echo "Error: Signature file not found at ${URL}.sig, but ${URL}.cert was found."
+                exit 1  # we donwloaded .cert, so exit with error
+            elif [[ "$SIG_STATUS" != 200 ]]; then
+              echo "Error: Failed to download ${URL}.sig: HTTP status $SIG_STATUS."
+              exit 1
+            fi
+        fi
+
+        # check signature if SIG_EXIST
+        if [[ "$SIG_EXISTS" == true ]]; then
+            validate_signature "${INST}"
+        else
+            if [[ "$VERIFY_SIGNATURES" == true ]]; then
+                echo "Error: No signature / certificate found for ${VERSION} but --verify-signatures was requested."
+                exit 1
+            else
+                echo "Warning: No signature / certificate found for ${VERSION}. Skipping signature verification."
+                echo "Warning: The package is still installed. It is likely that signature verification was added after this version."
+            fi
+        fi
 
         # make executable by all users
         chmod a+x "${INST}/opengrep" || exit 1
@@ -136,6 +214,7 @@ main() {
             exit 1
         fi
 
+        echo "Testing binary..."
         # Test by calling --version on the downloaded binary
         TEST=$("${INST}/opengrep" --version 2> /dev/null || true)
         if [ -z "$TEST" ]; then
@@ -211,16 +290,16 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -v)
-            if [[ -n "$2" && "$2" != -* ]]; then
+            if [[ -z "${2-}" ]] || ! [[ -n "$2" && "$2" != -* ]]; then
+                echo "Error: -v requires a version argument."
+                exit 1
+            else
                 VERSION="$2"
                 shift 2
-            else
-                echo "Error: -v requires a version argument"
-                exit 1
             fi
             ;;
         *)
-            echo "Error: Unknown option: $1"
+            echo "Error: Unknown option: $1."
             print_usage
             exit 1
             ;;
@@ -231,18 +310,16 @@ if { { $VERIFY_SIGNATURES || [[ -n "$VERSION" ]] || $LIST; } && $HELP; } || { { 
     echo "Error: incorrect arguments:"
     print_usage
     exit 1
-
 fi
 
 if $VERIFY_SIGNATURES && ! $HAS_COSIGN; then
-    echo "Error: cosign is required for --verify-signatures but not installed."
-    echo "Go to https://github.com/sigstore/cosign to install or run without the --verify-signatures flag to install without verifying."
+    echo "Error: cosign is required for --verify-signatures but is not installed."
+    echo "Go to https://github.com/sigstore/cosign to install it or run without the --verify-signatures flag to install without signature verification."
     exit 1
 elif ! $HAS_COSIGN; then
-    echo "Warning: cosign is required for --verify-signatures but not installed. Skipping signature validation"
-    echo "Go to https:/github.com/sigstore/cosign to install."
+    echo "Warning: cosign is required for --verify-signatures but is not installed. Skipping signature validation."
+    echo "Go to https:/github.com/sigstore/cosign to install it."
 fi
-
 
 if "$HELP"; then
     print_usage
