@@ -391,7 +391,6 @@ let core_scan_config_of_conf (conf : conf) : Core_scan_config.t =
         equivalences_file = None;
         respect_rule_paths = true;
         max_match_per_file = Core_scan_config.default.max_match_per_file;
-        tracing = None;
       }
 
 (* output adapter to Core_scan.scan.
