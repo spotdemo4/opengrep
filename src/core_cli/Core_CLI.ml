@@ -53,8 +53,6 @@ let log_to_file = ref None
  *)
 let debug = ref false
 let profile = ref false
-let trace = ref false
-let trace_endpoint = ref None
 
 (* ------------------------------------------------------------------------- *)
 (* main flags *)
@@ -302,11 +300,6 @@ let output_core_results (caps : < Cap.stdout ; Cap.stderr ; Cap.exit >)
 (* Config *)
 (*****************************************************************************)
 
-(* Coupling: these need to be kept in sync with tracing.py *)
-let default_trace_endpoint = Uri.of_string "https://telemetry.semgrep.dev"
-let default_dev_endpoint = Uri.of_string "https://telemetry.dev2.semgrep.dev"
-let default_local_endpoint = Uri.of_string "http://localhost:4318"
-
 let mk_config () : Core_scan_config.t =
   {
     rule_source =
@@ -335,32 +328,6 @@ let mk_config () : Core_scan_config.t =
     ncores = !ncores;
     filter_irrelevant_rules = !filter_irrelevant_rules;
     engine_config = Engine_config.default;
-    tracing =
-      (match (!trace, !trace_endpoint) with
-      | true, Some url ->
-          let endpoint, env =
-            match url with
-            (* coupling: cli/src/semgrep/tracing.py _ENV_ALIASES *)
-            | "semgrep-prod" -> (default_trace_endpoint, Some "prod")
-            | "semgrep-dev" -> (default_dev_endpoint, Some "dev2")
-            | "semgrep-local" -> (default_local_endpoint, Some "local")
-            | _ -> (Uri.of_string url, None)
-          in
-          Some { endpoint; top_level_span = None; env }
-      | true, None ->
-          Some
-            {
-              endpoint = default_trace_endpoint;
-              top_level_span = None;
-              env = None;
-            }
-      | false, Some _ ->
-          Logs.warn (fun m ->
-              m
-                "Tracing is disabled because -trace_endpoint is specified \
-                 without -trace.");
-          None
-      | false, None -> None);
   }
 
 (*****************************************************************************)
@@ -663,10 +630,6 @@ let options caps (actions : unit -> Arg_.cmdline_actions) =
     ( "-log_to_file",
       Arg.String (fun file -> log_to_file := Some (Fpath.v file)),
       " <file> log debugging info to file" );
-    ( "-trace", Arg.Set trace, " output tracing information");
-    ( "-trace_endpoint",
-      Arg.String (fun url -> trace_endpoint := Some url),
-      " url endpoint for collecting tracing information" );
     ( "-output_enclosing_context",
       Arg.Set Flag.output_enclosing_context,
       "Include information about the syntactic context of the matched fragmetns of\
@@ -815,7 +778,7 @@ let main_exn (caps : Cap.all_caps) (argv : string array) : unit =
   in
 
   (* coupling: lots of similarities with what we do in Scan_subcommand.ml *)
-  Log_semgrep.setup ~log_to_otel:!trace ?log_to_file:!log_to_file
+  Log_semgrep.setup ?log_to_file:!log_to_file
     ?require_one_of_these_tags:None ~force_color:true
     ~level:
       (* TODO: command-line option or env variable to choose the log level *)
@@ -884,24 +847,7 @@ let main_exn (caps : Cap.all_caps) (argv : string array) : unit =
              TODO when osemgrep is the default entry point, we will also be
              able to instrument the pre- and post-scan code in the same way.
           *)
-          match config.tracing with
-          | None -> run caps config
-          | Some tracing ->
-              let resource_attrs =
-                (* Let's make sure all traces/logs/metrics etc. are tagged as
-                   coming from the OSS invocation *)
-                Trace_data.get_resource_attrs ?env:tracing.env ~engine:"oss"
-                  ~analysis_flags:(Trace_data.no_analysis_features ())
-                  ~jobs:config.ncores ()
-              in
-              Tracing.configure_tracing ~attrs:resource_attrs "semgrep-core"
-                tracing.endpoint;
-              Tracing.with_tracing "Core_command.semgrep_core_dispatch" []
-                (fun span_id ->
-                  let tracing =
-                    { tracing with top_level_span = Some span_id }
-                  in
-                  run caps { config with tracing = Some tracing })))
+          run caps config))
 
 let with_exception_trace f =
   Printexc.record_backtrace true;
