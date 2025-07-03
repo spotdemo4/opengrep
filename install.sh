@@ -61,6 +61,7 @@ validate_version() {
     fi
 }
 
+# pre: $SIG_EXISTS == "true"
 validate_signature() {
     local P="$1"
     if $HAS_COSIGN; then
@@ -73,14 +74,14 @@ validate_signature() {
             "${P}/opengrep"; then
             echo "Signature valid."
         else
-            if [[ "$VERIFY_SIGNATURES" == true ]]; then
-                echo "Error: Signature validation error."
-                exit 1
-            else
-                echo "Warning: Signature validation error; the package is still installed."
-                echo "If this was not intended, delete and rerun with --verify-signatures."
-            fi
+            # if we have signatures and we also have cosign installed, then always
+            # verify, even without --verify-signatures.
+            echo "Error: Signature validation error."
+            exit 1
         fi
+    else
+      echo "Warning: cosign needed for signature validation; the package will still be installed."
+      echo "If this was not intended, delete and rerun with --verify-signatures or install cosign."
     fi
 }
 
@@ -197,10 +198,11 @@ main() {
         else
             if [[ "$VERIFY_SIGNATURES" == true ]]; then
                 echo "Error: No signature / certificate found for ${VERSION} but --verify-signatures was requested."
+                echo "Error: It is likely that signature verification was added after this version."
                 exit 1
             else
                 echo "Warning: No signature / certificate found for ${VERSION}. Skipping signature verification."
-                echo "Warning: The package is still installed. It is likely that signature verification was added after this version."
+                echo "Warning: The package will still be installed. It is likely that signature verification was added after this version."
             fi
         fi
 
