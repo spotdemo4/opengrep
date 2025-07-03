@@ -72,15 +72,13 @@ validate_signature() {
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
             "${P}/opengrep"; then
             echo "Signature valid."
-            exit 0
         else
             if [[ "$VERIFY_SIGNATURES" == true ]]; then
-                echo "Error: Signature validation error. Deleting downloaded package ${P}."
+                echo "Error: Signature validation error."
                 exit 1
             else
                 echo "Warning: Signature validation error; the package is still installed."
-                echo "If this was not intended, delete and rerun with --verify-signatures"
-                exit 0
+                echo "If this was not intended, delete and rerun with --verify-signatures."
             fi
         fi
     fi
@@ -186,7 +184,7 @@ main() {
             if [[ "$SIG_STATUS" == "404" ]]; then
                 SIG_EXISTS=false
                 echo "Error: Signature file not found at ${URL}.sig, but ${URL}.cert was found."
-                exit 1  # we donwloaded .cert, so exit with error
+                exit 1  # we downloaded .cert, so exit with error
             elif [[ "$SIG_STATUS" != 200 ]]; then
               echo "Error: Failed to download ${URL}.sig: HTTP status $SIG_STATUS."
               exit 1
