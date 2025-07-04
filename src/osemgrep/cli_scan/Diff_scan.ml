@@ -215,7 +215,14 @@ let scan_baseline (caps : < Cap.chdir ; Cap.tmp >) (conf : Scan_CLI.conf)
     in
     match conf.engine_type with
     | PRO Engine_type.{ analysis = Interfile; _ } -> (targets, added_or_modified)
-    | _ -> (targets, [])
+    | _ ->
+      let targets_modified_or_added =
+        let added_or_modified_set = Fpath.Set.of_list added_or_modified in
+        List.filter
+          (fun p -> Fpath.Set.mem p added_or_modified_set)
+          targets
+      in
+      (targets_modified_or_added, [])
   in
   let (head_scan_result : Core_result.result_or_exn) =
     Profiler.record profiler ~name:"head_core_time" (fun () ->
