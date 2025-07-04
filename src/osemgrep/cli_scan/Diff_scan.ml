@@ -58,7 +58,7 @@ let remove_matches_in_baseline caps (commit : string) (baseline : Core_result.t)
       !!(m.path.internal_path_to_content) |> fun p ->
       Option.bind renamed
         (List_.find_some_opt (fun (before, after) ->
-             if after = p then Some before else None))
+             if String.equal after p then Some before else None))
       |> Option.value ~default:p
     in
     let start_range, end_range = m.range_loc in
