@@ -1487,15 +1487,6 @@ let cmdline_term caps ~allow_empty_config : conf Term.t =
       test_CLI_conf ~test ~target_roots ~config ~json ~optimizations
         ~test_ignore_todo ~strict ~pro ~common
     in
-    (* more sanity checks *)
-    if
-      (List.mem "auto" config
-      || rules_source =*= Rules_source.Configs [ "auto" ])
-    then
-      Error.abort
-        "Cannot create auto config when metrics are off. Please allow metrics \
-         or run with a specific config.";
-
     (* warnings.
      * ugly: TODO: remove the Default guard once we get the warning message
      * in osemgrep equal to the one in pysemgrep or when we remove
