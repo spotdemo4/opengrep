@@ -112,25 +112,6 @@ let dirty_paths_of_folder folder =
     Some (List_.map (fun x -> folder // x) dirty_paths)
   else None
 
-(* TODO: registry caching is not anymore in semgrep-OSS! *)
-let _decode_rules caps data =
-  CapTmp.with_temp_file caps#tmp ~contents:data ~suffix:".json" (fun file ->
-      match
-        Rule_fetching.load_rules_from_file ~rewrite_rule_ids:false ~origin:App
-          caps file
-      with
-      | Ok res ->
-          Logs.app (fun m ->
-              m "Loaded %d rules from Semgrep Deployment"
-                (List.length res.rules));
-          Logs.app (fun m ->
-              m "Got %d errors from Semgrep Deployment"
-                (List.length res.invalid_rules));
-          res
-      | Error _err ->
-          (* There shouldn't be any errors, because we got these rules from CI. *)
-          failwith "impossible: received invalid rules from Deployment")
-
 let get_targets session (root : Fpath.t) =
   let targets_conf =
     User_settings.find_targets_conf_of_t session.user_settings

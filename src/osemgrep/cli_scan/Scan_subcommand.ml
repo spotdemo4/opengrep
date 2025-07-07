@@ -49,31 +49,6 @@ type caps =
   ; (* for iter_targets memory limit *)
     Cap.memory_limit >
 
-(* This function counts how many matches we got by rules:
-   [(Rule.t, number of matches : int) list].
-   This is use for rule metrics.
-*)
-let _rules_and_counted_matches (res : Core_runner.result) : (Rule.t * int) list =
-  let update = function
-    | Some n -> Some (succ n)
-    | None -> Some 1
-  in
-  let fold acc (core_match : Out.core_match) =
-    Map_.update core_match.check_id update acc
-  in
-  let xmap = List.fold_left fold Map_.empty res.core.results in
-  Map_.fold
-    (fun rule_id n acc ->
-      let res =
-        try Hashtbl.find res.hrules rule_id with
-        | Not_found ->
-            failwith
-              (spf "could not find rule_id %s in hash"
-                 (Rule_ID.to_string rule_id))
-      in
-      (res, n) :: acc)
-    xmap []
-
 (*****************************************************************************)
 (* Error management *)
 (*****************************************************************************)
@@ -254,9 +229,6 @@ let choose_output_format_and_match_hook (caps : < Cap.stdout >)
 (*****************************************************************************)
 (* Printing stuff for CLI UX *)
 (*****************************************************************************)
-
-(* TODO: Update pysemgrep and osemgrep snapshot tests to match new output *)
-let new_cli_ux = true
 
 let print_logo () : unit =
   let logo =
@@ -659,7 +631,7 @@ let check_targets_with_rules
 let run_scan_conf (caps : < caps ; .. >) (conf : Scan_CLI.conf) : Exit_code.t =
   (* step0: more initializations *)
   (* Print The logo ASAP to minimize time to first meaningful content paint *)
-  if new_cli_ux then print_logo ();
+  print_logo ();
 
   (* imitate pysemgrep for backward compatible profiling metrics ? *)
   let profiler = Profiler.make () in
@@ -672,22 +644,21 @@ let run_scan_conf (caps : < caps ; .. >) (conf : Scan_CLI.conf) : Exit_code.t =
      Ideally, pattern mode should be a different subcommand, but for now we will
      conditionally print the feature section.
   *)
-  (if new_cli_ux then
-     match conf.rules_source with
-     | Pattern _ ->
-         Logs.app (fun m ->
-             m "%s"
-               (Ocolor_format.asprintf {|@{<bold>  %s@}|}
-                  "Code scanning.\n"))
-     | _ ->
-         print_feature_section
-           (* ~includes_token:(settings.api_token <> None) *)
-           (* ~engine:conf.engine_type) *) ());
+  (match conf.rules_source with
+  | Pattern _ ->
+      Logs.app (fun m ->
+          m "%s"
+            (Ocolor_format.asprintf {|@{<bold>  %s@}|}
+               "Code scanning.\n"))
+  | _ ->
+      print_feature_section
+        (* ~includes_token:(settings.api_token <> None) *)
+        (* ~engine:conf.engine_type) *) ());
 
   (* step1: getting the rules *)
   Logs.info (fun m -> m "Getting the rules");
   (* Display a (possibly interactive) message to denote rule fetching *)
-  if new_cli_ux then display_rule_source ~rule_source:conf.rules_source;
+  display_rule_source ~rule_source:conf.rules_source;
   let rules_and_origins, fatal_errors =
     rules_from_rules_source
       (caps :> < Cap.network ; Cap.tmp >)

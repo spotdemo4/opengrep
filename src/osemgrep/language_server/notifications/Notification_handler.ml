@@ -35,8 +35,7 @@ module Conv = Convert_utils
 (*****************************************************************************)
 
 (* Dispatch to the various custom request handlers. *)
-let handle_custom_notification (meth : string)
-    (_params : Jsonrpc.Structured.t option) : Reply.t option =
+let handle_custom_notification (meth : string) : Reply.t option =
   Logs.warn (fun m -> m "Unhandled custom notification %s" meth);
   None
 
@@ -175,8 +174,8 @@ let on_notification (server : RPC_server.t) notification =
                   Lwt.return_unit)
             in
             ({ server with session }, Some reply))
-    | CN.UnknownNotification { method_; params } ->
-        (server, handle_custom_notification method_ params)
+    | CN.UnknownNotification { method_; _ } ->
+        (server, handle_custom_notification method_)
     | _ ->
         Logs.debug (fun m ->
             m "Unhandled notification %s"
