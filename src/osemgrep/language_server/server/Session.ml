@@ -267,7 +267,7 @@ let fetch_rules session =
 
 let fetch_skipped_app_fingerprints _caps =
   (* At some point we should allow users to ignore ids locally *)
-  Lwt.return []
+  Lwt.return_nil
 
 (* Useful for when we need to reset diagnostics, such as when changing what
  * rules we've run *)
@@ -322,7 +322,7 @@ let load_local_skipped_fingerprints session =
     { session with skipped_local_fingerprints }
 
 let fetch_deployment_id _caps =
-  Lwt.return None
+  Lwt.return_none
 
 (*****************************************************************************)
 (* State setters *)
