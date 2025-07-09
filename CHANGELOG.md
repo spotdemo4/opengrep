@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.6.0](https://github.com/opengrep/opengrep/releases/tag/v1.6.0) - 10-07-2025
+
+### Removed features
+
+* Remove semgrep-specific functionality including the `--metrics` parameter by @dimitris-m in #329 and #336
+
+### Improvements
+
+* Ensure that python has the expected version in the manylinux binary by @dimitris-m in #322
+* Make tests invariant to version by @dimitris-m in #325
+* Align --profile table output by @dimitris-m in #327
+
+### Bug fixes
+
+* Fix: install script flow for cosign by @dimitris-m in #321
+* Improve Ruby tainting by @corneliuhoffman in #324
+* Fix baseline scan when using --experimental by @dimitris-m in #326
+* Fix: pin memprof-limits by @dimitris-m in #328
+* fix: detect musl in install script by @securityPirate in #330
+* Ensure fingerprint is unique by @dimitris-m in #338
+
+### New Contributors
+* @securityPirate made their first contribution in #330
+
+**Full Changelog**: https://github.com/opengrep/opengrep/compare/v1.5.0...v1.6.0
+
+
 ## [1.5.0](https://github.com/opengrep/opengrep/releases/tag/v1.5.0) - 03-07-2025
 
 ### New features
