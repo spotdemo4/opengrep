@@ -194,27 +194,19 @@
       url = "github:ocaml/opam-repository";
       flake = false;
     };
-    memprof-limits = {
-      url = "gitlab:dimitris-m/memprof-limits/dm/ocaml-5.3.0-opengrep";
-      flake = false;
-    };
   };
   outputs = {
     nixpkgs,
     flake-utils,
     opam-nix,
     opam-repository,
-    memprof-limits,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
       on = opam-nix.lib.${system};
       pythonPackages = pkgs.python311Packages;
-      opamRepos = [
-        (opam-nix.lib.${system}.makeOpamRepo memprof-limits)
-        opam-repository
-      ];
+      opamRepos = [opam-repository];
       lib = pkgs.lib;
       isDarwin = lib.strings.hasSuffix "darwin" system;
     in let

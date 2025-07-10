@@ -34,23 +34,6 @@
         "type": "github"
       }
     },
-    "memprof-limits": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1738760381,
-        "narHash": "sha256-oY/ElDhsL+wfz9MpwqO/rwvHt3wOeKly0BYcR4ckAYQ=",
-        "owner": "dimitris-m",
-        "repo": "memprof-limits",
-        "rev": "c2cced325a93d2271379f0712db85867b29dbee1",
-        "type": "gitlab"
-      },
-      "original": {
-        "owner": "dimitris-m",
-        "ref": "dm/ocaml-5.3.0-opengrep",
-        "repo": "memprof-limits",
-        "type": "gitlab"
-      }
-    },
     "mirage-opam-overlays": {
       "flake": false,
       "locked": {
@@ -184,7 +167,6 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "memprof-limits": "memprof-limits",
         "nixpkgs": "nixpkgs",
         "opam-nix": "opam-nix",
         "opam-repository": "opam-repository_2"
